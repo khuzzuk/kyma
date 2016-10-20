@@ -32,6 +32,14 @@
         <jta.version>1.1</jta.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>collide</id>
+            <name>collide</name>
+            <url>http://mvn.collide.info/content/repositories/releases/</url>
+        </repository>
+    </repositories>
+
     <build>
         <plugins>
             <plugin>
@@ -60,7 +68,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>manager.Start</mainClass>
+                            <mainClass>net.kyma.player.Mp3Player</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -96,6 +104,16 @@
     </reporting>
 
     <dependencies>
+        <dependency>
+            <groupId>com.mpatric</groupId>
+            <artifactId>mp3agic</artifactId>
+            <version>0.8.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.soundlibs</groupId>
+            <artifactId>jlayer</artifactId>
+            <version>1.0.1.4</version>
+        </dependency>
         <!--DATABASE-->
         <dependency>
             <groupId>com.h2database</groupId>
@@ -118,17 +136,19 @@
             <version>${hibernate.version}</version>
         </dependency>
 
+        <!--SOUND-->
+        <dependency>
+            <groupId>javax.media</groupId>
+            <artifactId>jmf</artifactId>
+            <version>fs-3.0</version>
+        </dependency>
+
         <!--UTILITY-->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
             <version>${commons-collections4.version}</version>
         </dependency>
-        <!--dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>19.0</version>
-        </dependency-->
         <dependency>
             <groupId>javax.persistence</groupId>
             <artifactId>persistence-api</artifactId>
@@ -163,6 +183,16 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-jcl</artifactId>
             <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.5.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>1.5.6</version>
         </dependency>
 
         <!--TESTS-->
