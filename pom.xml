@@ -60,7 +60,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>manager.Start</mainClass>
+                            <mainClass>net.kyma.player.Mp3Player</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -96,6 +96,16 @@
     </reporting>
 
     <dependencies>
+        <dependency>
+            <groupId>com.mpatric</groupId>
+            <artifactId>mp3agic</artifactId>
+            <version>0.8.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.soundlibs</groupId>
+            <artifactId>jlayer</artifactId>
+            <version>1.0.1.4</version>
+        </dependency>
         <!--DATABASE-->
         <dependency>
             <groupId>com.h2database</groupId>
