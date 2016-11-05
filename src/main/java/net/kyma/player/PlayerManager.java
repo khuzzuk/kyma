@@ -1,6 +1,7 @@
 package net.kyma.player;
 
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import pl.khuzzuk.messaging.Bus;
 import pl.khuzzuk.messaging.MultiContentPublisher;
 import pl.khuzzuk.messaging.MultiContentSubscriber;
