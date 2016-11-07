@@ -1,20 +1,19 @@
 package net.kyma.mcichon;
 
-import java.io.IOException;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
 import net.kyma.mcichon.model.ItemModel;
 import net.kyma.mcichon.view.controllers.MainEditDialogController;
 import net.kyma.mcichon.view.controllers.MusicOverviewController;
+
+import java.io.IOException;
 
 public class MainApp extends Application {
 
@@ -79,7 +78,7 @@ public class MainApp extends Application {
         try {
             // Load root layout from fxml file.
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation( MainApp.class.getResource( "view/fxml/RootLayout.fxml" ) );
+            loader.setLocation( MainApp.class.getResource( "/fxml/RootLayout.fxml" ) );
             rootLayout = ( BorderPane ) loader.load();
 
             // Show the scene containing the root layout.
@@ -101,7 +100,7 @@ public class MainApp extends Application {
         try {
             // Load item overview.
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation( MainApp.class.getResource( "view/fxml/ItemOverview.fxml" ) );
+            loader.setLocation( MainApp.class.getResource( "/fxml/ItemOverview.fxml" ) );
             AnchorPane itemOverview = ( AnchorPane ) loader.load();
 
             // Set item overview into the center of root layout.
@@ -131,7 +130,7 @@ public class MainApp extends Application {
         try {
             // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation( MainApp.class.getResource( "view/fxml/ItemEditDialog.fxml" ) );
+            loader.setLocation( MainApp.class.getResource( "/fxml/ItemEditDialog.fxml" ) );
             AnchorPane page = ( AnchorPane ) loader.load();
 
             // Create the dialog Stage.
@@ -148,7 +147,7 @@ public class MainApp extends Application {
             controller.setItem( itemModel );
 
             // Set the dialog icon.
-            dialogStage.getIcons().add(new Image( "file:resources/images/edit.png" ) );
+            //dialogStage.getIcons().add(new Image( "file:resources/images/edit.png" ) );
 
             // Show the dialog and wait until the user closes it
             dialogStage.showAndWait();

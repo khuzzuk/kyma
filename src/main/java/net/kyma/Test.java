@@ -3,8 +3,6 @@ package net.kyma;
 import net.kyma.player.PlayerManager;
 import pl.khuzzuk.messaging.BagPublisher;
 import pl.khuzzuk.messaging.Bus;
-import pl.khuzzuk.messaging.Message;
-import pl.khuzzuk.messaging.Publisher;
 
 import java.io.IOException;
 import java.util.Properties;
