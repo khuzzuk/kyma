@@ -43,7 +43,6 @@ public class MusicOverviewController {
 
         showItemDetails(null);
 
-        // Listen for selection changes and show the item details when changed.
         songTable.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> showItemDetails( newValue ));
     }
@@ -56,7 +55,6 @@ public class MusicOverviewController {
     public void setMainApp( MainApp mainApp ) {
         this.mainApp = mainApp;
 
-        // Add observable list data to the table
         songTable.setItems( mainApp.getItemData() );
     }
 
@@ -68,11 +66,9 @@ public class MusicOverviewController {
      */
     private void showItemDetails( ItemModel item ) {
         if (item != null) {
-            // Fill the labels with info from the item object.
             nameLabel   .setText( item.getName() );
             timeLabel   .setText( item.getTime() );
         } else {
-            // Item is null, remove all the text.
             nameLabel   .setText("");
             timeLabel   .setText("");
         }
@@ -87,7 +83,6 @@ public class MusicOverviewController {
         if ( selectedIndex >= 0 ) {
             songTable.getItems().remove( selectedIndex );
         } else {
-            // Nothing selected.
             Alert alert = new Alert( AlertType.WARNING );
             alert.initOwner( mainApp.getPrimaryStage() );
             alert.setTitle(         "No Selection" );

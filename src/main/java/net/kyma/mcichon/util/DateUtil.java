@@ -56,7 +56,6 @@ public class DateUtil {
      * @return true if the String is a valid date
      */
     public static boolean validDate(String dateString) {
-        // Try to parse the String.
         return DateUtil.parse(dateString) != null;
     }
 }

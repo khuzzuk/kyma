@@ -26,13 +26,11 @@ public class MainApp extends Application {
     private ObservableList< ItemModel > itemMusic = FXCollections.observableArrayList();
 
     /**
-     * Constructor
      */
     public MainApp() {
         String name = Thread.currentThread().getName();
         System.out.println("FXLifeCycleApp() constructor: " + name);
 
-        // Add some sample data (music)
         itemMusic.add( new ItemModel( "Side to side" ,               "3:20" ) );
         itemMusic.add( new ItemModel( "Treat you better" ,           "2:50" ) );
         itemMusic.add( new ItemModel( "This is what you came for" ,  "2:20" ) );
@@ -60,9 +58,6 @@ public class MainApp extends Application {
         this.primaryStage = primaryStage;
         this.primaryStage.setTitle( "Mp3Fx" );
 
-        // Set the application icon.
-        //this.primaryStage.getIcons().add( new Image( "file:resources/images/address_book_32.png" ) );
-
         initRootLayout();
 
         showItemOverview();
@@ -76,12 +71,10 @@ public class MainApp extends Application {
         System.out.println( "init() method: " + name );
 
         try {
-            // Load root layout from fxml file.
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation( MainApp.class.getResource( "/fxml/RootLayout.fxml" ) );
             rootLayout = ( BorderPane ) loader.load();
 
-            // Show the scene containing the root layout.
             Scene scene = new Scene( rootLayout );
             primaryStage.setScene( scene );
             primaryStage.show();
@@ -98,15 +91,12 @@ public class MainApp extends Application {
         System.out.println("showItemOverview() method: " + name);
 
         try {
-            // Load item overview.
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation( MainApp.class.getResource( "/fxml/ItemOverview.fxml" ) );
             AnchorPane itemOverview = ( AnchorPane ) loader.load();
 
-            // Set item overview into the center of root layout.
             rootLayout.setCenter( itemOverview );
 
-            // Give the controller access to the main app.
             MusicOverviewController controller = loader.getController();
             controller.setMainApp( this );
 
@@ -128,12 +118,10 @@ public class MainApp extends Application {
         System.out.println( "showItemEditDialog() method: " + name );
 
         try {
-            // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation( MainApp.class.getResource( "/fxml/ItemEditDialog.fxml" ) );
             AnchorPane page = ( AnchorPane ) loader.load();
 
-            // Create the dialog Stage.
             Stage dialogStage = new Stage();
             dialogStage.setTitle        ("Edit Item");
             dialogStage.initModality    ( Modality.WINDOW_MODAL );
@@ -141,15 +129,10 @@ public class MainApp extends Application {
             Scene scene = new Scene     ( page );
             dialogStage.setScene        ( scene );
 
-            // Set the item into the controller.
             MainEditDialogController controller = loader.getController();
             controller.setDialogStage( dialogStage );
             controller.setItem( itemModel );
-
-            // Set the dialog icon.
-            //dialogStage.getIcons().add(new Image( "file:resources/images/edit.png" ) );
-
-            // Show the dialog and wait until the user closes it
+            
             dialogStage.showAndWait();
 
             return controller.isOkClicked();
