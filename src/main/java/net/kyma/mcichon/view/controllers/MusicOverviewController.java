@@ -44,7 +44,8 @@ public class MusicOverviewController {
         showItemDetails(null);
 
         songTable.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> showItemDetails( newValue ));
+                (observable, oldValue, newValue) -> showItemDetails( newValue )
+        );
     }
 
     /**

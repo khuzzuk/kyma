@@ -7,9 +7,7 @@ public class ItemModel {
 
     private final StringProperty name;
     private final StringProperty time;
-    /**
-     * Default constructor.
-     */
+
     public ItemModel() {
         this( null , null );
     }

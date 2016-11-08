@@ -73,7 +73,7 @@ public class MainApp extends Application {
         try {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation( MainApp.class.getResource( "/fxml/RootLayout.fxml" ) );
-            rootLayout = ( BorderPane ) loader.load();
+            rootLayout = loader.load();
 
             Scene scene = new Scene( rootLayout );
             primaryStage.setScene( scene );
@@ -93,7 +93,7 @@ public class MainApp extends Application {
         try {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation( MainApp.class.getResource( "/fxml/ItemOverview.fxml" ) );
-            AnchorPane itemOverview = ( AnchorPane ) loader.load();
+            AnchorPane itemOverview = loader.load();
 
             rootLayout.setCenter( itemOverview );
 
@@ -120,7 +120,7 @@ public class MainApp extends Application {
         try {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation( MainApp.class.getResource( "/fxml/ItemEditDialog.fxml" ) );
-            AnchorPane page = ( AnchorPane ) loader.load();
+            AnchorPane page = loader.load();
 
             Stage dialogStage = new Stage();
             dialogStage.setTitle        ("Edit Item");
@@ -132,7 +132,7 @@ public class MainApp extends Application {
             MainEditDialogController controller = loader.getController();
             controller.setDialogStage( dialogStage );
             controller.setItem( itemModel );
-            
+
             dialogStage.showAndWait();
 
             return controller.isOkClicked();
