@@ -11,56 +11,51 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="363.0" prefWidth="693.0" stylesheets="@LightTheme.css" xmlns="http://javafx.com/javafx/8.0.76-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.kyma.mcichon.view.controllers.MusicOverviewController">
-   <children>
-      <SplitPane dividerPositions="0.4126984126984127" layoutX="153.0" layoutY="70.0" prefHeight="300.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <items>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-               <children>
-                  <TableView fx:id="songTable" layoutX="-12.0" layoutY="49.0" prefHeight="298.0" prefWidth="175.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+<!-- <AnchorPane prefHeight="363.0" prefWidth="693.0" stylesheets="@LightTheme.css" xmlns="http://javafx.com/javafx/8.0.112-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.kyma.mcichon.view.controllers.MusicOverviewController">
+    <children> -->
+
+<SplitPane dividerPositions="0.4" prefHeight="300.0" prefWidth="600.0" stylesheets="@LightTheme.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" xmlns="http://javafx.com/javafx/8.0.112-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.kyma.mcichon.view.controllers.MusicOverviewController">
+    <items>
+        <AnchorPane prefHeight="1.6" prefWidth="1.0">
+            <children>
+                <TableView fx:id="songTable" layoutX="-12.0" layoutY="49.0" prefHeight="300.0" prefWidth="175.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <columns>
-                      <TableColumn fx:id="nameColumn" prefWidth="75.0" text="Name" />
-                      <TableColumn fx:id="timeColumn" prefWidth="75.0" text="Time" />
+                        <TableColumn fx:id="nameColumn" prefWidth="75.0" text="Name" />
+                        <TableColumn fx:id="timeColumn" prefWidth="75.0" text="Time" />
                     </columns>
-                     <columnResizePolicy>
+                    <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                     </columnResizePolicy>
-                  </TableView>
-               </children>
-            </AnchorPane>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0" styleClass="background">
-               <children>
-                  <Label layoutX="104.0" layoutY="51.0" styleClass="label-header" text="Mp3FX" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
-                  <GridPane layoutX="43.0" layoutY="87.0" prefHeight="173.0" prefWidth="393.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="87.0">
+                    </columnResizePolicy>
+                </TableView>
+            </children>
+        </AnchorPane>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0" styleClass="background">
+            <children>
+                <Label layoutX="104.0" layoutY="52.0" styleClass="label-header" text="Mp3FX" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
+                <GridPane layoutX="42.0" layoutY="88.0" prefHeight="62.0" prefWidth="346.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="88.0">
                     <columnConstraints>
-                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                     </columnConstraints>
                     <rowConstraints>
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
-                     <children>
+                    <children>
                         <Label text="Song name" />
-                        <Label text="Song time"     GridPane.rowIndex="1" />
-                        <Label fx:id="nameLabel"    styleClass="label-bright" text="Label" GridPane.columnIndex="1" />
-                        <Label fx:id="timeLabel"    styleClass="label-bright" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                     </children>
-                  </GridPane>
-                  <ButtonBar layoutX="54.0" layoutY="250.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
+                        <Label text="Song time" GridPane.rowIndex="1" />
+                        <Label fx:id="nameLabel" styleClass="label-bright" text="Label" GridPane.columnIndex="1" />
+                        <Label fx:id="timeLabel" styleClass="label-bright" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                    </children>
+                </GridPane>
+                <ButtonBar layoutX="54.0" layoutY="250.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
                     <buttons>
-                        <Button mnemonicParsing="false" onAction="#handleNewItem"     text="New..." />
-                        <Button mnemonicParsing="false" onAction="#handleEditItem"    text="Edit..." />
+                        <Button mnemonicParsing="false" onAction="#handleNewItem" text="New..." />
+                        <Button mnemonicParsing="false" onAction="#handleEditItem" text="Edit..." />
                         <Button minWidth="66.0" mnemonicParsing="false" onAction="#handleDeleteItem" prefHeight="33.0" prefWidth="120.0" text="Delete" />
                     </buttons>
-                  </ButtonBar>
-               </children>
-            </AnchorPane>
-        </items>
-      </SplitPane>
-   </children>
-</AnchorPane>
+                </ButtonBar>
+            </children>
+        </AnchorPane>
+    </items>
+</SplitPane>

@@ -5,6 +5,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.SplitPane;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
@@ -71,8 +72,7 @@ public class MainApp extends Application {
         System.out.println( "init() method: " + name );
 
         try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation( MainApp.class.getResource( "/fxml/RootLayout.fxml" ) );
+            FXMLLoader loader = new FXMLLoader( getClass().getResource( "/fxml/RootLayout.fxml" ) );
             rootLayout = loader.load();
 
             Scene scene = new Scene( rootLayout );
@@ -91,9 +91,9 @@ public class MainApp extends Application {
         System.out.println("showItemOverview() method: " + name);
 
         try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation( MainApp.class.getResource( "/fxml/ItemOverview.fxml" ) );
-            AnchorPane itemOverview = loader.load();
+            FXMLLoader loader = new FXMLLoader( getClass().getResource( "/fxml/ItemOverview.fxml" ));
+            // AnchorPane itemOverview = loader.load();
+            SplitPane itemOverview = loader.load();
 
             rootLayout.setCenter( itemOverview );
 
