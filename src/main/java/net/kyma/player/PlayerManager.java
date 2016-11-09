@@ -19,7 +19,7 @@ public class PlayerManager {
     public void init() throws IOException {
         subscriber = bus.getMultiContentSubscriber();
         publisher = bus.getMultiContentPublisher();
-        subscriber.subscribe(messages.getProperty("player.play.mp3"), this::playMp3);
+        //subscriber.subscribe(messages.getProperty("player.play.mp3"), this::playMp3);
         subscriber.subscribe(messages.getProperty("player.metadata.getLength"), () -> System.out.println(currentPlayer.getLength()));
         subscriber.subscribe(messages.getProperty("player.metadata.getCurrentTime"), () -> System.out.println(currentPlayer.playbackStatus()));
     }

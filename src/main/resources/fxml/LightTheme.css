@@ -113,8 +113,6 @@
     -fx-border-radius: 100%;
     -fx-text-alignment: center;
     -fx-cursor: hand;
-    -fx-max-width:  80;
-    -fx-max-height: 80;
     -fx-min-width:  80;
     -fx-min-height: 80;
 }
