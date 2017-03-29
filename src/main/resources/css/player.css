@@ -1,0 +1,9 @@
+.roundButton {
+    -fx-background-radius: 5em;
+    -fx-min-width: 35px;
+    -fx-min-height: 35px;
+    -fx-pref-width: 35px;
+    -fx-pref-height: 35px;
+    -fx-font-family: serif;
+    -fx-font-weight: bold;
+}
