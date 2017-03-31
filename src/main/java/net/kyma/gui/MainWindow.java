@@ -6,15 +6,24 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+import net.kyma.gui.controllers.ControllerDistributor;
 
+import javax.inject.Inject;
 import java.io.IOException;
 
 public class MainWindow extends Stage {
-    public MainWindow(Window parent) {
+    private ControllerDistributor controllerDistributor;
+    @Inject
+    public MainWindow(ControllerDistributor controllerDistributor) {
         super(StageStyle.DECORATED);
-        initOwner(parent);
         initModality(Modality.WINDOW_MODAL);
+        this.controllerDistributor = controllerDistributor;
+    }
+
+    void initMainWindow(Window parent) {
+        initOwner(parent);
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/mainWindow.fxml"));
+        loader.setControllerFactory(controllerDistributor);
         try {
             setScene(new Scene(loader.load()));
         } catch (IOException e) {

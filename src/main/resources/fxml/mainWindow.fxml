@@ -11,7 +11,7 @@
 
 <?import javafx.scene.control.Slider?>
 <SplitPane dividerPositions="0.8" orientation="VERTICAL"
-           prefHeight="400.0" prefWidth="600.0"
+           prefHeight="800.0" prefWidth="1200.0"
            xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="/css/player.css"
            fx:controller="net.kyma.gui.controllers.MainController">
@@ -31,16 +31,5 @@
             <RowConstraints/>
         </rowConstraints>
     </GridPane>
-    <GridPane hgap="5" vgap="5">
-        <columnConstraints>
-            <ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0"/>
-            <ColumnConstraints hgrow="SOMETIMES" percentWidth="80.0"/>
-        </columnConstraints>
-        <HBox spacing="5">
-            <Button text="►" styleClass="roundButton"/>
-            <Button text="‖‖" styleClass="roundButton"/>
-            <Button text="█" styleClass="roundButton"/>
-        </HBox>
-        <Slider GridPane.columnIndex="1"/>
-    </GridPane>
+    <fx:include source="playerPane.fxml" fx:id="playerPane"/>
 </SplitPane>

@@ -1,27 +1,26 @@
 package net.kyma.player;
 
-import lombok.RequiredArgsConstructor;
 import pl.khuzzuk.messaging.Bus;
-import pl.khuzzuk.messaging.MultiContentPublisher;
-import pl.khuzzuk.messaging.MultiContentSubscriber;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Properties;
 
-@RequiredArgsConstructor
 public class PlayerManager {
     private final Bus bus;
     private final Properties messages;
-    private MultiContentSubscriber subscriber;
-    private MultiContentPublisher publisher;
     private Mp3Player currentPlayer;
 
+    @Inject
+    public PlayerManager(Bus bus, Properties messages) {
+        this.bus = bus;
+        this.messages = messages;
+    }
+
     public void init() throws IOException {
-        subscriber = bus.getMultiContentSubscriber();
-        publisher = bus.getMultiContentPublisher();
-        //subscriber.subscribe(messages.getProperty("player.play.mp3"), this::playMp3);
-        subscriber.subscribe(messages.getProperty("player.metadata.getLength"), () -> System.out.println(currentPlayer.getLength()));
-        subscriber.subscribe(messages.getProperty("player.metadata.getCurrentTime"), () -> System.out.println(currentPlayer.playbackStatus()));
+        bus.setReaction(messages.getProperty("player.play.mp3"), this::playMp3);
+        bus.setReaction(messages.getProperty("player.metadata.getLength"), () -> System.out.println(currentPlayer.getLength()));
+        bus.setReaction(messages.getProperty("player.metadata.getCurrentTime"), () -> System.out.println(currentPlayer.playbackStatus()));
     }
 
     private void playMp3(String path) {
