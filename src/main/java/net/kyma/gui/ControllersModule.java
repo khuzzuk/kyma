@@ -1,4 +1,4 @@
-package net.kyma.bindings;
+package net.kyma.gui;
 
 import com.google.inject.AbstractModule;
 

@@ -28,7 +28,7 @@ public class PlayerManager {
             currentPlayer.stop();
         }
         currentPlayer = new Mp3Player(path);
-        currentPlayer.init();
+        currentPlayer.initMetadata();
         currentPlayer.start();
     }
 }

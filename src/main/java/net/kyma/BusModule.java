@@ -1,9 +1,8 @@
-package net.kyma.bindings;
+package net.kyma;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 import lombok.extern.log4j.Log4j2;
-import net.kyma.Test;
 import pl.khuzzuk.messaging.Bus;
 
 import java.io.IOException;

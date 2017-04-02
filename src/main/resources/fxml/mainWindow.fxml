@@ -10,11 +10,19 @@
 <?import javafx.scene.layout.RowConstraints?>
 
 <?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuItem?>
 <SplitPane dividerPositions="0.8" orientation="VERTICAL"
            prefHeight="800.0" prefWidth="1200.0"
            xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="/css/player.css"
            fx:controller="net.kyma.gui.controllers.MainController">
+    <MenuBar>
+        <Menu text="Plik">
+            <MenuItem text="Otwórz plik" onAction="#openFile"/>
+        </Menu>
+    </MenuBar>
     <GridPane>
         <columnConstraints>
             <ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0"/>
@@ -26,10 +34,7 @@
             <HBox/>
             <TableView/>
         </SplitPane>
-        <TableView GridPane.columnIndex="2"/>
-        <rowConstraints>
-            <RowConstraints/>
-        </rowConstraints>
+        <TableView fx:id="playlist" GridPane.columnIndex="2"/>
     </GridPane>
     <fx:include source="playerPane.fxml" fx:id="playerPane"/>
 </SplitPane>

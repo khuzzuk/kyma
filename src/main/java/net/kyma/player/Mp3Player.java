@@ -47,7 +47,7 @@ public class Mp3Player {
         player.stop();
     }
 
-    public void init() {
+    public void initMetadata() {
         try {
             metadata = new Mp3File(path);
         } catch (IOException e) {
