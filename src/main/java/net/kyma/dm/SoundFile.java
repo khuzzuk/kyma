@@ -6,7 +6,9 @@ import com.mpatric.mp3agic.UnsupportedTagException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import org.hibernate.search.annotations.*;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -17,11 +19,16 @@ import java.util.Optional;
 @Entity
 @Indexed
 @Log4j2
-public class SoundFile {
+public class SoundFile implements Comparable<SoundFile> {
     @Id
     @Getter
     @Setter
+    @Field(analyze = Analyze.NO)
     private String path;
+    @Field(analyze = Analyze.NO)
+    @Getter
+    @Setter
+    private String fileName;
     @Field(analyze = Analyze.NO)
     @Getter
     @Setter
@@ -29,6 +36,7 @@ public class SoundFile {
     public static SoundFile from(Mp3File metadata) {
         SoundFile file = new SoundFile();
         file.path = metadata.getFilename();
+        file.fileName = metadata.getFilename();
         fillData(file, metadata);
         return file;
     }
@@ -37,6 +45,7 @@ public class SoundFile {
         SoundFile sound = new SoundFile();
         Mp3File metadata = getMetadataFrom(file);
         sound.path = file.getPath();
+        sound.fileName = file.getName();
         if (metadata == null) {
             return sound;
         }
@@ -62,5 +71,10 @@ public class SoundFile {
             log.error(e);
         }
         return null;
+    }
+
+    @Override
+    public int compareTo(SoundFile o) {
+        return getPath().compareTo(o.getPath());
     }
 }
