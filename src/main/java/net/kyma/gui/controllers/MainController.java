@@ -7,14 +7,19 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.GridPane;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import lombok.extern.log4j.Log4j2;
-import net.kyma.dm.*;
+import net.kyma.dm.BaseElement;
+import net.kyma.dm.RootElement;
+import net.kyma.dm.SoundElement;
+import net.kyma.dm.SoundFile;
 import pl.khuzzuk.messaging.Bus;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.io.File;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,7 +28,7 @@ import java.util.stream.Collectors;
 @Log4j2
 public class MainController implements Initializable {
     @FXML
-    private TreeView<BaseElement> filesList;
+    private TreeView<String> filesList;
     @FXML
     private TableView<SoundFile> playlist;
     @FXML
@@ -37,7 +42,7 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         bus.<SoundFile>setReaction(messages.getProperty("playlist.add.sound"), playlist.getItems()::add);
-        bus.setReaction(messages.getProperty("data.view.refresh"), this::fillTreeView);
+        bus.setGuiReaction(messages.getProperty("data.view.refresh"), this::fillTreeView);
         initPlaylistView();
     }
 
@@ -56,6 +61,7 @@ public class MainController implements Initializable {
             if (path.length == 0) log.error("Database inconsistency!");
             fillChild(root, path, 0, f);
         }
+        filesList.setRoot(root);
     }
 
     private void fillChild(BaseElement parent, String[] path, int pos, SoundFile soundFile) {
@@ -82,10 +88,33 @@ public class MainController implements Initializable {
 
     @FXML
     private void openFile() {
+        Optional.ofNullable(getFile(new FileChooser.ExtensionFilter("Pliki dźwiękowe", "*.mp3")))
+                .ifPresent(f -> bus.send(messages.getProperty("playlist.add.file"), messages.getProperty("playlist.add.sound"), f));
+    }
+
+    @FXML
+    private void indexCatalogue() {
+        Optional.ofNullable(getFile()).ifPresent(f ->
+                bus.send(messages.getProperty("data.index.list"), getFilesFromDirectory(f)));
+    }
+
+    private File getFile(FileChooser.ExtensionFilter filter) {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("wybór pliku");
-        chooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Pliki dźwiękowe", "*.mp3"));
-        Optional.ofNullable(chooser.showOpenDialog(null))
-                .ifPresent(f -> bus.send(messages.getProperty("playlist.add.file"), messages.getProperty("playlist.add.sound"), f));
+        chooser.getExtensionFilters().addAll(filter);
+        return chooser.showOpenDialog(null);
+    }
+
+    private File getFile() {
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setTitle("wybór katalogu");
+        return chooser.showDialog(null);
+    }
+
+    private Collection<File> getFilesFromDirectory(File file) {
+        if (file.isFile()) return Collections.singletonList(file);
+        Optional<File[]> content = Optional.ofNullable(file.listFiles());
+        return Arrays.stream(content.orElse(new File[]{})).flatMap(f -> getFilesFromDirectory(f).stream())
+                .collect(Collectors.toList());
     }
 }

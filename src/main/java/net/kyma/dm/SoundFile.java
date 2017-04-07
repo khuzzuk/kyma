@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
@@ -23,7 +24,7 @@ public class SoundFile implements Comparable<SoundFile> {
     @Id
     @Getter
     @Setter
-    @Field(analyze = Analyze.NO)
+    @DocumentId
     private String path;
     @Field(analyze = Analyze.NO)
     @Getter

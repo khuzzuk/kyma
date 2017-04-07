@@ -29,35 +29,34 @@ public class DataIndexer {
     @PostConstruct
     public void init() {
         bus.<File, SoundFile>setResponse(messages.getProperty("playlist.add.file"), SoundFile::from);
-        bus.<Collection<File>>setReaction(messages.getProperty("data.index.list"), this::index);
+        bus.setReaction(messages.getProperty("data.index.list"), this::index);
         bus.setResponse(messages.getProperty("data.index.getAll"), this::getAll);
         session = factory.openSession();
     }
 
     private synchronized void index(Collection<File> files) {
-        session.beginTransaction();
-        files.parallelStream().onClose(() -> {
+        try (Session session = factory.openSession()) {
+            this.session = session;
+            session.beginTransaction();
+            files.stream().map(SoundFile::from).forEach(s -> persist(s, session));
             session.getTransaction().commit();
-            bus.send(messages.getProperty("data.index.getAll"), messages.getProperty("data.view.refresh"));
-        }).map(SoundFile::from).forEach(this::persist);
+            session.close();
+        }
+        bus.sendCommunicate(messages.getProperty("data.index.getAll"), messages.getProperty("data.view.refresh"));
     }
 
-    private synchronized SoundFile index(File file) {
-        SoundFile sound = SoundFile.from(file);
-        persist(sound);
-        return sound;
-    }
-
-    private void persist(SoundFile soundFile) {
+    private void persist(SoundFile soundFile, Session session) {
         session.saveOrUpdate(soundFile);
     }
 
     private synchronized List<SoundFile> getAll() {
         CriteriaQuery<SoundFile> criteriaQuery = factory.getCriteriaBuilder().createQuery(SoundFile.class);
         criteriaQuery.from(SoundFile.class);
-        session.beginTransaction();
-        List<SoundFile> results = session.createQuery(criteriaQuery).getResultList();
-        session.getTransaction().commit();
-        return results;
+        try (Session session = factory.openSession()) {
+            session.beginTransaction();
+            List<SoundFile> results = session.createQuery(criteriaQuery).getResultList();
+            session.getTransaction().commit();
+            return results;
+        }
     }
 }
