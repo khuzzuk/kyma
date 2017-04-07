@@ -10,9 +10,9 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import lombok.extern.log4j.Log4j2;
-import net.kyma.dm.BaseElement;
-import net.kyma.dm.RootElement;
-import net.kyma.dm.SoundElement;
+import net.kyma.gui.BaseElement;
+import net.kyma.gui.RootElement;
+import net.kyma.gui.SoundElement;
 import net.kyma.dm.SoundFile;
 import pl.khuzzuk.messaging.Bus;
 
@@ -44,6 +44,7 @@ public class MainController implements Initializable {
         bus.<SoundFile>setReaction(messages.getProperty("playlist.add.sound"), playlist.getItems()::add);
         bus.setGuiReaction(messages.getProperty("data.view.refresh"), this::fillTreeView);
         initPlaylistView();
+        setupFileViewCellFactory();
     }
 
     private void initPlaylistView() {
@@ -51,6 +52,9 @@ public class MainController implements Initializable {
         TableColumn<SoundFile, String> title = new TableColumn<>("Tytuł");
         title.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getTitle()));
         playlist.getColumns().add(title);
+    }
+
+    private void setupFileViewCellFactory() {
     }
 
     private void fillTreeView(Collection<SoundFile> sounds) {

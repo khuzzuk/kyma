@@ -22,4 +22,5 @@ out
 gen
 target
 db
+lucene
 *.log

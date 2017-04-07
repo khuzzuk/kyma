@@ -1,6 +1,7 @@
-package net.kyma.dm;
+package net.kyma.gui;
 
 import lombok.*;
+import net.kyma.dm.SoundFile;
 
 @Data
 public class SoundElement extends BaseElement {

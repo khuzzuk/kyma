@@ -1,4 +1,4 @@
-package net.kyma.dm;
+package net.kyma.gui;
 
 import lombok.Data;
 

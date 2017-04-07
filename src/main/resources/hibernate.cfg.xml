@@ -23,7 +23,7 @@
 
         <!-- HIBERNATE SEARCH -->
         <property name="hibernate.search.default.directory_provider">filesystem</property>
-        <property name="hibernate.search.default.indexBase">/db/lucene/indexes</property>
+        <property name="hibernate.search.default.indexBase">./lucene/indexes</property>
 
         <!-- MAPPED CLASSES -->
         <mapping class="net.kyma.dm.SoundFile"/>

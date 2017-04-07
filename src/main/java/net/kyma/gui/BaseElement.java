@@ -1,4 +1,4 @@
-package net.kyma.dm;
+package net.kyma.gui;
 
 import javafx.scene.control.TreeItem;
 import lombok.*;
@@ -19,6 +19,11 @@ public class BaseElement extends TreeItem<String> {
     public void addChild(BaseElement child) {
         childElements.put(child.getName(), child);
         getChildren().add(child);
+    }
+
+    public void setName(String name) {
+        this.name = name;
+        this.setValue(name);
     }
 
     public BaseElement getChildElement(String name) {
