@@ -10,6 +10,7 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import lombok.extern.log4j.Log4j2;
+import net.kyma.data.SoundFileConverter;
 import net.kyma.gui.BaseElement;
 import net.kyma.gui.RootElement;
 import net.kyma.gui.SoundElement;
@@ -38,6 +39,8 @@ public class MainController implements Initializable {
     @Inject
     @Named("messages")
     private Properties messages;
+    @Inject
+    private SoundFileConverter converter;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -61,7 +64,7 @@ public class MainController implements Initializable {
         BaseElement root = new RootElement();
         List<SoundFile> soundFiles = sounds.stream().sorted().collect(Collectors.toList());
         for (SoundFile f : soundFiles) {
-            String[] path = f.getPath().split("[\\\\/]+");
+            String[] path = f.getIndexedPath().split("[\\\\/]+");
             if (path.length == 0) log.error("Database inconsistency!");
             fillChild(root, path, 0, f);
         }
@@ -98,8 +101,10 @@ public class MainController implements Initializable {
 
     @FXML
     private void indexCatalogue() {
-        Optional.ofNullable(getFile()).ifPresent(f ->
-                bus.send(messages.getProperty("data.index.list"), getFilesFromDirectory(f)));
+        Optional.ofNullable(getFile()).ifPresent(f -> bus.send(messages.getProperty("data.index.list"),
+                getFilesFromDirectory(f).stream().map(current ->
+                        converter.from(current, f.getPath().substring(0, f.getPath().length() - f.getName().length())))
+                        .collect(Collectors.toList())));
     }
 
     private File getFile(FileChooser.ExtensionFilter filter) {

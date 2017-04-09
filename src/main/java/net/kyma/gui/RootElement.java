@@ -1,8 +1,8 @@
 package net.kyma.gui;
 
-import lombok.Data;
-
-@Data
 public class RootElement extends BaseElement {
-    private String name = "root";
+    public RootElement() {
+        setValue("Pliki");
+        setName("Pliki");
+    }
 }

@@ -1,5 +1,17 @@
 package net.kyma.dm;
 
-enum MetadataField {
-    TITLE
+import lombok.Getter;
+
+@Getter
+public enum MetadataField {
+    TITLE("title"),
+    PATH("path"),
+    INDEXED_PATH("indexedPath"),
+    FILE_NAME("fileName");
+
+    private final String name;
+
+    MetadataField(String name) {
+        this.name = name;
+    }
 }
