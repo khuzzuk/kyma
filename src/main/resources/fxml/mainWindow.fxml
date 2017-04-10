@@ -27,7 +27,7 @@
             <ColumnConstraints hgrow="SOMETIMES" percentWidth="60.0"/>
             <ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0"/>
         </columnConstraints>
-        <TreeView fx:id="filesList"/>
+        <TreeView fx:id="filesList" onMouseClicked="#addToPlaylist"/>
         <SplitPane dividerPositions="0.2" orientation="VERTICAL" GridPane.columnIndex="1">
             <HBox/>
             <TableView/>

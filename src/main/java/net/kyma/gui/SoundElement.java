@@ -12,4 +12,9 @@ public class SoundElement extends BaseElement {
         this.soundFile = soundFile;
         setName(soundFile.getFileName());
     }
+
+    @Override
+    public boolean hasSound() {
+        return soundFile != null;
+    }
 }

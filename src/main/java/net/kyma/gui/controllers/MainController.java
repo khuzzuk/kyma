@@ -6,6 +6,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeView;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -125,5 +127,16 @@ public class MainController implements Initializable {
         Optional<File[]> content = Optional.ofNullable(file.listFiles());
         return Arrays.stream(content.orElse(new File[]{})).flatMap(f -> getFilesFromDirectory(f).stream())
                 .collect(Collectors.toList());
+    }
+
+    @FXML
+    private void addToPlaylist(MouseEvent mouseEvent) {
+        if (!mouseEvent.getButton().equals(MouseButton.PRIMARY)) return;
+        if (mouseEvent.getClickCount() != 2) return;
+        //TODO extend Treeview so it can  return of selected BaseElement or SoundElement instead of casting and instanceof
+        filesList.getSelectionModel().getSelectedItems().stream()
+                .filter(i -> i instanceof SoundElement).map(i -> (SoundElement) i)
+                .map(SoundElement::getSoundFile)
+                .forEach(s -> playlist.getItems().add(s));
     }
 }

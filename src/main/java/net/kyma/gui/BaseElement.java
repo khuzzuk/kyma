@@ -29,4 +29,8 @@ public class BaseElement extends TreeItem<String> {
     public BaseElement getChildElement(String name) {
         return childElements.get(name);
     }
+
+    public boolean hasSound() {
+        return false;
+    }
 }
