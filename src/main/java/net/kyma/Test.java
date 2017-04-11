@@ -11,7 +11,7 @@ public class Test {
         Bus bus = Bus.initializeBus();
         Properties messages = new Properties();
         messages.load(Test.class.getResourceAsStream("/messages.properties"));
-        PlayerManager manager = new PlayerManager(bus, messages);
+        PlayerManager manager = new PlayerManager();
         manager.init();
         bus.send(messages.getProperty("player.play.mp3"), "Preludium.mp3");
         Thread.sleep(1000);

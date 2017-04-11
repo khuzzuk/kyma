@@ -60,7 +60,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>net.kyma.player.Mp3Player</mainClass>
+                            <mainClass>net.kyma.player.Mp3PlayerJLayer</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

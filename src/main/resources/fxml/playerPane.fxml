@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
@@ -15,9 +12,9 @@
         <ColumnConstraints hgrow="SOMETIMES" percentWidth="80.0"/>
     </columnConstraints>
     <HBox spacing="5">
-        <Button text="►" styleClass="roundButton"/>
+        <Button text="►" styleClass="roundButton" onAction="#startOrResume"/>
         <Button text="‖‖" styleClass="roundButton"/>
-        <Button text="█" styleClass="roundButton"/>
+        <Button text="█" styleClass="roundButton" onAction="#stop"/>
     </HBox>
     <Slider GridPane.columnIndex="1"/>
 </GridPane>

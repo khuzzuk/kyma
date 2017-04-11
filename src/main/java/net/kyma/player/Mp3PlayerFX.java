@@ -6,6 +6,7 @@ import com.mpatric.mp3agic.UnsupportedTagException;
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.advanced.AdvancedPlayer;
 import lombok.extern.log4j.Log4j2;
+import net.kyma.dm.SoundFile;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,14 +14,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 @Log4j2
-public class Mp3Player {
+public class Mp3PlayerFX {
     private String path;
     private AdvancedPlayer player;
     private Mp3File metadata;
     private long startedTime;
+    private long stoppedAt;
 
-    public Mp3Player(String path) {
-        this.path = path;
+    public Mp3PlayerFX(SoundFile file) {
+        this.path = file.getPath();
     }
 
     void start() {
@@ -44,24 +46,25 @@ public class Mp3Player {
     }
 
     void stop() {
-        player.stop();
+        player.close();
+        player = null;
     }
 
-    public void initMetadata() {
+    void initMetadata() {
         try {
             metadata = new Mp3File(path);
         } catch (IOException e) {
             log.error("File read problems: " + path);
             log.error(e.getStackTrace());
         } catch (UnsupportedTagException e) {
-            log.error("Mp3 file has unsopported tag set");
+            log.error("Mp3 file has unsupported tag set");
         } catch (InvalidDataException e) {
             log.error("Mp3 file is invalid");
         }
 
     }
 
-    public long playbackStatus() {
+    long playbackStatus() {
         return System.currentTimeMillis() - startedTime;
     }
 }

@@ -10,6 +10,8 @@ import lombok.extern.log4j.Log4j2;
 import net.kyma.BusModule;
 import net.kyma.data.DataIndexer;
 import net.kyma.data.DatabaseModule;
+import net.kyma.player.PlayerManager;
+import net.kyma.player.Playlist;
 import pl.khuzzuk.messaging.Bus;
 
 import java.util.Properties;
@@ -22,6 +24,8 @@ public class Manager extends Application {
     public static void main(String[] args) {
         injector = Guice.createInjector(new ControllersModule(), new BusModule(), new DatabaseModule());
         injector.getInstance(DataIndexer.class).init();
+        injector.getInstance(Playlist.class).init();
+        injector.getInstance(PlayerManager.class).init();
         bus = injector.getInstance(Bus.class);
         messages = injector.getInstance(Key.get(Properties.class, Names.named("messages")));
         launch(args);

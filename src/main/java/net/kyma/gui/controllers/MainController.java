@@ -47,9 +47,12 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         bus.<SoundFile>setReaction(messages.getProperty("playlist.add.sound"), playlist.getItems()::add);
+        bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.add.list"), c -> playlist.getItems().addAll(c));
         bus.setGuiReaction(messages.getProperty("data.view.refresh"), this::fillTreeView);
+        bus.setReaction(messages.getProperty("playlist.highlight"), this::highlight);
         initPlaylistView();
         setupFileViewCellFactory();
+        bus.sendCommunicate(messages.getProperty("data.index.getAll"), messages.getProperty("data.convert.from.doc.gui"));
     }
 
     private void initPlaylistView() {
@@ -133,10 +136,14 @@ public class MainController implements Initializable {
     private void addToPlaylist(MouseEvent mouseEvent) {
         if (!mouseEvent.getButton().equals(MouseButton.PRIMARY)) return;
         if (mouseEvent.getClickCount() != 2) return;
-        //TODO extend Treeview so it can  return of selected BaseElement or SoundElement instead of casting and instanceof
-        filesList.getSelectionModel().getSelectedItems().stream()
+        //TODO extend TreeView so it can return of selected BaseElement or SoundElement instead of casting and instanceof
+        bus.send(messages.getProperty("playlist.add.list"), filesList.getSelectionModel().getSelectedItems().stream()
                 .filter(i -> i instanceof SoundElement).map(i -> (SoundElement) i)
                 .map(SoundElement::getSoundFile)
-                .forEach(s -> playlist.getItems().add(s));
+                .collect(Collectors.toList()));
+    }
+
+    private void highlight(int pos) {
+        //TODO highlighting
     }
 }
