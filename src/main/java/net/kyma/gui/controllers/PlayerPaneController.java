@@ -3,6 +3,7 @@ package net.kyma.gui.controllers;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Slider;
 import pl.khuzzuk.messaging.Bus;
 
 import javax.inject.Inject;
@@ -14,6 +15,8 @@ import java.util.ResourceBundle;
 
 @Singleton
 public class PlayerPaneController implements Initializable {
+    @FXML
+    private Slider playbackProgress;
     @Inject
     private Bus bus;
     @Inject
@@ -21,6 +24,11 @@ public class PlayerPaneController implements Initializable {
     private Properties messages;
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        playbackProgress.setMajorTickUnit(0.01D);
+        bus.<Long>setReaction(messages.getProperty("player.metadata.length"),
+                i -> playbackProgress.setMax(i));
+        bus.<Long>setReaction(messages.getProperty("player.metadata.currentTime"),
+                i -> playbackProgress.setValue(i));
     }
 
     @FXML
