@@ -4,6 +4,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Slider;
+import javafx.scene.input.MouseEvent;
+import net.kyma.player.PlaybackPoint;
 import pl.khuzzuk.messaging.Bus;
 
 import javax.inject.Inject;
@@ -39,5 +41,10 @@ public class PlayerPaneController implements Initializable {
     @FXML
     private void stop() {
         bus.send(messages.getProperty("player.stop.mp3"));
+    }
+
+    @FXML
+    private void playFrom() {
+        bus.send(messages.getProperty("playlist.start.from"), Math.round(playbackProgress.getValue()));
     }
 }
