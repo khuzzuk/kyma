@@ -6,15 +6,11 @@ import com.mpatric.mp3agic.UnsupportedTagException;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
-import javazoom.jl.decoder.JavaLayerException;
-import javazoom.jl.player.advanced.AdvancedPlayer;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 @Log4j2
 public class Mp3PlayerFX {
@@ -30,7 +26,7 @@ public class Mp3PlayerFX {
 
     void start() {
         if (player == null) {
-            Media sound = new Media("file://" + path);
+            Media sound = new Media(Paths.get(path).toUri().toString());
             player = new MediaPlayer(sound);
         }
         MediaView mediaView = new MediaView(player);
