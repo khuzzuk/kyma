@@ -3,6 +3,9 @@ package net.kyma.player;
 import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
 import com.mpatric.mp3agic.UnsupportedTagException;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.MediaView;
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.advanced.AdvancedPlayer;
 import lombok.extern.log4j.Log4j2;
@@ -16,7 +19,7 @@ import java.io.IOException;
 @Log4j2
 public class Mp3PlayerFX {
     private String path;
-    private AdvancedPlayer player;
+    private MediaPlayer player;
     private Mp3File metadata;
     private long startedTime;
     private long stoppedAt;
@@ -27,18 +30,12 @@ public class Mp3PlayerFX {
 
     void start() {
         if (player == null) {
-            try {
-                player = new AdvancedPlayer(new FileInputStream(new File(path)));
-                startedTime = System.currentTimeMillis();
-                player.play();
-            } catch (JavaLayerException e) {
-                log.error("Could not read stream, expected mp3 audio file");
-                log.error(e.getStackTrace());
-            } catch (FileNotFoundException e) {
-                log.error("No file in " + path);
-                log.error(e.getStackTrace());
-            }
+            Media sound = new Media("file://" + path);
+            player = new MediaPlayer(sound);
         }
+        MediaView mediaView = new MediaView(player);
+        startedTime = System.currentTimeMillis();
+        player.play();
     }
 
     long getLength() {
@@ -46,7 +43,7 @@ public class Mp3PlayerFX {
     }
 
     void stop() {
-        player.close();
+        player.stop();
         player = null;
     }
 

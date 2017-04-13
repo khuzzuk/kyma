@@ -17,7 +17,7 @@ public class PlayerManager {
     private Properties messages;
     @Inject
     private PlaybackTimer timer;
-    private Mp3PlayerJLayer currentPlayer;
+    private Mp3PlayerFX currentPlayer;
 
     public void init() {
         timer.init();
@@ -34,7 +34,7 @@ public class PlayerManager {
         if (currentPlayer != null) {
             currentPlayer.stop();
         }
-        currentPlayer = new Mp3PlayerJLayer(file);
+        currentPlayer = new Mp3PlayerFX(file);
         currentPlayer.initMetadata();
         log.info("start play");
         timer.start();

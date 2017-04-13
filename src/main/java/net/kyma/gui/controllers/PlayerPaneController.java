@@ -1,11 +1,8 @@
 package net.kyma.gui.controllers;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Slider;
-import javafx.scene.input.MouseEvent;
-import net.kyma.player.PlaybackPoint;
 import pl.khuzzuk.messaging.Bus;
 
 import javax.inject.Inject;
