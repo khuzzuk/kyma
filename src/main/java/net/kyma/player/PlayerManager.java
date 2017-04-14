@@ -22,23 +22,31 @@ public class PlayerManager {
     public void init() {
         timer.init();
         bus.setReaction(messages.getProperty("player.play.mp3"), this::playMp3);
+        bus.setReaction(messages.getProperty("player.pause.mp3"), this::pauseMp3);
         bus.setReaction(messages.getProperty("player.stop.mp3"), this::stopMp3);
         bus.setReaction(messages.getProperty("close"), this::stopMp3);
         bus.setReaction(messages.getProperty("player.metadata.getLength"),
                 () -> bus.send(messages.getProperty("player.metadata.length"), currentPlayer.getLength()));
         bus.setReaction(messages.getProperty("player.metadata.getCurrentTime"),
                 () -> bus.send(messages.getProperty("player.metadata.currentTime"), currentPlayer.playbackStatus()));
+        bus.setReaction(messages.getProperty("player.play.from.mp3"), this::startFrom);
     }
 
     private void playMp3(SoundFile file) {
         if (currentPlayer != null) {
-            currentPlayer.stop();
+            if (currentPlayer.isPaused()) {
+                currentPlayer.start();
+                timer.start();
+                return;
+            } else {
+                currentPlayer.stop();
+            }
         }
         currentPlayer = new Mp3PlayerFX(file);
         currentPlayer.initMetadata();
         log.info("start play");
-        timer.start();
         currentPlayer.start();
+        timer.start();
     }
 
     private void stopMp3() {
@@ -46,6 +54,17 @@ public class PlayerManager {
         if (currentPlayer != null) {
             currentPlayer.stop();
             currentPlayer = null;
+        }
+    }
+
+    private void pauseMp3() {
+        timer.stop();
+        currentPlayer.pause();
+    }
+
+    private void startFrom(Long millis) {
+        if (currentPlayer != null) {
+            currentPlayer.startFrom(millis);
         }
     }
 }

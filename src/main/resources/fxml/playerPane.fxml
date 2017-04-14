@@ -12,8 +12,7 @@
         <ColumnConstraints hgrow="SOMETIMES" percentWidth="80.0"/>
     </columnConstraints>
     <HBox spacing="5">
-        <Button text="►" styleClass="roundButton" onAction="#startOrResume"/>
-        <Button text="‖‖" styleClass="roundButton"/>
+        <Button fx:id="playButton" text="►" styleClass="roundButton" onAction="#startOrPause"/>
         <Button text="█" styleClass="roundButton" onAction="#stop"/>
     </HBox>
     <Slider GridPane.columnIndex="1" fx:id="playbackProgress" onMouseClicked="#playFrom"/>

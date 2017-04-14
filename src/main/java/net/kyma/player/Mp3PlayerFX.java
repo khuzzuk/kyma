@@ -1,41 +1,30 @@
 package net.kyma.player;
 
-import com.mpatric.mp3agic.InvalidDataException;
-import com.mpatric.mp3agic.Mp3File;
-import com.mpatric.mp3agic.UnsupportedTagException;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
-import lombok.extern.log4j.Log4j2;
+import javafx.util.Duration;
 import net.kyma.dm.SoundFile;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 
-@Log4j2
-public class Mp3PlayerFX {
-    private String path;
+public class Mp3PlayerFX extends Mp3Player {
     private MediaPlayer player;
-    private Mp3File metadata;
-    private long startedTime;
-    private long stoppedAt;
+    private MediaView mediaView;
 
     public Mp3PlayerFX(SoundFile file) {
-        this.path = file.getPath();
+        super(file);
+        mediaView = new MediaView();
     }
 
     void start() {
         if (player == null) {
-            Media sound = new Media(Paths.get(path).toUri().toString());
+            Media sound = new Media(Paths.get(getPath()).toUri().toString());
             player = new MediaPlayer(sound);
         }
-        MediaView mediaView = new MediaView(player);
-        startedTime = System.currentTimeMillis();
+        mediaView.setMediaPlayer(player);
+        setStartedTime(System.currentTimeMillis());
         player.play();
-    }
-
-    long getLength() {
-        return metadata.getLengthInMilliseconds();
     }
 
     void stop() {
@@ -43,21 +32,22 @@ public class Mp3PlayerFX {
         player = null;
     }
 
-    void initMetadata() {
-        try {
-            metadata = new Mp3File(path);
-        } catch (IOException e) {
-            log.error("File read problems: " + path);
-            log.error(e.getStackTrace());
-        } catch (UnsupportedTagException e) {
-            log.error("Mp3 file has unsupported tag set");
-        } catch (InvalidDataException e) {
-            log.error("Mp3 file is invalid");
-        }
-
+    void pause() {
+        player.pause();
     }
 
+    boolean isPaused() {
+        return player.getStatus() == MediaPlayer.Status.PAUSED;
+    }
+
+    @Override
     long playbackStatus() {
-        return System.currentTimeMillis() - startedTime;
+        return Math.round(player.getCurrentTime().toMillis());
+    }
+
+    void startFrom(long millis) {
+        player.pause();
+        player.setStartTime(new Duration(millis));
+        player.play();
     }
 }
