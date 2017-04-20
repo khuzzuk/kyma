@@ -7,3 +7,23 @@
     -fx-font-family: serif;
     -fx-font-weight: bold;
 }
+
+.table-row-cell:odd {
+    -fx-background: -fx-control-inner-background;
+}
+
+.table-row-cell {
+    -fx-background-color: -fx-control-inner-background;
+    -fx-background: -fx-control-inner-background;
+    -fx-table-cell-border-color: -fx-control-inner-background;
+}
+
+.currentlyPlayed {
+    -fx-font-weight: bold;
+    -fx-background-color: -fx-control-inner-background-alt;
+}
+
+.table-row-cell:filled:selected {
+    -fx-background-color: gray;
+    -fx-table-cell-border-color: gray;
+}

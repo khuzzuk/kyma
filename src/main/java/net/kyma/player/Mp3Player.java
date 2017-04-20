@@ -1,8 +1,6 @@
 package net.kyma.player;
 
-import com.mpatric.mp3agic.InvalidDataException;
-import com.mpatric.mp3agic.Mp3File;
-import com.mpatric.mp3agic.UnsupportedTagException;
+import com.beaglebuddy.mp3.MP3;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,7 +12,7 @@ import java.io.IOException;
 @Log4j2
 @Getter(AccessLevel.PACKAGE)
 abstract class Mp3Player {
-    private Mp3File metadata;
+    private MP3 metadata;
     @Setter(AccessLevel.PACKAGE)
     private long startedTime;
     private String path;
@@ -26,20 +24,14 @@ abstract class Mp3Player {
 
     void initMetadata() {
         try {
-            metadata = new Mp3File(path);
+            metadata = new MP3(path);
         } catch (IOException e) {
             log.error("File read problems: " + path);
             log.error(e.getStackTrace());
-        } catch (UnsupportedTagException e) {
-            log.error("Mp3 file has unsupported tag set");
-        } catch (InvalidDataException e) {
-            log.error("Mp3 file is invalid");
         }
     }
 
-    long getLength() {
-        return metadata.getLengthInMilliseconds();
-    }
+    abstract long getLength();
 
     long playbackStatus() {
         return System.currentTimeMillis() - startedTime;

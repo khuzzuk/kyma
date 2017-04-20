@@ -1,12 +1,13 @@
 package net.kyma.gui.controllers;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.Node;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
@@ -50,11 +51,7 @@ public class MainController implements Initializable {
     @Inject
     private TableColumnFactory columnFactory;
     private static Set<String> fileExtensions;
-
-    {
-        fileExtensions = new HashSet<>();
-        fileExtensions.add(".mp3");
-    }
+    private IntegerProperty highlighted;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -62,24 +59,25 @@ public class MainController implements Initializable {
         bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.add.list"), c -> playlist.getItems().addAll(c));
         bus.setGuiReaction(messages.getProperty("data.view.refresh"), this::fillTreeView);
         bus.setReaction(messages.getProperty("playlist.highlight"), this::highlight);
+        fileExtensions = new HashSet<>();
+        fileExtensions.add(".mp3");
+        highlighted = new SimpleIntegerProperty(-1);
+
         initPlaylistView();
         initContentView();
-        setupFileViewCellFactory();
+
         bus.sendCommunicate(messages.getProperty("data.index.getAll"), messages.getProperty("data.convert.from.doc.gui"));
     }
 
     private void initPlaylistView() {
         playlist.getColumns().clear();
-        playlist.getColumns().add(columnFactory.getTitleColumn());
+        playlist.getColumns().add(columnFactory.getTitleColumn(highlighted));
     }
 
     @SuppressWarnings("unchecked")
     private void initContentView() {
         contentView.getColumns().clear();
         contentView.getColumns().addAll(columnFactory.getTitleColumn(), columnFactory.getRateColumn());
-    }
-
-    private void setupFileViewCellFactory() {
     }
 
     private void fillTreeView(Collection<SoundFile> sounds) {
@@ -164,7 +162,8 @@ public class MainController implements Initializable {
     }
 
     private void highlight(int pos) {
-        //TODO highlighting
+        highlighted.setValue(pos);
+        playlist.refresh();
     }
 
     @FXML

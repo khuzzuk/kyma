@@ -1,11 +1,7 @@
 package net.kyma.data;
 
 import com.beaglebuddy.mp3.MP3;
-import com.mpatric.mp3agic.InvalidDataException;
-import com.mpatric.mp3agic.Mp3File;
-import com.mpatric.mp3agic.UnsupportedTagException;
 import lombok.extern.log4j.Log4j2;
-import net.kyma.dm.MetadataField;
 import net.kyma.dm.SoundFile;
 import org.apache.lucene.document.Document;
 import pl.khuzzuk.messaging.Bus;
@@ -16,7 +12,6 @@ import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -76,9 +71,5 @@ public class SoundFileConverter {
             log.error(e);
         }
         return null;
-    }
-
-    private Collection<SoundFile> convert(Collection<Document> documents) {
-        return documents.stream().map(this::from).collect(Collectors.toList());
     }
 }
