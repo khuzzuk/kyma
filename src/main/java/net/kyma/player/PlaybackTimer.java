@@ -5,13 +5,14 @@ import pl.khuzzuk.messaging.Bus;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 @Log4j2
+@Singleton
 public class PlaybackTimer {
-    private boolean started;
     private int refreshLatency = 32;
     @Inject
     private Bus bus;
@@ -53,7 +54,7 @@ public class PlaybackTimer {
         channel.add(TimerAction.START);
     }
 
-    void stop() {
+    public void stop() {
         channel.add(TimerAction.STOP);
     }
 

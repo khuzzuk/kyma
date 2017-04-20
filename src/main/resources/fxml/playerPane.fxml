@@ -15,5 +15,6 @@
         <Button fx:id="playButton" text="►" styleClass="roundButton" onAction="#startOrPause"/>
         <Button text="█" styleClass="roundButton" onAction="#stop"/>
     </HBox>
-    <Slider GridPane.columnIndex="1" fx:id="playbackProgress" onMouseClicked="#playFrom"/>
+    <Slider GridPane.columnIndex="1" fx:id="playbackProgress"
+            onMousePressed="#stopTimer" onMouseReleased="#playFrom"/>
 </GridPane>

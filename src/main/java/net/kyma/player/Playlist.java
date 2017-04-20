@@ -24,10 +24,15 @@ public class Playlist {
     public void init() {
         playlist = new ArrayList<>();
         bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.add.list"), playlist::addAll);
-        bus.setReaction(messages.getProperty("playlist.start"), this::playItem);
+        bus.setReaction(messages.getProperty("playlist.start"), this::playFirstItem);
+        bus.setReaction(messages.getProperty("playlist.next"), this::playNextItem);
     }
 
-    private void playItem() {
+    private void playFirstItem() {
+        currentPos = 0;
+        playNextItem();
+    }
+    private void playNextItem() {
         if (playlist.size() == 0) return;
         if (currentPos >= playlist.size()) currentPos = 0;
         bus.send(messages.getProperty("player.play.mp3"), playlist.get(currentPos));

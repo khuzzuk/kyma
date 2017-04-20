@@ -1,5 +1,6 @@
 package net.kyma.data;
 
+import com.beaglebuddy.mp3.MP3;
 import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
 import com.mpatric.mp3agic.UnsupportedTagException;
@@ -43,7 +44,7 @@ public class SoundFileConverter {
         sound.setFileName(file.getName());
         sound.setIndexedPath(file.getPath().replace(indexedPath, ""));
 
-        Mp3File metadata = getMetadataFrom(file);
+        MP3 metadata = getMetadataFrom(file);
         if (metadata == null) {
             return sound;
         }
@@ -58,25 +59,20 @@ public class SoundFileConverter {
         soundFile.setIndexedPath(document.get(INDEXED_PATH.getName()));
         soundFile.setFileName(document.get(FILE_NAME.getName()));
         soundFile.setTitle(document.get(TITLE.getName()));
+        soundFile.setRate(document.getField(RATE.getName()).numericValue().intValue());
         return soundFile;
     }
 
-    private void fillData(SoundFile sound, Mp3File metadata) {
-        sound.setTitle(Optional.ofNullable(metadata.getId3v2Tag().getTitle())
-                .orElse(metadata.getId3v1Tag().getTitle()));
+    private void fillData(SoundFile sound, MP3 metadata) {
+        sound.setTitle(metadata.getTitle());
+        sound.setRate(metadata.getRating());
     }
 
-    private Mp3File getMetadataFrom(File file) {
+    private MP3 getMetadataFrom(File file) {
         try {
-            return new Mp3File(file);
+            return new MP3(file.getPath());
         } catch (IOException e) {
             log.error("file is not accessible");
-            log.error(e);
-        } catch (UnsupportedTagException e) {
-            log.error("file has unsupported set of tags");
-            log.error(e);
-        } catch (InvalidDataException e) {
-            log.error("File is corrupted");
             log.error(e);
         }
         return null;

@@ -7,7 +7,8 @@ public enum MetadataField {
     TITLE("title"),
     PATH("path"),
     INDEXED_PATH("indexedPath"),
-    FILE_NAME("fileName");
+    FILE_NAME("fileName"),
+    RATE("rate");
 
     private final String name;
 

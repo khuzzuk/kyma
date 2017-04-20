@@ -1,15 +1,8 @@
 package net.kyma.dm;
 
-import com.mpatric.mp3agic.InvalidDataException;
-import com.mpatric.mp3agic.Mp3File;
-import com.mpatric.mp3agic.UnsupportedTagException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Optional;
 
 @Log4j2
 @Getter
@@ -19,6 +12,7 @@ public class SoundFile implements Comparable<SoundFile> {
     private String fileName;
     private String indexedPath;
     private String title;
+    private int rate;
 
     @Override
     public int compareTo(SoundFile o) {

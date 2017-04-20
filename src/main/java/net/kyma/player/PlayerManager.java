@@ -32,7 +32,7 @@ public class PlayerManager {
         bus.setReaction(messages.getProperty("player.play.from.mp3"), this::startFrom);
     }
 
-    private void playMp3(SoundFile file) {
+    private synchronized void playMp3(SoundFile file) {
         if (currentPlayer != null) {
             if (currentPlayer.isPaused()) {
                 currentPlayer.start();
@@ -42,14 +42,14 @@ public class PlayerManager {
                 currentPlayer.stop();
             }
         }
-        currentPlayer = new Mp3PlayerFX(file);
+        currentPlayer = new Mp3PlayerFX(file, bus, messages);
         currentPlayer.initMetadata();
         log.info("start play");
         currentPlayer.start();
         timer.start();
     }
 
-    private void stopMp3() {
+    private synchronized void stopMp3() {
         timer.stop();
         if (currentPlayer != null) {
             currentPlayer.stop();
@@ -57,14 +57,15 @@ public class PlayerManager {
         }
     }
 
-    private void pauseMp3() {
+    private synchronized void pauseMp3() {
         timer.stop();
         currentPlayer.pause();
     }
 
-    private void startFrom(Long millis) {
+    private synchronized void startFrom(Long millis) {
         if (currentPlayer != null) {
             currentPlayer.startFrom(millis);
+            timer.start();
         }
     }
 }

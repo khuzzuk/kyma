@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -17,6 +18,7 @@ import net.kyma.gui.BaseElement;
 import net.kyma.gui.RootElement;
 import net.kyma.gui.SoundElement;
 import net.kyma.dm.SoundFile;
+import net.kyma.gui.TableColumnFactory;
 import pl.khuzzuk.messaging.Bus;
 
 import javax.inject.Inject;
@@ -31,6 +33,8 @@ import java.util.stream.Collectors;
 @Log4j2
 public class MainController implements Initializable {
     @FXML
+    private TableView<SoundFile> contentView;
+    @FXML
     private TreeView<String> filesList;
     @FXML
     private TableView<SoundFile> playlist;
@@ -43,6 +47,14 @@ public class MainController implements Initializable {
     private Properties messages;
     @Inject
     private SoundFileConverter converter;
+    @Inject
+    private TableColumnFactory columnFactory;
+    private static Set<String> fileExtensions;
+
+    {
+        fileExtensions = new HashSet<>();
+        fileExtensions.add(".mp3");
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -51,15 +63,20 @@ public class MainController implements Initializable {
         bus.setGuiReaction(messages.getProperty("data.view.refresh"), this::fillTreeView);
         bus.setReaction(messages.getProperty("playlist.highlight"), this::highlight);
         initPlaylistView();
+        initContentView();
         setupFileViewCellFactory();
         bus.sendCommunicate(messages.getProperty("data.index.getAll"), messages.getProperty("data.convert.from.doc.gui"));
     }
 
     private void initPlaylistView() {
         playlist.getColumns().clear();
-        TableColumn<SoundFile, String> title = new TableColumn<>("Tytuł");
-        title.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getTitle()));
-        playlist.getColumns().add(title);
+        playlist.getColumns().add(columnFactory.getTitleColumn());
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initContentView() {
+        contentView.getColumns().clear();
+        contentView.getColumns().addAll(columnFactory.getTitleColumn(), columnFactory.getRateColumn());
     }
 
     private void setupFileViewCellFactory() {
@@ -126,7 +143,13 @@ public class MainController implements Initializable {
     }
 
     private Collection<File> getFilesFromDirectory(File file) {
-        if (file.isFile()) return Collections.singletonList(file);
+        if (file.isFile()) {
+            if (fileExtensions.contains(file.getName().substring(file.getName().length() - 4))) {
+                return Collections.singletonList(file);
+            } else {
+                return Collections.emptyList();
+            }
+        }
         Optional<File[]> content = Optional.ofNullable(file.listFiles());
         return Arrays.stream(content.orElse(new File[]{})).flatMap(f -> getFilesFromDirectory(f).stream())
                 .collect(Collectors.toList());
@@ -137,13 +160,23 @@ public class MainController implements Initializable {
         if (!mouseEvent.getButton().equals(MouseButton.PRIMARY)) return;
         if (mouseEvent.getClickCount() != 2) return;
         //TODO extend TreeView so it can return of selected BaseElement or SoundElement instead of casting and instanceof
-        bus.send(messages.getProperty("playlist.add.list"), filesList.getSelectionModel().getSelectedItems().stream()
-                .filter(i -> i instanceof SoundElement).map(i -> (SoundElement) i)
-                .map(SoundElement::getSoundFile)
-                .collect(Collectors.toList()));
+        bus.send(messages.getProperty("playlist.add.list"), contentView.getSelectionModel().getSelectedItems());
     }
 
     private void highlight(int pos) {
         //TODO highlighting
+    }
+
+    @FXML
+    private void fillContentView() {
+        BaseElement selectedItem = (BaseElement) filesList.getSelectionModel().getSelectedItem();
+        if (selectedItem != null && !(selectedItem instanceof SoundElement)) {
+            contentView.getItems().clear();
+            contentView.getItems().addAll(selectedItem.getChildElements().values()
+                    .stream().filter(e -> e instanceof SoundElement)
+                    .map(e -> (SoundElement) e)
+                    .map(SoundElement::getSoundFile)
+                    .collect(Collectors.toList()));
+        }
     }
 }

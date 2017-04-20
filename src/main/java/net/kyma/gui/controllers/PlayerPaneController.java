@@ -1,10 +1,12 @@
 package net.kyma.gui.controllers;
 
+import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
+import net.kyma.player.PlaybackTimer;
 import pl.khuzzuk.messaging.Bus;
 
 import javax.inject.Inject;
@@ -25,8 +27,11 @@ public class PlayerPaneController implements Initializable {
     @Inject
     @Named("messages")
     private Properties messages;
+    @Inject
+    private PlaybackTimer timer;
     private static final String play = "►";
     private static final String pause = "‖‖";
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         playbackProgress.setMajorTickUnit(0.01D);
@@ -56,5 +61,10 @@ public class PlayerPaneController implements Initializable {
     public void playFrom(MouseEvent mouseEvent) {
         bus.send(messages.getProperty("player.play.from.mp3"),
                 Math.round(playbackProgress.getMax() * (mouseEvent.getX() / playbackProgress.getWidth())));
+    }
+
+    @FXML
+    private void stopTimer() {
+        timer.stop();
     }
 }
