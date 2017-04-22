@@ -1,12 +1,15 @@
 package net.kyma.gui;
 
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
 
 import javax.inject.Singleton;
@@ -19,9 +22,18 @@ public class TableColumnFactory {
         return title;
     }
 
-    public TableColumn<SoundFile, String> getRateColumn() {
-        TableColumn<SoundFile, String> title = new TableColumn<>("Ocena");
-        title.setCellValueFactory(p -> new SimpleStringProperty("" + p.getValue().getRate()));
+    public TableColumn<SoundFile, Integer> getRateColumn() {
+        TableColumn<SoundFile, Integer> title = new TableColumn<>("Ocena");
+        title.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue().getRate()));
+        title.setCellFactory(param -> new TableCell<SoundFile, Integer>() {
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(Rating.getStarFor(item != null ? item : 0));
+            }
+        });
+        title.setPrefWidth(100);
+        title.setMaxWidth(100);
         return title;
     }
 

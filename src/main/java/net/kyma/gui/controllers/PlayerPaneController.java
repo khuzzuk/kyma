@@ -6,6 +6,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
+import net.kyma.gui.PlayButton;
 import net.kyma.player.PlaybackTimer;
 import pl.khuzzuk.messaging.Bus;
 
@@ -19,7 +20,7 @@ import java.util.ResourceBundle;
 @Singleton
 public class PlayerPaneController implements Initializable {
     @FXML
-    private Button playButton;
+    private PlayButton playButton;
     @FXML
     private Slider playbackProgress;
     @Inject
@@ -39,15 +40,17 @@ public class PlayerPaneController implements Initializable {
                 i -> playbackProgress.setMax(i));
         bus.<Long>setReaction(messages.getProperty("player.metadata.currentTime"),
                 i -> playbackProgress.setValue(i));
+
+        playButton.showPlay();
     }
 
     @FXML
     private void startOrPause() {
-        if (playButton.getText().equals(pause)) {
-            playButton.setText(play);
+        if (playButton.isPaused()) {
+            playButton.showPlay();
             bus.send(messages.getProperty("player.pause.mp3"));
         } else {
-            playButton.setText(pause);
+            playButton.showPause();
             bus.send(messages.getProperty("playlist.start"));
         }
     }
