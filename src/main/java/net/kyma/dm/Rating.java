@@ -1,6 +1,5 @@
 package net.kyma.dm;
 
-import javafx.scene.Group;
 import javafx.scene.Node;
 import net.kyma.gui.StarsFactory;
 
@@ -20,11 +19,11 @@ public enum Rating {
     FOUR(196, 196, 223, 8),
     FOUR_HALF(224, 224, 251, 9),
     FIVE(255, 252, 255, 10);
-    private int value;
-    private int min;
-    private int max;
-    private int rate;
-    private static Set<Rating> SET = EnumSet.allOf(Rating.class);
+    private final int value;
+    private final int min;
+    private final int max;
+    private final int rate;
+    private static final Set<Rating> SET = EnumSet.allOf(Rating.class);
 
     Rating(int value, int min, int max, int rate) {
         this.value = value;

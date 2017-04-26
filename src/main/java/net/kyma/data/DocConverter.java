@@ -10,7 +10,8 @@ import org.apache.lucene.document.StringField;
 import static net.kyma.dm.MetadataField.*;
 import static org.apache.lucene.document.Field.Store.YES;
 
-public class DocConverter {
+@SuppressWarnings("unused")
+class DocConverter {
     Document docFrom(SoundFile file) {
         Document doc = new Document();
         addField(doc, PATH, file.getPath());
@@ -27,7 +28,7 @@ public class DocConverter {
         doc.add(new StringField(field.getName(), value, YES));
     }
 
-    private void addField(Document doc, MetadataField field, int value) {
+    private void addField(Document doc, @SuppressWarnings("SameParameterValue") MetadataField field, int value) {
         doc.add(new StoredField(field.getName(), value));
         doc.add(new IntPoint(field.getName(), value));
     }

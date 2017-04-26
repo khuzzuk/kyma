@@ -3,17 +3,14 @@ package net.kyma.data;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.extern.log4j.Log4j2;
-import net.kyma.dm.MetadataField;
 import net.kyma.dm.SoundFile;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.MultiFields;
-import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Bits;
 import pl.khuzzuk.messaging.Bus;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Named;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,15 +40,6 @@ public class DataIndexer {
     private synchronized void index(Collection<SoundFile> files) {
         persist(files.stream().map(docConverter::docFrom).collect(Collectors.toList()));
         bus.sendCommunicate(messages.getProperty("data.index.getAll"), messages.getProperty("data.convert.from.doc.gui"));
-    }
-
-    private void persist(Document document) {
-        try {
-            writer.addDocument(document);
-        } catch (IOException e) {
-            log.error("error occured when file was indexed: " + document.get(MetadataField.FILE_NAME.getName()));
-            log.error(e);
-        }
     }
 
     private void persist(Collection<Document> documents) {

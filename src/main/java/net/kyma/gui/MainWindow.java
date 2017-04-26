@@ -11,8 +11,8 @@ import net.kyma.gui.controllers.ControllerDistributor;
 import javax.inject.Inject;
 import java.io.IOException;
 
-public class MainWindow extends Stage {
-    private ControllerDistributor controllerDistributor;
+class MainWindow extends Stage {
+    private final ControllerDistributor controllerDistributor;
     @Inject
     public MainWindow(ControllerDistributor controllerDistributor) {
         super(StageStyle.DECORATED);

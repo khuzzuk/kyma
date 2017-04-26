@@ -1,9 +1,7 @@
 package net.kyma.gui.controllers;
 
-import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
 import net.kyma.gui.PlayButton;
@@ -17,6 +15,7 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
+@SuppressWarnings("WeakerAccess")
 @Singleton
 public class PlayerPaneController implements Initializable {
     @FXML
@@ -30,8 +29,6 @@ public class PlayerPaneController implements Initializable {
     private Properties messages;
     @Inject
     private PlaybackTimer timer;
-    private static final String play = "►";
-    private static final String pause = "‖‖";
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -58,7 +55,7 @@ public class PlayerPaneController implements Initializable {
     @FXML
     private void stop() {
         bus.send(messages.getProperty("player.stop.mp3"));
-        playButton.setText(play);
+        playButton.showPlay();
     }
 
     public void playFrom(MouseEvent mouseEvent) {

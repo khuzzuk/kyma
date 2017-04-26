@@ -32,7 +32,7 @@
             <HBox/>
             <TableView fx:id="contentView" onMouseClicked="#addToPlaylist"/>
         </SplitPane>
-        <TableView fx:id="playlist" GridPane.columnIndex="2" styleClass="playlist"/>
+        <TableView fx:id="playlist" GridPane.columnIndex="2"/>
     </GridPane>
     <fx:include source="playerPane.fxml" fx:id="playerPane"/>
 </SplitPane>

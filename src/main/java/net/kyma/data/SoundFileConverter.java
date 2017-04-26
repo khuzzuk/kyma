@@ -20,13 +20,8 @@ import static net.kyma.dm.MetadataField.*;
 @Log4j2
 @Singleton
 public class SoundFileConverter {
-    private Bus bus;
-    private Properties messages;
-
     @Inject
     public SoundFileConverter(Bus bus, @Named("messages") Properties messages) {
-        this.bus = bus;
-        this.messages = messages;
         bus.<File, SoundFile>setResponse(messages.getProperty("playlist.add.file"), f -> from(f, f.getParent()));
         bus.<Collection<Document>>setReaction(messages.getProperty("data.convert.from.doc.gui"),
                 docs -> bus.send(messages.getProperty("data.view.refresh"),

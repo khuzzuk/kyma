@@ -10,7 +10,7 @@ import java.util.Map;
 
 @Singleton
 public class ControllerDistributor implements Callback<Class<?>, Object> {
-    private Map<Class<?>, Initializable> controllers;
+    private final Map<Class<?>, Initializable> controllers;
 
     @Inject
     public ControllerDistributor(MainController controller, PlayerPaneController playerPaneController) {

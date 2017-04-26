@@ -14,6 +14,8 @@ public class SoundFile implements Comparable<SoundFile> {
     private String title;
     private int rate;
 
+
+
     @Override
     public int compareTo(SoundFile o) {
         return getPath().compareTo(o.getPath());

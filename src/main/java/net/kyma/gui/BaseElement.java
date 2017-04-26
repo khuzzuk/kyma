@@ -6,6 +6,7 @@ import lombok.*;
 import java.util.HashMap;
 import java.util.Map;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class BaseElement extends TreeItem<String> {
     private String name;
@@ -18,7 +19,9 @@ public class BaseElement extends TreeItem<String> {
 
     public void addChild(BaseElement child) {
         childElements.put(child.getName(), child);
-        getChildren().add(child);
+        if (!(child instanceof SoundElement)) {
+            getChildren().add(child);
+        }
     }
 
     public void setName(String name) {
@@ -30,7 +33,4 @@ public class BaseElement extends TreeItem<String> {
         return childElements.get(name);
     }
 
-    public boolean hasSound() {
-        return false;
-    }
 }

@@ -10,10 +10,12 @@ import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+@SuppressWarnings("unused")
 @Log4j2
 @Singleton
 public class PlaybackTimer {
-    private int refreshLatency = 32;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final int refreshLatency = 32;
     @Inject
     private Bus bus;
     @Inject
@@ -28,7 +30,8 @@ public class PlaybackTimer {
         t.start();
     }
 
-    void run() {
+    @SuppressWarnings("InfiniteLoopStatement")
+    private void run() {
         try {
             while (true) {
                 TimerAction action = channel.take();

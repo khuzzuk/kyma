@@ -23,7 +23,7 @@ public class DatabaseModule extends AbstractModule {
             IndexWriter writer = new IndexWriter(directory, config);
             bind(IndexWriter.class).toInstance(writer);
         } catch (IOException e) {
-            log.error("No acces to database");
+            log.error("No access to database");
             log.error(e);
             System.err.println("Exiting");
             System.exit(1);

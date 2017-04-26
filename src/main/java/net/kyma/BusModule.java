@@ -15,7 +15,7 @@ public class BusModule extends AbstractModule {
         bind(Bus.class).toInstance(Bus.initializeBus());
         Properties messages = new Properties();
         try {
-            messages.load(Test.class.getResourceAsStream("/messages.properties"));
+            messages.load(BusModule.class.getResourceAsStream("/messages.properties"));
         } catch (IOException e) {
             log.fatal("bus setup fatal error, exit program");
             log.fatal(e);

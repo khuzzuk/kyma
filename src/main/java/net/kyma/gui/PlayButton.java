@@ -44,8 +44,4 @@ public class PlayButton extends Button {
     public boolean isPaused() {
         return paused;
     }
-
-    public void setPaused(boolean paused) {
-        this.paused = paused;
-    }
 }

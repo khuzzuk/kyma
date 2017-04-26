@@ -3,6 +3,7 @@ package net.kyma.gui;
 import lombok.*;
 import net.kyma.dm.SoundFile;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class SoundElement extends BaseElement {
     private SoundFile soundFile;
@@ -13,8 +14,4 @@ public class SoundElement extends BaseElement {
         setName(soundFile.getFileName());
     }
 
-    @Override
-    public boolean hasSound() {
-        return soundFile != null;
-    }
 }

@@ -3,12 +3,9 @@ package net.kyma.gui;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
 

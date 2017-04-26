@@ -1,5 +1,6 @@
 package net.kyma.player;
 
+import com.beaglebuddy.mp3.MP3;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
@@ -9,19 +10,24 @@ import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
 import pl.khuzzuk.messaging.Bus;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Properties;
 
 @Log4j2
-public class Mp3PlayerFX extends Mp3Player {
+class Mp3PlayerFX {
     private MediaPlayer player;
-    private MediaView mediaView;
-    private Bus bus;
-    private Properties messages;
+    private final MediaView mediaView;
+    private final Bus bus;
+    private final Properties messages;
     private long length;
+    @Getter
+    private MP3 metadata;
+    @Getter
+    private final String path;
 
     public Mp3PlayerFX(SoundFile file, Bus bus, Properties messages) {
-        super(file);
+        this.path = file.getPath();
         this.bus = bus;
         this.messages = messages;
         mediaView = new MediaView();
@@ -29,13 +35,12 @@ public class Mp3PlayerFX extends Mp3Player {
 
     void start() {
         if (player == null) {
-            Media sound = new Media(Paths.get(getPath()).toUri().toString());
+            Media sound = new Media(Paths.get(path).toUri().toString());
             player = new MediaPlayer(sound);
             player.setOnEndOfMedia(() -> bus.send(messages.getProperty("playlist.next")));
             length = calculateLength(player);
         }
         mediaView.setMediaPlayer(player);
-        setStartedTime(System.currentTimeMillis());
         player.play();
     }
 
@@ -52,7 +57,6 @@ public class Mp3PlayerFX extends Mp3Player {
         return player.getStatus() == MediaPlayer.Status.PAUSED;
     }
 
-    @Override
     long playbackStatus() {
         return Math.round(player.getCurrentTime().toMillis());
     }
@@ -86,8 +90,16 @@ public class Mp3PlayerFX extends Mp3Player {
         }
     }
 
-    @Override
     synchronized long getLength() {
         return length;
+    }
+
+    void initMetadata() {
+        try {
+            metadata = new MP3(path);
+        } catch (IOException e) {
+            log.error("File read problems: " + path);
+            log.error(e.getStackTrace());
+        }
     }
 }

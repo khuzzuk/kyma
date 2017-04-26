@@ -16,7 +16,6 @@ import static java.lang.Math.toRadians;
 
 public class StarsFactory {
     private static final int R = -8;
-    private static final int starsDistance = 22;
 
     private static void drawStarLines(Path star, int start, int endInclusive) {
         for (int i = start; i <= endInclusive; i++) {
@@ -36,15 +35,14 @@ public class StarsFactory {
         return star;
     }
 
-    private static Group getHalfStar(Color first, Color second) {
+    private static Group getHalfStar() {
         Path half1 = new Path();
         half1.getElements().add(new MoveTo(0, R));
         drawStarLines(half1, 0, 5);
-        half1.setFill(first);
+        half1.setFill(Color.BLACK);
         Path half2 = new Path();
         half2.getElements().add(new MoveTo(0, R));
         drawStarLines(half2, 5, 9);
-        half2.setFill(second);
         return new Group(half1, half2);
     }
 
@@ -56,9 +54,7 @@ public class StarsFactory {
                 star.setFill(Color.BLACK);
                 hBox.getChildren().add(star);
             } else if (rating / 2 == i && rating % 2 == 1) {
-                hBox.getChildren().add(getHalfStar(Color.BLACK, Color.WHITE));
-                //star.setFill(new LinearGradient(0, 0, 1, 0, true, CycleMethod.NO_CYCLE,
-                  //      new Stop(0, Color.BLACK), new Stop(1, Color.WHITE)));
+                hBox.getChildren().add(getHalfStar());
             } else {
                 hBox.getChildren().add(getStar());
             }
