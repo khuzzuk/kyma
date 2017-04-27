@@ -26,7 +26,9 @@ public class TableColumnFactory {
             @Override
             protected void updateItem(Integer item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(Rating.getStarFor(item != null ? item : 0));
+                if (item != null) {
+                    setGraphic(Rating.getStarFor(item));
+                }
             }
         });
         title.setPrefWidth(100);

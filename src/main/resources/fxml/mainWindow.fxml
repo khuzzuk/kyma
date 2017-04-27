@@ -21,18 +21,6 @@
             <MenuItem text="Dodaj katalog" onAction="#indexCatalogue"/>
         </Menu>
     </MenuBar>
-    <GridPane>
-        <columnConstraints>
-            <ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0"/>
-            <ColumnConstraints hgrow="SOMETIMES" percentWidth="60.0"/>
-            <ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0"/>
-        </columnConstraints>
-        <TreeView fx:id="filesList" onMouseClicked="#fillContentView"/>
-        <SplitPane dividerPositions="0.2" orientation="VERTICAL" GridPane.columnIndex="1">
-            <HBox/>
-            <TableView fx:id="contentView" onMouseClicked="#addToPlaylist"/>
-        </SplitPane>
-        <TableView fx:id="playlist" GridPane.columnIndex="2" onKeyPressed="#removeFromPlaylist"/>
-    </GridPane>
+    <fx:include source="managerPane.fxml" fx:id="managerPane"/>
     <fx:include source="playerPane.fxml" fx:id="playerPane"/>
 </SplitPane>

@@ -13,10 +13,13 @@ public class ControllerDistributor implements Callback<Class<?>, Object> {
     private final Map<Class<?>, Initializable> controllers;
 
     @Inject
-    public ControllerDistributor(MainController controller, PlayerPaneController playerPaneController) {
+    public ControllerDistributor(MainController controller,
+                                 PlayerPaneController playerPaneController,
+                                 ManagerPaneController managerPaneController) {
         this.controllers = new HashMap<>();
         controllers.put(MainController.class, controller);
         controllers.put(PlayerPaneController.class, playerPaneController);
+        controllers.put(ManagerPaneController.class, managerPaneController);
     }
 
     @Override

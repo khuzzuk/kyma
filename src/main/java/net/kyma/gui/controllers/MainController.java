@@ -34,11 +34,7 @@ import java.util.stream.Collectors;
 @Log4j2
 public class MainController implements Initializable {
     @FXML
-    private TableView<SoundFile> contentView;
-    @FXML
-    private TreeView<String> filesList;
-    @FXML
-    private TableView<SoundFile> playlist;
+    private GridPane managerPane;
     @FXML
     private GridPane playerPane;
     @Inject
@@ -49,71 +45,13 @@ public class MainController implements Initializable {
     @Inject
     private SoundFileConverter converter;
     @Inject
-    private TableColumnFactory columnFactory;
+    @Named("fileExtensions")
     private static Set<String> fileExtensions;
-    private IntegerProperty highlighted;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        bus.<SoundFile>setReaction(messages.getProperty("playlist.add.sound"), playlist.getItems()::add);
-        bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.add.list"),
-                c -> playlist.getItems().addAll(c));
-        bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.remove.list"),
-                c -> playlist.getItems().removeAll(c));
-        bus.setGuiReaction(messages.getProperty("data.view.refresh"), this::fillTreeView);
-        bus.setReaction(messages.getProperty("playlist.highlight"), this::highlight);
         fileExtensions = new HashSet<>();
         fileExtensions.add(".mp3");
-        highlighted = new SimpleIntegerProperty(-1);
-
-        initPlaylistView();
-        initContentView();
-
-        bus.sendCommunicate(messages.getProperty("data.index.getAll"), messages.getProperty("data.convert.from.doc.gui"));
-    }
-
-    private void initPlaylistView() {
-        playlist.getColumns().clear();
-        playlist.getColumns().add(columnFactory.getTitleColumn(highlighted));
-    }
-
-    @SuppressWarnings("unchecked")
-    private void initContentView() {
-        contentView.getColumns().clear();
-        contentView.getColumns().addAll(columnFactory.getTitleColumn(), columnFactory.getRateColumn());
-    }
-
-    private void fillTreeView(Collection<SoundFile> sounds) {
-        BaseElement root = new RootElement();
-        List<SoundFile> soundFiles = sounds.stream().sorted().collect(Collectors.toList());
-        for (SoundFile f : soundFiles) {
-            String[] path = f.getIndexedPath().split("[\\\\/]+");
-            if (path.length == 0) log.error("Database inconsistency!");
-            fillChild(root, path, 0, f);
-        }
-        filesList.setRoot(root);
-    }
-
-    private void fillChild(BaseElement parent, String[] path, int pos, SoundFile soundFile) {
-        if (pos == path.length) {
-            return;
-        }
-
-        BaseElement element;
-        if (pos == path.length - 1) {
-            element = new SoundElement(soundFile);
-            parent.addChild(element);
-        } else {
-            BaseElement catalogue = parent.getChildElement(path[pos]);
-            if (catalogue == null) {
-                element = new BaseElement();
-                element.setName(path[pos]);
-                fillChild(element, path, pos + 1, soundFile);
-                parent.addChild(element);
-            } else {
-                fillChild(catalogue, path, pos + 1, soundFile);
-            }
-        }
     }
 
     @FXML
@@ -156,36 +94,4 @@ public class MainController implements Initializable {
                 .collect(Collectors.toList());
     }
 
-    @FXML
-    private void addToPlaylist(MouseEvent mouseEvent) {
-        if (!mouseEvent.getButton().equals(MouseButton.PRIMARY)) return;
-        if (mouseEvent.getClickCount() != 2) return;
-        //TODO extend TreeView so it can return of selected BaseElement or SoundElement instead of casting and instanceof
-        bus.send(messages.getProperty("playlist.add.list"), contentView.getSelectionModel().getSelectedItems());
-    }
-
-    @FXML
-    private void removeFromPlaylist(KeyEvent keyEvent) {
-        if (keyEvent.getCode().equals(KeyCode.DELETE) || keyEvent.getCode().equals(KeyCode.BACK_SPACE)) {
-            bus.send(messages.getProperty("playlist.remove.list"), playlist.getSelectionModel().getSelectedItems());
-        }
-    }
-
-    private void highlight(int pos) {
-        highlighted.setValue(pos);
-        playlist.refresh();
-    }
-
-    @FXML
-    private void fillContentView() {
-        BaseElement selectedItem = (BaseElement) filesList.getSelectionModel().getSelectedItem();
-        if (selectedItem != null && !(selectedItem instanceof SoundElement)) {
-            contentView.getItems().clear();
-            contentView.getItems().addAll(selectedItem.getChildElements().values()
-                    .stream().filter(e -> e instanceof SoundElement)
-                    .map(e -> (SoundElement) e)
-                    .map(SoundElement::getSoundFile)
-                    .collect(Collectors.toList()));
-        }
-    }
 }
