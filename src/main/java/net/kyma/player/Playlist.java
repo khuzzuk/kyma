@@ -24,6 +24,7 @@ public class Playlist {
     public void init() {
         playlist = new ArrayList<>();
         bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.add.list"), playlist::addAll);
+        bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.remove.list"), playlist::removeAll);
         bus.setReaction(messages.getProperty("playlist.start"), this::playFirstItem);
         bus.setReaction(messages.getProperty("playlist.next"), this::playNextItem);
     }

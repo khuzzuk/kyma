@@ -5,6 +5,8 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
@@ -54,7 +56,10 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         bus.<SoundFile>setReaction(messages.getProperty("playlist.add.sound"), playlist.getItems()::add);
-        bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.add.list"), c -> playlist.getItems().addAll(c));
+        bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.add.list"),
+                c -> playlist.getItems().addAll(c));
+        bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.remove.list"),
+                c -> playlist.getItems().removeAll(c));
         bus.setGuiReaction(messages.getProperty("data.view.refresh"), this::fillTreeView);
         bus.setReaction(messages.getProperty("playlist.highlight"), this::highlight);
         fileExtensions = new HashSet<>();
@@ -157,6 +162,13 @@ public class MainController implements Initializable {
         if (mouseEvent.getClickCount() != 2) return;
         //TODO extend TreeView so it can return of selected BaseElement or SoundElement instead of casting and instanceof
         bus.send(messages.getProperty("playlist.add.list"), contentView.getSelectionModel().getSelectedItems());
+    }
+
+    @FXML
+    private void removeFromPlaylist(KeyEvent keyEvent) {
+        if (keyEvent.getCode().equals(KeyCode.DELETE) || keyEvent.getCode().equals(KeyCode.BACK_SPACE)) {
+            bus.send(messages.getProperty("playlist.remove.list"), playlist.getSelectionModel().getSelectedItems());
+        }
     }
 
     private void highlight(int pos) {
