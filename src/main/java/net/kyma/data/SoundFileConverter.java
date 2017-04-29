@@ -1,9 +1,15 @@
 package net.kyma.data;
 
-import com.beaglebuddy.mp3.MP3;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
 import org.apache.lucene.document.Document;
+import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.audio.exceptions.CannotReadException;
+import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
+import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.Tag;
+import org.jaudiotagger.tag.TagException;
 import pl.khuzzuk.messaging.Bus;
 
 import javax.inject.Inject;
@@ -12,7 +18,9 @@ import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static net.kyma.dm.MetadataField.*;
@@ -34,12 +42,7 @@ public class SoundFileConverter {
         sound.setFileName(file.getName());
         sound.setIndexedPath(file.getPath().replace(indexedPath, ""));
 
-        MP3 metadata = getMetadataFrom(file);
-        if (metadata == null) {
-            return sound;
-        }
-
-        fillData(sound, metadata);
+        Optional.ofNullable(getMetadataFrom(file)).ifPresent(m -> fillData(sound, m));
         return sound;
     }
 
@@ -56,18 +59,28 @@ public class SoundFileConverter {
         return soundFile;
     }
 
-    private void fillData(SoundFile sound, MP3 metadata) {
-        sound.setTitle(metadata.getTitle());
-        sound.setRate(metadata.getRating());
-        sound.setYear(metadata.getYear());
-        sound.setAlbum(metadata.getAlbum());
+    private void fillData(SoundFile sound, Tag metadata) {
+        sound.setTitle(metadata.getFirst(FieldKey.TITLE));
+        fillNumericField(FieldKey.RATING, metadata, sound::setRate);
+        fillNumericField(FieldKey.YEAR, metadata, sound::setYear);
+        sound.setAlbum(metadata.getFirst(FieldKey.ALBUM));
     }
 
-    private MP3 getMetadataFrom(File file) {
+    private void fillNumericField(FieldKey fieldKey, Tag tags, Consumer<Integer> consumer) {
+        String s = tags.getFirst(fieldKey);
+        if (s.length() > 0 && s.length() == s.replace("^[0-9]", "").length()) {
+            consumer.accept(Integer.parseInt(s));
+        }
+    }
+
+    private Tag getMetadataFrom(File file) {
         try {
-            return new MP3(file.getPath());
-        } catch (IOException e) {
-            log.error("file is not accessible");
+            return AudioFileIO.read(file).getTag();
+        } catch (CannotReadException |
+                IOException |
+                TagException |
+                ReadOnlyFileException |
+                InvalidAudioFrameException e) {
             log.error(e);
         }
         return null;

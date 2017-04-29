@@ -43,7 +43,6 @@ public class PlayerManager {
             }
         }
         currentPlayer = new Mp3PlayerFX(file, bus, messages);
-        currentPlayer.initMetadata();
         log.info("start play");
         currentPlayer.start();
         timer.start();

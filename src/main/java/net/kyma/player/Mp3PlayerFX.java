@@ -1,6 +1,5 @@
 package net.kyma.player;
 
-import com.beaglebuddy.mp3.MP3;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
@@ -21,8 +20,6 @@ class Mp3PlayerFX {
     private final Bus bus;
     private final Properties messages;
     private long length;
-    @Getter
-    private MP3 metadata;
     @Getter
     private final String path;
 
@@ -92,14 +89,5 @@ class Mp3PlayerFX {
 
     synchronized long getLength() {
         return length;
-    }
-
-    void initMetadata() {
-        try {
-            metadata = new MP3(path);
-        } catch (IOException e) {
-            log.error("File read problems: " + path);
-            log.error(e.getStackTrace());
-        }
     }
 }
