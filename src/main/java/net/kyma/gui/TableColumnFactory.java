@@ -42,6 +42,12 @@ public class TableColumnFactory {
         return year;
     }
 
+    public TableColumn<SoundFile, String> getAlbumColumn() {
+        TableColumn<SoundFile, String> album = new TableColumn<>("album");
+        album.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getAlbum()));
+        return album;
+    }
+
     public TableColumn<SoundFile, String> getTitleColumn(IntegerProperty property) {
         TableColumn<SoundFile, String> column = getTitleColumn();
         column.setCellFactory(param -> new TableCell<SoundFile, String>() {

@@ -71,7 +71,8 @@ public class ManagerPaneController implements Initializable {
         contentView.getColumns().clear();
         contentView.getColumns().addAll(columnFactory.getTitleColumn(),
                 columnFactory.getRateColumn(),
-                columnFactory.getYearColumn());
+                columnFactory.getYearColumn(),
+                columnFactory.getAlbumColumn());
     }
     private void fillTreeView(Collection<SoundFile> sounds) {
         BaseElement root = new RootElement();

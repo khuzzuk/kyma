@@ -51,7 +51,7 @@ public class SoundFileConverter {
         soundFile.setTitle(document.get(TITLE.getName()));
         soundFile.setRate(document.getField(RATE.getName()).numericValue().intValue());
         soundFile.setYear(document.getField(YEAR.getName()).numericValue().intValue());
-        soundFile.setAlbum(document.get(TITLE.getName()));
+        soundFile.setAlbum(document.get(ALBUM.getName()));
 
         return soundFile;
     }
