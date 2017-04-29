@@ -22,6 +22,7 @@ public class DatabaseModule extends AbstractModule {
             config.setRAMBufferSizeMB(64);
             IndexWriter writer = new IndexWriter(directory, config);
             bind(IndexWriter.class).toInstance(writer);
+
         } catch (IOException e) {
             log.error("No access to database");
             log.error(e);

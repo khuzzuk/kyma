@@ -25,6 +25,7 @@ class DocConverter {
     }
 
     private void addField(Document doc, MetadataField field, String value) {
+        if (value == null) return;
         doc.add(new StringField(field.getName(), value, YES));
     }
 

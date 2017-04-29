@@ -10,6 +10,7 @@ import lombok.extern.log4j.Log4j2;
 import net.kyma.BusModule;
 import net.kyma.data.DataIndexer;
 import net.kyma.data.DatabaseModule;
+import net.kyma.data.DirectoryIndexer;
 import net.kyma.player.PlayerManager;
 import net.kyma.player.Playlist;
 import pl.khuzzuk.messaging.Bus;
@@ -26,6 +27,7 @@ public class Manager extends Application {
         injector.getInstance(DataIndexer.class).init();
         injector.getInstance(Playlist.class).init();
         injector.getInstance(PlayerManager.class).init();
+        injector.getInstance(DirectoryIndexer.class).init();
         bus = injector.getInstance(Bus.class);
         messages = injector.getInstance(Key.get(Properties.class, Names.named("messages")));
         launch(args);

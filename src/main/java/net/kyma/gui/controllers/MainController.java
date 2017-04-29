@@ -4,6 +4,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -34,6 +35,8 @@ import java.util.stream.Collectors;
 @Log4j2
 public class MainController implements Initializable {
     @FXML
+    private SplitPane mainPane;
+    @FXML
     private GridPane managerPane;
     @FXML
     private GridPane playerPane;
@@ -43,15 +46,19 @@ public class MainController implements Initializable {
     @Named("messages")
     private Properties messages;
     @Inject
-    private SoundFileConverter converter;
-    @Inject
     @Named("fileExtensions")
     private static Set<String> fileExtensions;
+    private ProgressIndicator indicator;
+    private double maxProgress;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         fileExtensions = new HashSet<>();
         fileExtensions.add(".mp3");
+        bus.setGuiReaction(messages.getProperty("data.view.refresh"), o -> mainPane.getItems().remove(indicator));
+        bus.<Number>setReaction(messages.getProperty("data.index.gui.amount"), n -> maxProgress = n.doubleValue());
+        bus.<Number>setGuiReaction(messages.getProperty("data.index.gui.progress"), n -> indicator.setProgress(n.doubleValue() / maxProgress));
+        bus.setGuiReaction(messages.getProperty("data.index.gui.finish"), () -> mainPane.getItems().remove(indicator));
     }
 
     @FXML
@@ -62,10 +69,12 @@ public class MainController implements Initializable {
 
     @FXML
     private void indexCatalogue() {
-        Optional.ofNullable(getFile()).ifPresent(f -> bus.send(messages.getProperty("data.index.list"),
-                getFilesFromDirectory(f).stream().map(current ->
-                        converter.from(current, f.getPath().substring(0, f.getPath().length() - f.getName().length())))
-                        .collect(Collectors.toList())));
+        Optional.ofNullable(getFile()).ifPresent(f -> {
+            indicator = new ProgressIndicator();
+            mainPane.getItems().add(indicator);
+            indicator.setVisible(true);
+            bus.send(messages.getProperty("data.index.directory"), f);
+        });
     }
 
     private File getFile(FileChooser.ExtensionFilter filter) {
@@ -80,18 +89,4 @@ public class MainController implements Initializable {
         chooser.setTitle("wybór katalogu");
         return chooser.showDialog(null);
     }
-
-    private Collection<File> getFilesFromDirectory(File file) {
-        if (file.isFile()) {
-            if (fileExtensions.contains(file.getName().substring(file.getName().length() - 4))) {
-                return Collections.singletonList(file);
-            } else {
-                return Collections.emptyList();
-            }
-        }
-        Optional<File[]> content = Optional.ofNullable(file.listFiles());
-        return Arrays.stream(content.orElse(new File[]{})).flatMap(f -> getFilesFromDirectory(f).stream())
-                .collect(Collectors.toList());
-    }
-
 }

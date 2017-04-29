@@ -11,6 +11,7 @@ import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.util.Bits;
 import pl.khuzzuk.messaging.Bus;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Named;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public class DataIndexer {
     @Inject
     private DocConverter docConverter;
 
+    @PostConstruct
     public void init() {
         bus.setReaction(messages.getProperty("close"), this::close);
         bus.setReaction(messages.getProperty("data.index.list"), this::index);
@@ -78,6 +80,7 @@ public class DataIndexer {
             log.error("error on closing database");
             log.error(e);
         }
+        //TODO refactoring, change place where bus is closed
         bus.closeBus();
     }
 }

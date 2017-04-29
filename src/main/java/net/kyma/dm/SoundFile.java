@@ -2,9 +2,7 @@ package net.kyma.dm;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 
-@Log4j2
 @Getter
 @Setter
 public class SoundFile implements Comparable<SoundFile> {
@@ -13,8 +11,6 @@ public class SoundFile implements Comparable<SoundFile> {
     private String indexedPath;
     private String title;
     private int rate;
-
-
 
     @Override
     public int compareTo(SoundFile o) {
