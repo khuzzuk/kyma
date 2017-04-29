@@ -11,7 +11,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import lombok.extern.log4j.Log4j2;
-import net.kyma.data.SoundFileConverter;
 import net.kyma.dm.SoundFile;
 import net.kyma.gui.BaseElement;
 import net.kyma.gui.RootElement;
@@ -70,7 +69,9 @@ public class ManagerPaneController implements Initializable {
     @SuppressWarnings("unchecked")
     private void initContentView() {
         contentView.getColumns().clear();
-        contentView.getColumns().addAll(columnFactory.getTitleColumn(), columnFactory.getRateColumn());
+        contentView.getColumns().addAll(columnFactory.getTitleColumn(),
+                columnFactory.getRateColumn(),
+                columnFactory.getYearColumn());
     }
     private void fillTreeView(Collection<SoundFile> sounds) {
         BaseElement root = new RootElement();

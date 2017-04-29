@@ -14,13 +14,14 @@ import static org.apache.lucene.document.Field.Store.YES;
 class DocConverter {
     Document docFrom(SoundFile file) {
         Document doc = new Document();
+
         addField(doc, PATH, file.getPath());
         addField(doc, INDEXED_PATH, file.getIndexedPath());
         addField(doc, FILE_NAME, file.getFileName());
-
         addField(doc, TITLE, file.getTitle());
-
         addField(doc, RATE, file.getRate());
+        addField(doc, YEAR, file.getYear());
+
         return doc;
     }
 
