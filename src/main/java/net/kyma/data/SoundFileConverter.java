@@ -51,6 +51,8 @@ public class SoundFileConverter {
         soundFile.setTitle(document.get(TITLE.getName()));
         soundFile.setRate(document.getField(RATE.getName()).numericValue().intValue());
         soundFile.setYear(document.getField(YEAR.getName()).numericValue().intValue());
+        soundFile.setAlbum(document.get(TITLE.getName()));
+
         return soundFile;
     }
 
@@ -58,6 +60,7 @@ public class SoundFileConverter {
         sound.setTitle(metadata.getTitle());
         sound.setRate(metadata.getRating());
         sound.setYear(metadata.getYear());
+        sound.setAlbum(metadata.getAlbum());
     }
 
     private MP3 getMetadataFrom(File file) {

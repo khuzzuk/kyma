@@ -21,6 +21,7 @@ class DocConverter {
         addField(doc, TITLE, file.getTitle());
         addField(doc, RATE, file.getRate());
         addField(doc, YEAR, file.getYear());
+        addField(doc, ALBUM, file.getAlbum());
 
         return doc;
     }

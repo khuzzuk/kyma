@@ -12,6 +12,7 @@ public class SoundFile implements Comparable<SoundFile> {
     private String title;
     private int rate;
     private int year;
+    private String album;
 
     @Override
     public int compareTo(SoundFile o) {

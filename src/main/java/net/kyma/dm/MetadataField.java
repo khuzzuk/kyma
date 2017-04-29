@@ -11,7 +11,8 @@ public enum MetadataField {
     INDEXED_PATH("indexedPath"),
     FILE_NAME("fileName"),
     RATE("rate"),
-    YEAR("year");
+    YEAR("year"),
+    ALBUM("album");
 
     private final String name;
 
