@@ -1,8 +1,6 @@
 package net.kyma.properties;
 
-import com.sun.istack.internal.NotNull;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import pl.khuzzuk.messaging.Bus;
 
@@ -36,9 +34,9 @@ public class PropertiesManager {
     private OutputStream output;
 
     PropertiesManager() {
-        this.lastAlbum = "";
-        this.volume = "0";
-        this.musicPosition = "0";
+        this.lastAlbum      = "0";
+        this.volume         = "0";
+        this.musicPosition  = "0";
     }
 
     public void initializationProperties() {
