@@ -13,9 +13,16 @@ import javax.inject.Singleton;
 
 @Singleton
 public class TableColumnFactory {
+    //TODO: 
     public TableColumn<SoundFile, String> getTitleColumn() {
         TableColumn<SoundFile, String> title = new TableColumn<>("Tytuł");
-        title.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getTitle()));
+        title.setCellValueFactory(param -> {
+            SimpleStringProperty param1 = new SimpleStringProperty(param.getValue().getTitle());
+            if (param1 != null && !param1.getValueSafe().trim().isEmpty())
+                return new SimpleStringProperty(param.getValue().getTitle());
+            else
+                return new SimpleObjectProperty(param.getValue().getFileName());
+        });
         return title;
     }
 
