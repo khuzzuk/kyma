@@ -18,25 +18,14 @@ public class PropertiesManager {
     @Inject
     @Named("userProperties")
     private Properties properties;
-
-    @Setter
-    @Getter
+    
     private String lastAlbum;
-
-    @Setter
-    @Getter
     private String volume;
-
-    @Setter
-    @Getter
     private String musicPosition;
 
     private OutputStream output;
 
     PropertiesManager() {
-        this.lastAlbum      = "0";
-        this.volume         = "0";
-        this.musicPosition  = "0";
     }
 
     public void initializationProperties() {
@@ -62,10 +51,5 @@ public class PropertiesManager {
                 }
             }
         }
-    }
-
-    // TODO: Add this event on the bus programming pattern
-    public void initializationConnect() {
-        bus.send(properties.getProperty("user.music.lastAlbum"));
     }
 }
