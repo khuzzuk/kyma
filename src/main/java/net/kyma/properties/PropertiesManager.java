@@ -58,6 +58,7 @@ public class PropertiesManager {
         }
     }
 
+    // TODO: Add this event on the bus programming pattern
     public void initializationConnect() {
         bus.send(properties.getProperty("user.music.lastAlbum"));
     }
