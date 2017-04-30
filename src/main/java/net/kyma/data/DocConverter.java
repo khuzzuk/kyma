@@ -22,6 +22,34 @@ class DocConverter {
         addField(doc, RATE, file.getRate());
         addField(doc, YEAR, file.getYear());
         addField(doc, ALBUM, file.getAlbum());
+        addField(doc, ALBUM_ARTIST, file.getAlbumArtist());
+        addField(doc, ALBUM_ARTISTS, file.getAlbumArtists());
+        addField(doc, ARTIST, file.getArtist());
+        addField(doc, ARTISTS, file.getArtists());
+        addField(doc, COMPOSER, file.getComposer());
+        addField(doc, CONDUCTOR, file.getConductor());
+        addField(doc, COUNTRY, file.getCountry());
+        addField(doc, CUSTOM1, file.getCustom1());
+        addField(doc, CUSTOM2, file.getCustom2());
+        addField(doc, CUSTOM3, file.getCustom3());
+        addField(doc, CUSTOM4, file.getCustom4());
+        addField(doc, CUSTOM5, file.getCustom5());
+        addField(doc, DISC_NO, file.getDiscNo());
+        addField(doc, GENRE, file.getGenre());
+        addField(doc, GROUP, file.getGroup());
+        addField(doc, INSTRUMENT, file.getInstrument());
+        addField(doc, MOOD, file.getMood());
+        addField(doc, MOVEMENT, file.getMovement());
+        addField(doc, OCCASION, file.getOccasion());
+        addField(doc, OPUS, file.getOpus());
+        addField(doc, ORCHESTRA, file.getOrchestra());
+        addField(doc, QUALITY, file.getQuality());
+        addField(doc, RANKING, file.getRanking());
+        addField(doc, TEMPO, file.getTempo());
+        addField(doc, TONALITY, file.getTonality());
+        addField(doc, TRACK, file.getTrack());
+        addField(doc, WORK, file.getWork());
+        addField(doc, WORK_TYPE, file.getWorkType());
 
         return doc;
     }
