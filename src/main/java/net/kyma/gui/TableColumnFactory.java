@@ -13,7 +13,7 @@ import javax.inject.Singleton;
 
 @Singleton
 public class TableColumnFactory {
-    //TODO: 
+    //TODO:
     public TableColumn<SoundFile, String> getTitleColumn() {
         TableColumn<SoundFile, String> title = new TableColumn<>("Tytuł");
         title.setCellValueFactory(param -> {
