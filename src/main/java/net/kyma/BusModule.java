@@ -12,7 +12,7 @@ import java.util.Properties;
 public class BusModule extends AbstractModule {
     @Override
     protected void configure() {
-        bind(Bus.class).toInstance(Bus.initializeBus());
+        bind(Bus.class).toInstance(Bus.initializeBus(false));
         Properties messages = new Properties();
         try {
             messages.load(BusModule.class.getResourceAsStream("/messages.properties"));
