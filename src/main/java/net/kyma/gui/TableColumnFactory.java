@@ -19,7 +19,7 @@ public class TableColumnFactory {
         title.setCellValueFactory(param -> {
             SimpleStringProperty param1 = new SimpleStringProperty(param.getValue().getTitle());
             if (param1 != null && !param1.getValueSafe().trim().isEmpty())
-                return new SimpleStringProperty(param.getValue().getTitle());
+                return param1;
             else
                 return new SimpleObjectProperty(param.getValue().getFileName());
         });
