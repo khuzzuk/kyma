@@ -1,18 +1,20 @@
 package net.kyma.properties;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.jcp.xml.dsig.internal.dom.ApacheCanonicalizer;
 import pl.khuzzuk.messaging.Bus;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
 import java.util.Properties;
 
+@Log4j2
 public class PropertiesManager {
     @Inject
     private Bus bus;
@@ -24,49 +26,27 @@ public class PropertiesManager {
     @Inject
     @Named("messages")
     private Properties messages;
-
-    private String lastAlbum;
-    private String volume;
-    private String musicPosition;
+    @Inject
+    @Named("propertiesFile")
+    private File propertiesFile;
 
     private OutputStream output;
-
-    PropertiesManager() {
-    }
 
     public void initializationProperties() {
         properties = new Properties();
 
-        try {
-            output = new FileOutputStream("userProperties.properties");
-
-            properties.setProperty("user.music.lastAlbum",      lastAlbum);
-            properties.setProperty("user.music.volume",         volume);
-            properties.setProperty("user.music.musicPosition",  musicPosition);
-
+        try (OutputStream output = new FileOutputStream("userProperties.properties")){
             properties.store(output, "User properties");
-
         } catch (IOException io) {
-            io.printStackTrace();
-        } finally {
-            if (output != null) {
-                try {
-                    output.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            log.error(io);
         }
+
+        bus.setReaction(messages.getProperty("gui.window.settings"), this::windowSettings);
     }
 
-    // TODO: Dimension?
-    public void initializationDimension() {
-        //bus.setResponse("", );
-    }
-
-    public void windowDimension() {
-        String x = messages.getProperty("player.window.dimension.set.x");
-        String y = messages.getProperty("player.window.dimension.set.y");
+    public void windowSettings() {
+        String x = messages.getProperty("player.window.dimension.x");
+        String y = messages.getProperty("player.window.dimension.y");
         if(NumberUtils.isDigits(x) && NumberUtils.isDigits(y))
             if (NumberUtils.isParsable(x) && NumberUtils.isParsable(y)){
                 int x1 = NumberUtils.toInt(x);
