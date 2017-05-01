@@ -8,6 +8,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Singleton;
 
@@ -17,11 +18,13 @@ public class TableColumnFactory {
     public TableColumn<SoundFile, String> getTitleColumn() {
         TableColumn<SoundFile, String> title = new TableColumn<>("Tytuł");
         title.setCellValueFactory(param -> {
-            SimpleStringProperty param1 = new SimpleStringProperty(param.getValue().getTitle());
-            if (param1 != null && !param1.getValueSafe().trim().isEmpty())
-                return param1;
-            else
-                return new SimpleObjectProperty(param.getValue().getFileName());
+            if (!StringUtils.isEmpty(param.getValue().getTitle())) {
+                return new SimpleStringProperty(param.getValue().getTitle());
+            }
+            else {
+                String name = param.getValue().getFileName();
+                return new SimpleObjectProperty(name.substring(0, name.lastIndexOf(".")));
+            }
         });
         return title;
     }
