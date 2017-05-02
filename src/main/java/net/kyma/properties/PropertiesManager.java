@@ -26,6 +26,7 @@ public class PropertiesManager {
     @Inject
     @Named("messages")
     private Properties messages;
+
     @Inject
     @Named("propertiesFile")
     private File propertiesFile;
@@ -45,12 +46,32 @@ public class PropertiesManager {
     }
 
     public void windowSettings() {
-        String x = messages.getProperty("player.window.dimension.x");
-        String y = messages.getProperty("player.window.dimension.y");
-        if(NumberUtils.isDigits(x) && NumberUtils.isDigits(y))
-            if (NumberUtils.isParsable(x) && NumberUtils.isParsable(y)){
-                int x1 = NumberUtils.toInt(x);
-                int y1 = NumberUtils.toInt(y);
+        String xFromProperties = messages.getProperty("player.window.x");
+        String yFromProperties = messages.getProperty("player.window.y");
+
+        String widthFromProperties = messages.getProperty("player.window.width");
+        String heightFromProperties = messages.getProperty("player.window.height");
+
+        String maximizedFromProperties = messages.getProperty("player.window.maximized");
+
+        if(NumberUtils.isDigits(xFromProperties) && NumberUtils.isDigits(yFromProperties)
+                && NumberUtils.isDigits(widthFromProperties) && NumberUtils.isDigits(heightFromProperties))
+            if (NumberUtils.isParsable(xFromProperties) && NumberUtils.isParsable(yFromProperties)
+                    && NumberUtils.isParsable(widthFromProperties) && NumberUtils.isParsable(heightFromProperties)){
+
+                int x = NumberUtils.toInt(xFromProperties);
+                int y = NumberUtils.toInt(yFromProperties);
+
+                bus.send(properties.getProperty("player.window.x"), x);
+                bus.send(properties.getProperty("player.window.y"), y);
+
+                int width = NumberUtils.toInt(widthFromProperties);
+                int height = NumberUtils.toInt(heightFromProperties);
+
+                bus.send(properties.getProperty("player.window.width"), width);
+                bus.send(properties.getProperty("player.window.height"), height);
+
+                bus.send(properties.getProperty("player.window.maximized"), maximizedFromProperties);
             }
     }
 }
