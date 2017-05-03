@@ -4,6 +4,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
@@ -68,6 +69,7 @@ public class ManagerPaneController implements Initializable {
 
     @SuppressWarnings("unchecked")
     private void initContentView() {
+        contentView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         contentView.getColumns().clear();
         contentView.getColumns().addAll(columnFactory.getTitleColumn(),
                 columnFactory.getRateColumn(),
