@@ -2,6 +2,7 @@ package net.kyma.data;
 
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
+import net.kyma.player.Format;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.lucene.document.Document;
@@ -41,6 +42,7 @@ public class SoundFileConverter {
     public SoundFile from(File file, String indexedPath) {
         SoundFile sound = new SoundFile();
         sound.setPath(file.getPath());
+        sound.setFormat(Format.forPath(file.getPath()));
         sound.setFileName(file.getName());
         sound.setIndexedPath(file.getPath().replace(indexedPath, ""));
 
@@ -51,6 +53,7 @@ public class SoundFileConverter {
     private SoundFile from(Document document) {
         SoundFile soundFile = new SoundFile();
         soundFile.setPath(document.get(PATH.getName()));
+        soundFile.setFormat(Format.forPath(soundFile.getPath()));
         soundFile.setIndexedPath(document.get(INDEXED_PATH.getName()));
         soundFile.setFileName(document.get(FILE_NAME.getName()));
         soundFile.setTitle(document.get(TITLE.getName()));

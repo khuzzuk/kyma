@@ -23,7 +23,7 @@
 /*noinspection CssUnusedSymbol*/
 .currentlyPlayed {
     -fx-font-weight: bold;
-    -fx-background-color: -fx-control-inner-background-alt;
+    -fx-background-color: #909090;
 }
 
 /*noinspection CssUnusedSymbol*/

@@ -45,16 +45,11 @@ public class MainController implements Initializable {
     @Inject
     @Named("messages")
     private Properties messages;
-    @Inject
-    @Named("fileExtensions")
-    private static Set<String> fileExtensions;
     private ProgressIndicator indicator;
     private double maxProgress;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        fileExtensions = new HashSet<>();
-        fileExtensions.add(".mp3");
         bus.setGuiReaction(messages.getProperty("data.view.refresh"), o -> mainPane.getItems().remove(indicator));
         bus.<Number>setReaction(messages.getProperty("data.index.gui.amount"), n -> maxProgress = n.doubleValue());
         bus.<Number>setGuiReaction(messages.getProperty("data.index.gui.progress"), n -> indicator.setProgress(n.doubleValue() / maxProgress));

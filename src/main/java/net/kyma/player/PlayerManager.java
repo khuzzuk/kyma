@@ -17,7 +17,7 @@ public class PlayerManager {
     private Properties messages;
     @Inject
     private PlaybackTimer timer;
-    private Mp3PlayerFX currentPlayer;
+    private Player currentPlayer;
 
     public void init() {
         timer.init();
@@ -25,6 +25,7 @@ public class PlayerManager {
         bus.setReaction(messages.getProperty("player.pause.mp3"), this::pauseMp3);
         bus.setReaction(messages.getProperty("player.stop.mp3"), this::stopMp3);
         bus.setReaction(messages.getProperty("close"), this::stopMp3);
+        bus.setReaction(messages.getProperty("close"), FLACPlayer::closeFLACPlayers);
         bus.setReaction(messages.getProperty("player.metadata.getLength"),
                 () -> bus.send(messages.getProperty("player.metadata.length"), currentPlayer.getLength()));
         bus.setReaction(messages.getProperty("player.metadata.getCurrentTime"),
@@ -42,7 +43,11 @@ public class PlayerManager {
                 currentPlayer.stop();
             }
         }
-        currentPlayer = new Mp3PlayerFX(file, bus, messages);
+        currentPlayer = file.getFormat().getPlayer(file, bus, messages);
+        if (currentPlayer == null) {
+            //TODO send communicate to the user
+            return;
+        }
         log.info("start play");
         currentPlayer.start();
         timer.start();

@@ -6,7 +6,11 @@
 
     <groupId>kyma.net</groupId>
     <artifactId>kyma</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>lib/jflac</module>
+    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -133,6 +137,12 @@
             <groupId>net.jthink</groupId>
             <artifactId>jaudiotagger</artifactId>
             <version>2.2.6-SNAPSHOT</version>
+        </dependency>
+        <!-- mvn install:install-file -Dfile=jflac-1.3.jar -DgroupId=org.kc7bfi -DartifactId=jflac -Dversion=1.3 -Dpackaging=jar -->
+        <dependency>
+            <groupId>org.kc7bfi</groupId>
+            <artifactId>jflac</artifactId>
+            <version>1.3</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

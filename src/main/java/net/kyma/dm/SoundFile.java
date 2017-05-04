@@ -2,10 +2,12 @@ package net.kyma.dm;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.kyma.player.Format;
 
 @Getter
 @Setter
 public class SoundFile implements Comparable<SoundFile> {
+    private Format format;
     private String path;
     private String fileName;
     private String indexedPath;

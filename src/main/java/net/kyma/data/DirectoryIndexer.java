@@ -1,6 +1,7 @@
 package net.kyma.data;
 
 import net.kyma.dm.SoundFile;
+import net.kyma.player.Format;
 import pl.khuzzuk.messaging.Bus;
 
 import javax.annotation.PostConstruct;
@@ -12,9 +13,6 @@ import java.util.stream.Collectors;
 
 public class DirectoryIndexer {
     @Inject
-    @Named("fileExtensions")
-    private static Set<String> fileExtensions;
-    @Inject
     private Bus bus;
     @Inject
     @Named("messages")
@@ -25,13 +23,13 @@ public class DirectoryIndexer {
     @PostConstruct
     public void init() {
         bus.<File>setReaction(messages.getProperty("data.index.directory"), d -> bus.send(messages.getProperty("data.index.list"), indexCatalogue(d)));
-        fileExtensions = new HashSet<>();
-        fileExtensions.add(".mp3");
     }
 
     private List<File> getFilesFromDirectory(File file) {
         if (file.isFile()) {
-            if (fileExtensions.contains(file.getName().substring(file.getName().length() - 4))) {
+            String name = file.getName();
+            if (name.contains(".") &&
+                    Format.supportedFormats.contains(name.substring(name.lastIndexOf(".")).toLowerCase())) {
                 return Collections.singletonList(file);
             } else {
                 return Collections.emptyList();
