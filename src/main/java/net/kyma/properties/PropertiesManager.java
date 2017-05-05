@@ -44,10 +44,12 @@ public class PropertiesManager {
             log.error(io);
         }
 
-        bus.setReaction(messages.getProperty("gui.window.settings"), this::windowSettings);
+        bus.setReaction(messages.getProperty("gui.window.settings"), this::windowGetSettings);
+        bus.setReaction(messages.getProperty("properties.window.store.frame"), this::windowStoreRectangle);
+        bus.setReaction(messages.getProperty("properties.window.store.maximized"), this::windowMaximized);
     }
 
-    private void windowSettings() {
+    private void windowGetSettings() {
         String maximizedFromProperties = messages.getProperty("player.window.maximized");
 
         if (BooleanUtils.toBoolean(maximizedFromProperties)) {
@@ -60,14 +62,24 @@ public class PropertiesManager {
         String widthFromProperties = messages.getProperty("player.window.width");
         String heightFromProperties = messages.getProperty("player.window.height");
 
-
         if (NumberUtils.isDigits(xFromProperties) && NumberUtils.isDigits(yFromProperties)
                 && NumberUtils.isDigits(widthFromProperties) && NumberUtils.isDigits(heightFromProperties)) {
-            int y = NumberUtils.toInt(yFromProperties);
-            int width = NumberUtils.toInt(widthFromProperties);
-            int height = NumberUtils.toInt(heightFromProperties);
-            Rectangle rectangle = new Rectangle(NumberUtils.toInt(xFromProperties), y, width, height);
+
+            Rectangle rectangle = new Rectangle(NumberUtils.toInt(xFromProperties), NumberUtils.toInt(yFromProperties),
+                    NumberUtils.toInt(widthFromProperties), NumberUtils.toInt(heightFromProperties));
+
             bus.send(messages.getProperty("gui.window.set.frame"), rectangle);
         }
+    }
+
+    private void windowStoreRectangle(Rectangle rectangle) {
+        properties.setProperty("player.window.height", String.valueOf(rectangle.getHeight()));
+        properties.setProperty("player.window.width", String.valueOf(rectangle.getWidth()));
+        properties.setProperty("player.window.x", String.valueOf(rectangle.getX()));
+        properties.setProperty("player.window.y", String.valueOf(rectangle.getY()));
+    }
+
+    private void windowMaximized(Boolean maximized) {
+        properties.setProperty("player.window.maximized", String.valueOf(maximized.equals(Boolean.TRUE)));
     }
 }
