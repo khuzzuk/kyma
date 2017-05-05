@@ -6,7 +6,7 @@ import com.google.inject.name.Names;
 import java.util.HashSet;
 import java.util.Set;
 
-class ControllersModule extends AbstractModule {
+public class ControllersModule extends AbstractModule {
     @Override
     protected void configure() {
     }

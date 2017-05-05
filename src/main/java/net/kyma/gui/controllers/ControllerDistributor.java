@@ -15,11 +15,13 @@ public class ControllerDistributor implements Callback<Class<?>, Object> {
     @Inject
     public ControllerDistributor(MainController controller,
                                  PlayerPaneController playerPaneController,
-                                 ManagerPaneController managerPaneController) {
+                                 ManagerPaneController managerPaneController,
+                                 ContentView contentView) {
         this.controllers = new HashMap<>();
         controllers.put(MainController.class, controller);
         controllers.put(PlayerPaneController.class, playerPaneController);
         controllers.put(ManagerPaneController.class, managerPaneController);
+        controllers.put(ContentView.class, contentView);
     }
 
     @Override

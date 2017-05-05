@@ -1,4 +1,4 @@
-package net.kyma.gui;
+package net.kyma;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -11,6 +11,9 @@ import net.kyma.BusModule;
 import net.kyma.data.DataIndexer;
 import net.kyma.data.DatabaseModule;
 import net.kyma.data.DirectoryIndexer;
+import net.kyma.data.MetadataIndexer;
+import net.kyma.gui.ControllersModule;
+import net.kyma.gui.MainWindow;
 import net.kyma.player.PlayerManager;
 import net.kyma.player.Playlist;
 import pl.khuzzuk.messaging.Bus;
@@ -28,6 +31,7 @@ public class Manager extends Application {
         injector.getInstance(Playlist.class).init();
         injector.getInstance(PlayerManager.class).init();
         injector.getInstance(DirectoryIndexer.class).init();
+        injector.getInstance(MetadataIndexer.class).init();
         bus = injector.getInstance(Bus.class);
         messages = injector.getInstance(Key.get(Properties.class, Names.named("messages")));
         launch(args);

@@ -6,16 +6,29 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.cell.TextFieldTableCell;
 import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
+import pl.khuzzuk.messaging.Bus;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
+import java.util.Properties;
 
 @Singleton
 public class TableColumnFactory {
+    @Inject
+    private Bus bus;
+    @Inject
+    @Named("messages")
+    private Properties messages;
+
     public TableColumn<SoundFile, String> getTitleColumn() {
         TableColumn<SoundFile, String> title = new TableColumn<>("Tytuł");
         title.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getTitle()));
+        title.setCellFactory(TextFieldTableCell.forTableColumn());
+        title.setOnEditCommit(v -> bus.send(messages.getProperty("data.edit.title.commit"), v.getNewValue()));
         return title;
     }
 
@@ -63,6 +76,7 @@ public class TableColumnFactory {
                 setGraphic(label);
             }
         });
+        column.setOnEditCommit(v -> bus.send(messages.getProperty("data.edit.title.commit.playlist"), v));
         return column;
     }
 }

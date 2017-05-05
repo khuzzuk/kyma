@@ -2,22 +2,28 @@ package net.kyma.data;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
+import net.kyma.dm.MetadataField;
 import net.kyma.dm.SoundFile;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.MultiFields;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.Bits;
 import pl.khuzzuk.messaging.Bus;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Named;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static net.kyma.data.QueryUtils.termForPath;
 
 @Singleton
 @Log4j2
@@ -36,17 +42,37 @@ public class DataIndexer {
     public void init() {
         bus.setReaction(messages.getProperty("close"), this::close);
         bus.setReaction(messages.getProperty("data.index.list"), this::index);
+        bus.setReaction(messages.getProperty("data.index.item"), this::indexSingleEntity);
         bus.setResponse(messages.getProperty("data.index.getAll"), this::getAll);
     }
 
-    private synchronized void index(Collection<SoundFile> files) {
-        persist(files.stream().map(docConverter::docFrom).collect(Collectors.toList()));
+    private synchronized void index(@NonNull Collection<SoundFile> files) {
+        persist(files);
         bus.sendCommunicate(messages.getProperty("data.index.getAll"), messages.getProperty("data.convert.from.doc.gui"));
     }
 
-    private void persist(Collection<Document> documents) {
-        try {
-            writer.addDocuments(documents);
+    private void persist(Collection<SoundFile> documents) {
+        try (DirectoryReader reader = DirectoryReader.open(writer)) {
+            IndexSearcher searcher = new IndexSearcher(reader);
+            List<Document> docs = documents.stream()
+                    .filter(s -> isNew(s, searcher))
+                    .map(docConverter::docFrom)
+                    .collect(Collectors.toList());
+            writer.addDocuments(docs);
+        } catch (IOException e) {
+            log.error("Indexing occurred error");
+            log.error(e);
+        }
+    }
+
+    private void indexSingleEntity(@NonNull SoundFile soundFile) {
+        try (DirectoryReader reader = DirectoryReader.open(writer)) {
+            IndexSearcher searcher = new IndexSearcher(reader);
+            if (isNew(soundFile, searcher)) {
+                writer.addDocument(docConverter.docFrom(soundFile));
+            } else {
+                writer.updateDocument(termForPath(soundFile.getPath()), docConverter.docFrom(soundFile));
+            }
         } catch (IOException e) {
             log.error("Indexing occurred error");
             log.error(e);
@@ -73,6 +99,36 @@ public class DataIndexer {
         return documents;
     }
 
+    private boolean isNew(Document document, IndexSearcher searcher) {
+        try {
+            return searcher.search(new TermQuery(termForPath(document.get(MetadataField.PATH.getName()))), 1)
+                    .scoreDocs.length == 0;
+        } catch (IOException e) {
+            log.error("Cannot read data");
+            log.error(e);
+        }
+        return false;
+    }
+
+    private boolean isNew(SoundFile soundFile, IndexSearcher searcher) {
+        try {
+            return searcher.search(new TermQuery(termForPath(soundFile.getPath())), 1)
+                    .scoreDocs.length == 0;
+        } catch (IOException e) {
+            log.error("Cannot read data");
+            log.error(e);
+        }
+        return false;
+    }
+
+    private Document getByPath(SoundFile soundFile, IndexSearcher searcher) throws IOException {
+        TopDocs search = searcher.search(new TermQuery(new Term(MetadataField.PATH.getName(), soundFile.getPath())), 1);
+        if (search.scoreDocs.length == 0) {
+            return null;
+        }
+        return searcher.doc(search.scoreDocs[0].doc);
+    }
+
     private void close() {
         try {
             writer.close();
@@ -82,5 +138,16 @@ public class DataIndexer {
         }
         //TODO refactoring, change place where bus is closed
         bus.closeBus();
+    }
+
+    private void closeSearcher(IndexSearcher searcher) {
+        try {
+            if (searcher != null) {
+                searcher.getIndexReader().close();
+            }
+        } catch (IOException e) {
+            log.error("Error when closing IndexSearcher");
+            log.error(e);
+        }
     }
 }

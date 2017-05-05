@@ -57,7 +57,6 @@ public class ManagerPaneController implements Initializable {
         highlighted = new SimpleIntegerProperty(-1);
 
         initPlaylistView();
-        initContentView();
 
         bus.sendCommunicate(messages.getProperty("data.index.getAll"), messages.getProperty("data.convert.from.doc.gui"));
     }
@@ -67,15 +66,6 @@ public class ManagerPaneController implements Initializable {
         playlist.getColumns().add(columnFactory.getTitleColumn(highlighted));
     }
 
-    @SuppressWarnings("unchecked")
-    private void initContentView() {
-        contentView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        contentView.getColumns().clear();
-        contentView.getColumns().addAll(columnFactory.getTitleColumn(),
-                columnFactory.getRateColumn(),
-                columnFactory.getYearColumn(),
-                columnFactory.getAlbumColumn());
-    }
     private void fillTreeView(Collection<SoundFile> sounds) {
         BaseElement root = new RootElement();
         List<SoundFile> soundFiles = sounds.stream().sorted().collect(Collectors.toList());
@@ -110,14 +100,6 @@ public class ManagerPaneController implements Initializable {
     }
 
     @FXML
-    private void addToPlaylist(MouseEvent mouseEvent) {
-        if (!mouseEvent.getButton().equals(MouseButton.PRIMARY)) return;
-        if (mouseEvent.getClickCount() != 2) return;
-        //TODO extend TreeView so it can return of selected BaseElement or SoundElement instead of casting and instanceof
-        bus.send(messages.getProperty("playlist.add.list"), contentView.getSelectionModel().getSelectedItems());
-    }
-
-    @FXML
     private void removeFromPlaylist(KeyEvent keyEvent) {
         if (keyEvent.getCode().equals(KeyCode.DELETE) || keyEvent.getCode().equals(KeyCode.BACK_SPACE)) {
             bus.send(messages.getProperty("playlist.remove.list"), playlist.getSelectionModel().getSelectedItems());
@@ -131,10 +113,10 @@ public class ManagerPaneController implements Initializable {
 
     @FXML
     private void fillContentView() {
-        initContentView();
         BaseElement selectedItem = (BaseElement) filesList.getSelectionModel().getSelectedItem();
         if (selectedItem != null && !(selectedItem instanceof SoundElement)) {
             contentView.getItems().clear();
+            contentView.refresh();
             contentView.getItems().addAll(selectedItem.getChildElements().values()
                     .stream().filter(e -> e instanceof SoundElement)
                     .map(e -> (SoundElement) e)
@@ -142,4 +124,5 @@ public class ManagerPaneController implements Initializable {
                     .collect(Collectors.toList()));
         }
     }
+
 }

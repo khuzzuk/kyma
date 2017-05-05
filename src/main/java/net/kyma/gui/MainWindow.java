@@ -11,7 +11,7 @@ import net.kyma.gui.controllers.ControllerDistributor;
 import javax.inject.Inject;
 import java.io.IOException;
 
-class MainWindow extends Stage {
+public class MainWindow extends Stage {
     private final ControllerDistributor controllerDistributor;
     @Inject
     public MainWindow(ControllerDistributor controllerDistributor) {
@@ -20,7 +20,7 @@ class MainWindow extends Stage {
         this.controllerDistributor = controllerDistributor;
     }
 
-    void initMainWindow(Window parent) {
+    public void initMainWindow(Window parent) {
         initOwner(parent);
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/mainWindow.fxml"));
         loader.setControllerFactory(controllerDistributor);

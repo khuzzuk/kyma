@@ -6,20 +6,14 @@ import net.kyma.player.Format;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.lucene.document.Document;
-import org.jaudiotagger.audio.AudioFileIO;
-import org.jaudiotagger.audio.exceptions.CannotReadException;
-import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
-import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
-import org.jaudiotagger.tag.TagException;
 import pl.khuzzuk.messaging.Bus;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.File;
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
 import java.util.function.Consumer;
@@ -46,7 +40,7 @@ public class SoundFileConverter {
         sound.setFileName(file.getName());
         sound.setIndexedPath(file.getPath().replace(indexedPath, ""));
 
-        Optional.ofNullable(getMetadataFrom(file)).ifPresent(m -> fillData(sound, m));
+        Optional.ofNullable(MetadataConverter.getMetadataFrom(file)).ifPresent(m -> fillData(sound, m));
         return sound;
     }
 
@@ -135,16 +129,4 @@ public class SoundFileConverter {
         }
     }
 
-    private Tag getMetadataFrom(File file) {
-        try {
-            return AudioFileIO.read(file).getTag();
-        } catch (CannotReadException |
-                IOException |
-                TagException |
-                ReadOnlyFileException |
-                InvalidAudioFrameException e) {
-            log.error(e);
-        }
-        return null;
-    }
 }
