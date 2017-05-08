@@ -3,18 +3,27 @@ package net.kyma.gui;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.MouseButton;
+import javafx.util.StringConverter;
 import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
+import org.apache.commons.lang3.StringUtils;
 import pl.khuzzuk.messaging.Bus;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 @Singleton
 public class TableColumnFactory {
@@ -24,6 +33,9 @@ public class TableColumnFactory {
     @Named("messages")
     private Properties messages;
 
+    private static BiConsumer<SoundFile, TableCell<?, ?>> graphicSetter =
+            (s, cell) -> Optional.ofNullable(s).map(Rating::getStarFor).ifPresent(cell::setGraphic);
+
     public TableColumn<SoundFile, String> getTitleColumn() {
         TableColumn<SoundFile, String> title = new TableColumn<>("Tytuł");
         title.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getTitle()));
@@ -32,27 +44,36 @@ public class TableColumnFactory {
         return title;
     }
 
-    public TableColumn<SoundFile, Integer> getRateColumn() {
-        TableColumn<SoundFile, Integer> title = new TableColumn<>("Ocena");
-        title.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue().getRate()));
-        title.setCellFactory(param -> new TableCell<SoundFile, Integer>() {
+    public TableColumn<SoundFile, SoundFile> getRateColumn() {
+        TableColumn<SoundFile, SoundFile> column = new TableColumn<>("Ocena");
+        column.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue()));
+        column.setCellFactory(param -> new TableCell<SoundFile, SoundFile>() {
             @Override
-            protected void updateItem(Integer item, boolean empty) {
+            protected void updateItem(SoundFile item, boolean empty) {
                 super.updateItem(item, empty);
-                if (item != null) {
-                    setGraphic(Rating.getStarFor(item));
-                }
+                graphicSetter.accept(item, this);
+                setOnMouseMoved(e -> Optional.ofNullable(item).ifPresent(i ->
+                        setGraphic(Rating.getStarFor((int) (e.getX() * 10 / getWidth() + 1)))));
+                setOnMouseExited(e -> graphicSetter.accept(item, this));
+                setOnMouseClicked(e -> {
+                    if (e.getButton().equals(MouseButton.PRIMARY)) {
+                        Rating.setRate((int) (e.getX() * 10 / getWidth() + 1), item);
+                        bus.send(messages.getProperty("data.store.item"), item);
+                    }
+                });
             }
         });
-        title.setPrefWidth(100);
-        title.setMaxWidth(100);
-        return title;
+        column.setPrefWidth(100);
+        column.setMaxWidth(100);
+        return column;
     }
 
-    public TableColumn<SoundFile, Integer> getYearColumn() {
-        TableColumn<SoundFile, Integer> year = new TableColumn<>("rok");
-        year.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue().getYear()));
-        return year;
+    public TableColumn<SoundFile, String> getYearColumn() {
+        TableColumn<SoundFile, String> column = new TableColumn<>("rok");
+        column.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue().getDate()));
+        column.setCellFactory(TextFieldTableCell.forTableColumn());
+        column.setOnEditCommit(v -> bus.send(messages.getProperty("data.edit.year.commit"), v.getNewValue()));
+        return column;
     }
 
     public TableColumn<SoundFile, String> getAlbumColumn() {

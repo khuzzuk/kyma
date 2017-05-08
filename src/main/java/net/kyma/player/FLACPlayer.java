@@ -20,9 +20,10 @@ import java.util.concurrent.*;
 
 @Log4j2
 public class FLACPlayer implements Player {
+    private static ExecutorService thread = Executors.newFixedThreadPool(1);
+    private static BlockingQueue<Object> meetingPoint = new SynchronousQueue<>();
     private Bus bus;
     private Properties messages;
-    private static ExecutorService thread = Executors.newFixedThreadPool(1);
     private SoundFile file;
     private FLACDecoder decoder;
     private AudioFormat format;
@@ -32,7 +33,6 @@ public class FLACPlayer implements Player {
     private long length;
     private volatile long current;
     private Emitter emitter;
-    private static BlockingQueue<Object> meetingPoint = new SynchronousQueue<>();
 
     FLACPlayer(SoundFile file, Bus bus, Properties messages) {
         this.file = file;

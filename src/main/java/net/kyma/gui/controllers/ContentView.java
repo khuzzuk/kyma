@@ -17,6 +17,9 @@ import javax.inject.Singleton;
 import java.net.URL;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 @Log4j2
 @Singleton
@@ -45,14 +48,18 @@ public class ContentView implements Initializable {
                 columnFactory.getYearColumn(),
                 columnFactory.getAlbumColumn());
 
-        bus.setReaction(messages.getProperty("data.edit.title.commit"), this::updateTitleSelected);
+        bus.<String>setReaction(messages.getProperty("data.edit.title.commit"), v -> update(v, (n, s) -> s.setTitle(n)));
+        bus.<String>setReaction(messages.getProperty("data.edit.year.commit"), v -> update(v, (n, s) -> s.setDate(n)));
     }
 
-    private void updateTitleSelected(String title) {
-        SoundFile selectedItem = contentView.getSelectionModel().getSelectedItem();
-        selectedItem.setTitle(title);
-        bus.send(messages.getProperty("data.index.item"), selectedItem);
-        bus.send(messages.getProperty("data.store.item"), selectedItem);
+    private <T> void update(T value, BiConsumer<T, SoundFile> updater) {
+        SoundFile selected = getSelected();
+        updater.accept(value, selected);
+        bus.send(messages.getProperty("data.store.item"), selected);
+    }
+
+    private SoundFile getSelected() {
+        return contentView.getSelectionModel().getSelectedItem();
     }
 
     @FXML

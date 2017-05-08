@@ -25,6 +25,7 @@ import pl.khuzzuk.messaging.Bus;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.awt.*;
 import java.io.File;
 import java.net.URL;
 import java.util.*;
@@ -83,5 +84,12 @@ public class MainController implements Initializable {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("wybór katalogu");
         return chooser.showDialog(null);
+    }
+
+    private void setSize(Rectangle r) {
+        mainPane.setLayoutX(r.getX());
+        mainPane.setLayoutY(r.getY());
+        mainPane.setPrefWidth(r.getWidth());
+        mainPane.setPrefHeight(r.getHeight());
     }
 }

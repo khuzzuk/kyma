@@ -20,7 +20,7 @@ class DocConverter {
         addField(doc, FILE_NAME, file.getFileName());
         addField(doc, TITLE, file.getTitle());
         addField(doc, RATE, file.getRate());
-        addField(doc, YEAR, file.getYear());
+        addField(doc, YEAR, file.getDate());
         addField(doc, ALBUM, file.getAlbum());
         addField(doc, ALBUM_ARTIST, file.getAlbumArtist());
         addField(doc, ALBUM_ARTISTS, file.getAlbumArtists());

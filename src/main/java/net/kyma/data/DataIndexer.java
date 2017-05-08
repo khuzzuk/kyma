@@ -43,6 +43,7 @@ public class DataIndexer {
         bus.setReaction(messages.getProperty("close"), this::close);
         bus.setReaction(messages.getProperty("data.index.list"), this::index);
         bus.setReaction(messages.getProperty("data.index.item"), this::indexSingleEntity);
+        bus.setReaction(messages.getProperty("data.store.item"), this::indexSingleEntity);
         bus.setResponse(messages.getProperty("data.index.getAll"), this::getAll);
     }
 

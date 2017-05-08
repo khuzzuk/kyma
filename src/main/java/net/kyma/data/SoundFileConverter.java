@@ -52,7 +52,7 @@ public class SoundFileConverter {
         soundFile.setFileName(document.get(FILE_NAME.getName()));
         soundFile.setTitle(document.get(TITLE.getName()));
         soundFile.setRate(document.getField(RATE.getName()).numericValue().intValue());
-        soundFile.setYear(document.getField(YEAR.getName()).numericValue().intValue());
+        soundFile.setDate(document.get(YEAR.getName()));
         soundFile.setAlbum(document.get(ALBUM.getName()));
         soundFile.setAlbumArtist(document.get(ALBUM_ARTIST.getName()));
         soundFile.setAlbumArtists(document.get(ALBUM_ARTISTS.getName()));
@@ -89,7 +89,7 @@ public class SoundFileConverter {
     private void fillData(SoundFile sound, Tag metadata) {
         sound.setTitle(metadata.getFirst(FieldKey.TITLE));
         sound.setRate(NumberUtils.toInt(metadata.getFirst(FieldKey.RATING), 0));
-        fillDateField(FieldKey.YEAR, metadata, sound::setYear);
+        sound.setDate(metadata.getFirst(FieldKey.YEAR));
         sound.setAlbum(metadata.getFirst(FieldKey.ALBUM));
         sound.setAlbumArtist(metadata.getFirst(FieldKey.ALBUM_ARTIST));
         sound.setAlbumArtists(metadata.getFirst(FieldKey.ALBUM_ARTISTS));
@@ -120,13 +120,4 @@ public class SoundFileConverter {
         sound.setWork(metadata.getFirst(FieldKey.WORK));
         sound.setWorkType(metadata.getFirst(FieldKey.WORK_TYPE));
     }
-
-    private void fillDateField(FieldKey fieldKey, Tag tags, Consumer<Integer> consumer) {
-        try {
-            consumer.accept(DateUtils.parseDate(tags.getFirst(fieldKey), dateParsers).getYear());
-        } catch (ParseException e) {
-            log.warn(e);
-        }
-    }
-
 }

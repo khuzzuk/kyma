@@ -37,10 +37,8 @@ class MetadataConverter {
 
     static void updateMetadata(Tag metadata, SoundFile updateSource) throws FieldDataInvalidException {
         metadata.setField(TITLE, updateSource.getTitle());
-        metadata.setField(RATING, updateSource.getRate() + "");
-        if (updateSource.getYear() > 1900) {
-            metadata.setField(YEAR, updateSource.getYear() + "");
-        }
+        metadata.setField(RATING, String.valueOf(updateSource.getRate()));
+        metadata.setField(YEAR, updateSource.getDate());
         metadata.setField(ALBUM, updateSource.getAlbum());
         metadata.setField(ALBUM_ARTIST, updateSource.getAlbumArtist());
         metadata.setField(ARTIST, updateSource.getArtist());
