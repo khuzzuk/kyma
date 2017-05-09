@@ -9,10 +9,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import java.awt.*;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 
 import java.util.Properties;
 
@@ -22,51 +19,50 @@ public class PropertiesManager {
     private Bus bus;
 
     @Inject
-    @Named("userProperties")
-    private Properties properties;
-
-    @Inject
     @Named("messages")
     private Properties messages;
+
+    @Inject
+    @Named("userProperties")
+    private Properties properties;
 
     @Inject
     @Named("propertiesFile")
     private File propertiesFile;
 
-    private OutputStream output;
-
-    public void initializationProperties() {
-        properties = new Properties();
-
-        try (OutputStream output = new FileOutputStream("userProperties.properties")) {
-            properties.store(output, "User properties");
-        } catch (IOException io) {
-            log.error(io);
-        }
-
+    public void initializeProperties() {
         bus.setReaction(messages.getProperty("gui.window.settings"), this::windowGetSettings);
         bus.setReaction(messages.getProperty("properties.window.store.frame"), this::windowStoreRectangle);
-        bus.setReaction(messages.getProperty("properties.window.store.maximized"), this::windowMaximized);
+        bus.<Boolean>setReaction(messages.getProperty("properties.window.store.maximized"),
+                b -> set("player.window.maximized", b));
+        bus.<Boolean>setReaction(messages.getProperty("properties.window.store.fullScreen"),
+                b -> set("player.window.fullScreen", b));
     }
 
     private void windowGetSettings() {
-        String maximizedFromProperties = messages.getProperty("player.window.maximized");
 
+        if (BooleanUtils.toBoolean(properties.getProperty("player.window.fullScreen"))) {
+            bus.send(messages.getProperty("gui.window.set.fullScreen"));
+            return;
+        }
+
+        String maximizedFromProperties = properties.getProperty("player.window.maximized");
         if (BooleanUtils.toBoolean(maximizedFromProperties)) {
             bus.send(messages.getProperty("gui.window.set.maximized"));
             return;
         }
 
-        String xFromProperties = messages.getProperty("player.window.x");
-        String yFromProperties = messages.getProperty("player.window.y");
-        String widthFromProperties = messages.getProperty("player.window.width");
-        String heightFromProperties = messages.getProperty("player.window.height");
+        String x = properties.getProperty("player.window.x");
+        String y = properties.getProperty("player.window.y");
+        String width = properties.getProperty("player.window.width");
+        String height = properties.getProperty("player.window.height");
 
-        if (NumberUtils.isDigits(xFromProperties) && NumberUtils.isDigits(yFromProperties)
-                && NumberUtils.isDigits(widthFromProperties) && NumberUtils.isDigits(heightFromProperties)) {
+        if (NumberUtils.isParsable(x) && NumberUtils.isParsable(y)
+                && NumberUtils.isParsable(width) && NumberUtils.isParsable(height)) {
 
-            Rectangle rectangle = new Rectangle(NumberUtils.toInt(xFromProperties), NumberUtils.toInt(yFromProperties),
-                    NumberUtils.toInt(widthFromProperties), NumberUtils.toInt(heightFromProperties));
+            Rectangle rectangle = new Rectangle();
+            rectangle.setRect(NumberUtils.toDouble(x), NumberUtils.toDouble(y),
+                    NumberUtils.toDouble(width), NumberUtils.toDouble(height));
 
             bus.send(messages.getProperty("gui.window.set.frame"), rectangle);
         }
@@ -77,9 +73,30 @@ public class PropertiesManager {
         properties.setProperty("player.window.width", String.valueOf(rectangle.getWidth()));
         properties.setProperty("player.window.x", String.valueOf(rectangle.getX()));
         properties.setProperty("player.window.y", String.valueOf(rectangle.getY()));
+        store();
+    }
+
+    private synchronized void store() {
+        try (FileWriter writer = new FileWriter(propertiesFile)) {
+            properties.store(writer, "kyma properties");
+        } catch (IOException e) {
+            log.error("cannot write properties to file");
+            log.error(e);
+        }
     }
 
     private void windowMaximized(Boolean maximized) {
         properties.setProperty("player.window.maximized", String.valueOf(maximized.equals(Boolean.TRUE)));
+        store();
+    }
+
+    private void windowFullScreen(Boolean fullScreen) {
+        properties.setProperty("player.window.maximized", String.valueOf(fullScreen.equals(Boolean.TRUE)));
+        store();
+    }
+
+    private void set(String key, Boolean value) {
+        properties.setProperty(key, String.valueOf(value.equals(Boolean.TRUE)));
+        store();
     }
 }

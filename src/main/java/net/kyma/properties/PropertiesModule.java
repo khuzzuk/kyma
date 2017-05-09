@@ -4,7 +4,9 @@ import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 import lombok.extern.log4j.Log4j2;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -14,9 +16,9 @@ public class PropertiesModule extends AbstractModule {
     protected void configure() {
         Properties properties = new Properties();
         try {
-            File file = new File("/userProperties.properties");
+            File file = new File("userProperties.properties");
             if (file.exists()) {
-                properties.load(PropertiesModule.class.getResourceAsStream("/userProperties.properties"));
+                properties.load(new BufferedInputStream(new FileInputStream(file)));
             } else {
                 file.createNewFile();
             }

@@ -16,6 +16,8 @@ import net.kyma.gui.ControllersModule;
 import net.kyma.gui.MainWindow;
 import net.kyma.player.PlayerManager;
 import net.kyma.player.Playlist;
+import net.kyma.properties.PropertiesManager;
+import net.kyma.properties.PropertiesModule;
 import pl.khuzzuk.messaging.Bus;
 
 import java.util.Properties;
@@ -26,12 +28,14 @@ public class Manager extends Application {
     private static Bus bus;
     private static Properties messages;
     public static void main(String[] args) {
-        injector = Guice.createInjector(new ControllersModule(), new BusModule(), new DatabaseModule());
+        injector = Guice.createInjector(new ControllersModule(), new BusModule(),
+                new DatabaseModule(), new PropertiesModule());
         injector.getInstance(DataIndexer.class).init();
         injector.getInstance(Playlist.class).init();
         injector.getInstance(PlayerManager.class).init();
         injector.getInstance(DirectoryIndexer.class).init();
         injector.getInstance(MetadataIndexer.class).init();
+        injector.getInstance(PropertiesManager.class).initializeProperties();
         bus = injector.getInstance(Bus.class);
         messages = injector.getInstance(Key.get(Properties.class, Names.named("messages")));
         launch(args);
@@ -41,7 +45,6 @@ public class Manager extends Application {
     public void start(Stage primaryStage) throws Exception {
         MainWindow window = injector.getInstance(MainWindow.class);
         window.initMainWindow(primaryStage);
-        window.setOnCloseRequest(e -> bus.send(messages.getProperty("close")));
         window.show();
     }
 }
