@@ -3,13 +3,11 @@ package net.kyma.gui;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseButton;
-import javafx.util.StringConverter;
 import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
 import org.apache.commons.lang3.StringUtils;
@@ -21,9 +19,6 @@ import javax.inject.Singleton;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 @Singleton
 public class TableColumnFactory {
@@ -41,6 +36,15 @@ public class TableColumnFactory {
         title.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getTitle()));
         title.setCellFactory(TextFieldTableCell.forTableColumn());
         title.setOnEditCommit(v -> bus.send(messages.getProperty("data.edit.title.commit"), v.getNewValue()));
+        title.setCellValueFactory(param -> {
+            if (!StringUtils.isEmpty(param.getValue().getTitle())) {
+                return new SimpleStringProperty(param.getValue().getTitle());
+            }
+            else {
+                String name = param.getValue().getFileName();
+                return new SimpleObjectProperty(name.substring(0, name.lastIndexOf(".")));
+            }
+        });
         return title;
     }
 
