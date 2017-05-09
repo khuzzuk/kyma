@@ -14,12 +14,13 @@ import java.util.Set;
 @Getter
 public enum Format {
     MP3(Mp3PlayerFX::new, true),
+    M4A(M4aPlayerFX::new, true),
     FLAC(FLACPlayer::new, false),
     UNKNOWN(null, false);
 
     final PlayerSupplier playerSupplier;
     private static final Set<Format> SET = EnumSet.allOf(Format.class);
-    public static final Set<String> supportedFormats = Sets.newHashSet(".mp3", ".flac");
+    public static final Set<String> supportedFormats = Sets.newHashSet(".mp3", ".flac", ".m4a");
     private boolean byteScale;
 
     public static Format forPath(String path) {

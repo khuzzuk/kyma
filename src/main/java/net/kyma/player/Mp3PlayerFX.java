@@ -8,8 +8,16 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
+import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.audio.exceptions.CannotReadException;
+import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
+import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.TagException;
 import pl.khuzzuk.messaging.Bus;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Properties;
 
@@ -72,11 +80,11 @@ class Mp3PlayerFX implements Player {
         player.play();
     }
 
-    private long calculateLength(MediaPlayer player) {
+    long calculateLength(MediaPlayer player) {
         if (player == null) return 0;
         while (Double.valueOf(Double.NaN).equals(player.getTotalDuration().toMillis())) {
             try {
-                Thread.sleep(1);
+                Thread.sleep(4);
             } catch (InterruptedException e) {
                 log.error(e);
             }

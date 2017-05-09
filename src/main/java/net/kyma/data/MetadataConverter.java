@@ -2,6 +2,7 @@ package net.kyma.data;
 
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.exceptions.CannotReadException;
 import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
@@ -50,7 +51,6 @@ class MetadataConverter {
         metadata.setField(CUSTOM3, updateSource.getCustom3());
         metadata.setField(CUSTOM4, updateSource.getCustom4());
         metadata.setField(CUSTOM5, updateSource.getCustom5());
-        metadata.setField(DISC_NO, updateSource.getDiscNo());
         metadata.setField(GENRE, updateSource.getGenre());
         metadata.setField(GROUP, updateSource.getGroup());
         metadata.setField(INSTRUMENT, updateSource.getInstrument());
@@ -66,5 +66,9 @@ class MetadataConverter {
         metadata.setField(TRACK, updateSource.getTrack());
         metadata.setField(WORK, updateSource.getWork());
         metadata.setField(WORK_TYPE, updateSource.getWorkType());
+
+        if (NumberUtils.isDigits(updateSource.getDiscNo())) {
+            metadata.setField(DISC_NO, updateSource.getDiscNo());
+        }
     }
 }
