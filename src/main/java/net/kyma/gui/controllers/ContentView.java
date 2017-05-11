@@ -1,13 +1,17 @@
 package net.kyma.gui.controllers;
 
+import com.google.common.collect.Lists;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
+import net.kyma.gui.SoundFileEditor;
 import net.kyma.gui.TableColumnFactory;
 import pl.khuzzuk.messaging.Bus;
 
@@ -15,6 +19,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.function.BiConsumer;
@@ -32,6 +38,8 @@ public class ContentView implements Initializable {
     private Properties messages;
     @Inject
     private TableColumnFactory columnFactory;
+    @Inject
+    private SoundFileEditor editor;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -46,7 +54,11 @@ public class ContentView implements Initializable {
         contentView.getColumns().addAll(columnFactory.getTitleColumn(),
                 columnFactory.getRateColumn(),
                 columnFactory.getYearColumn(),
-                columnFactory.getAlbumColumn());
+                columnFactory.getAlbumColumn(),
+                columnFactory.getAlbumArtistColumn(),
+                columnFactory.getAlbumArtistsColumn(),
+                columnFactory.getArtistColumn(),
+                columnFactory.getArtistsColumn());
 
         bus.<String>setReaction(messages.getProperty("data.edit.title.commit"), v -> update(v, (n, s) -> s.setTitle(n)));
         bus.<String>setReaction(messages.getProperty("data.edit.year.commit"), v -> update(v, (n, s) -> s.setDate(n)));
@@ -62,11 +74,25 @@ public class ContentView implements Initializable {
         return contentView.getSelectionModel().getSelectedItem();
     }
 
+    private Collection<SoundFile> getAllSelected() {
+        return contentView.getSelectionModel().getSelectedItems();
+    }
+
     @FXML
     private void addToPlaylist(MouseEvent mouseEvent) {
-        if (!mouseEvent.getButton().equals(MouseButton.PRIMARY)) return;
-        if (mouseEvent.getClickCount() != 2) return;
         //TODO extend TreeView so it can return of selected BaseElement or SoundElement instead of casting and instanceof
-        bus.send(messages.getProperty("playlist.add.list"), contentView.getSelectionModel().getSelectedItems());
+        if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && mouseEvent.getClickCount() == 2) {
+            bus.send(messages.getProperty("playlist.add.list"), getAllSelected());
+        }
+        if (mouseEvent.getButton().equals(MouseButton.MIDDLE)) {
+            editor.showEditor(getSelected());
+        }
+    }
+
+    @FXML
+    private void onKeyPressed(KeyEvent keyEvent) {
+        if (keyEvent.getCode().equals(KeyCode.ENTER)) {
+            editor.showEditor(getSelected());
+        }
     }
 }

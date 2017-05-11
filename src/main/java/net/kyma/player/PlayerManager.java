@@ -29,7 +29,10 @@ public class PlayerManager {
         bus.setReaction(messages.getProperty("player.metadata.getLength"),
                 () -> bus.send(messages.getProperty("player.metadata.length"), currentPlayer.getLength()));
         bus.setReaction(messages.getProperty("player.metadata.getCurrentTime"),
-                () -> bus.send(messages.getProperty("player.metadata.currentTime"), currentPlayer.playbackStatus()));
+                () -> {
+                    if (currentPlayer != null)
+                        bus.send(messages.getProperty("player.metadata.currentTime"), currentPlayer.playbackStatus());
+                });
         bus.setReaction(messages.getProperty("player.play.from.mp3"), this::startFrom);
     }
 

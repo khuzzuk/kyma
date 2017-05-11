@@ -41,7 +41,8 @@ public class DirectoryIndexer {
     }
 
     private Collection<SoundFile> indexCatalogue(File file) {
-        List<File> files = getFilesFromDirectory(file);
+        List<File> files = getFilesFromDirectory(file)
+                .stream().filter(f -> !f.isHidden()).collect(Collectors.toList());
         Collection<SoundFile> soundFiles = new ArrayList<>();
         bus.send(messages.getProperty("data.index.gui.amount"), files.size());
         for (int x = 0; x < files.size(); x++) {

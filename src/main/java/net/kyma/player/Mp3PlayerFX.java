@@ -5,20 +5,12 @@ import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.util.Duration;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
-import org.jaudiotagger.audio.AudioFileIO;
-import org.jaudiotagger.audio.exceptions.CannotReadException;
-import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
-import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
-import org.jaudiotagger.tag.FieldKey;
-import org.jaudiotagger.tag.TagException;
 import pl.khuzzuk.messaging.Bus;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.Properties;
 
 @Log4j2
@@ -53,7 +45,9 @@ class Mp3PlayerFX implements Player {
 
     @Override
     public void stop() {
-        player.stop();
+        if (player != null) {
+            player.stop();
+        }
         player = null;
     }
 
@@ -69,7 +63,7 @@ class Mp3PlayerFX implements Player {
 
     @Override
     public long playbackStatus() {
-        return Math.round(player.getCurrentTime().toMillis());
+        return Math.round(Optional.ofNullable(player).map(p -> p.getCurrentTime().toMillis()).orElse(0D));
     }
 
     @Override
@@ -82,9 +76,13 @@ class Mp3PlayerFX implements Player {
 
     long calculateLength(MediaPlayer player) {
         if (player == null) return 0;
+        int retries = 100;
+        int currentRetry = 0;
         while (Double.valueOf(Double.NaN).equals(player.getTotalDuration().toMillis())) {
             try {
                 Thread.sleep(4);
+                currentRetry++;
+                if (currentRetry >= retries) break;
             } catch (InterruptedException e) {
                 log.error(e);
             }

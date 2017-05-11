@@ -14,6 +14,7 @@ import net.kyma.data.DirectoryIndexer;
 import net.kyma.data.MetadataIndexer;
 import net.kyma.gui.ControllersModule;
 import net.kyma.gui.MainWindow;
+import net.kyma.gui.SoundFileEditor;
 import net.kyma.player.PlayerManager;
 import net.kyma.player.Playlist;
 import net.kyma.properties.PropertiesManager;
@@ -36,6 +37,7 @@ public class Manager extends Application {
         injector.getInstance(DirectoryIndexer.class).init();
         injector.getInstance(MetadataIndexer.class).init();
         injector.getInstance(PropertiesManager.class).initializeProperties();
+        injector.getInstance(SoundFileEditor.class).init();
         bus = injector.getInstance(Bus.class);
         messages = injector.getInstance(Key.get(Properties.class, Names.named("messages")));
         launch(args);

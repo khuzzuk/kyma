@@ -81,9 +81,37 @@ public class TableColumnFactory {
     }
 
     public TableColumn<SoundFile, String> getAlbumColumn() {
-        TableColumn<SoundFile, String> album = new TableColumn<>("album");
-        album.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getAlbum()));
-        return album;
+        TableColumn<SoundFile, String> column = new TableColumn<>("album");
+        column.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getAlbum()));
+        return column;
+    }
+
+    public TableColumn<SoundFile, String> getAlbumArtistColumn() {
+        TableColumn<SoundFile, String> column = new TableColumn<>("Wykonawca albumu");
+        column.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue().getAlbumArtist()));
+        column.setCellFactory(TextFieldTableCell.forTableColumn());
+        return column;
+    }
+
+    public TableColumn<SoundFile, String> getAlbumArtistsColumn() {
+        TableColumn<SoundFile, String> column = new TableColumn<>("Wykonawcy albumu");
+        column.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue().getAlbumArtists()));
+        column.setCellFactory(TextFieldTableCell.forTableColumn());
+        return column;
+    }
+
+    public TableColumn<SoundFile, String> getArtistColumn() {
+        TableColumn<SoundFile, String> column = new TableColumn<>("Wykonawca");
+        column.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue().getArtist()));
+        column.setCellFactory(TextFieldTableCell.forTableColumn());
+        return column;
+    }
+
+    public TableColumn<SoundFile, String> getArtistsColumn() {
+        TableColumn<SoundFile, String> column = new TableColumn<>("Wykonawcy");
+        column.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue().getArtists()));
+        column.setCellFactory(TextFieldTableCell.forTableColumn());
+        return column;
     }
 
     public TableColumn<SoundFile, String> getTitleColumn(IntegerProperty property) {
