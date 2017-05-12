@@ -4,18 +4,24 @@
 <?import javafx.scene.layout.*?>
 
 <GridPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="net.kyma.gui.controllers.ManagerPaneController">
-        <columnConstraints>
-            <ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0"/>
-            <ColumnConstraints hgrow="SOMETIMES" percentWidth="60.0"/>
-            <ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0"/>
-        </columnConstraints>
-        <TreeView fx:id="filesList" onMouseClicked="#fillContentView"/>
-        <SplitPane dividerPositions="0.2" orientation="VERTICAL" GridPane.columnIndex="1">
-            <HBox/>
-            <fx:include source="contentView.fxml" fx:id="contentView"/>
-        </SplitPane>
-        <TableView fx:id="playlist" GridPane.columnIndex="2" onKeyPressed="#removeFromPlaylist"/>
+          xmlns:fx="http://javafx.com/fxml"
+          fx:controller="net.kyma.gui.controllers.ManagerPaneController">
+    <columnConstraints>
+        <ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0"/>
+        <ColumnConstraints hgrow="SOMETIMES" percentWidth="60.0"/>
+        <ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0"/>
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints vgrow="ALWAYS"/>
+        <RowConstraints vgrow="ALWAYS"/>
+        <RowConstraints vgrow="ALWAYS"/>
+    </rowConstraints>
+    <TreeView fx:id="filesList" onMouseClicked="#fillContentView"/>
+    <SplitPane dividerPositions="0.2" orientation="VERTICAL" GridPane.columnIndex="1"
+               maxHeight="Infinity" maxWidth="Infinity">
+        <HBox/>
+        <fx:include source="contentView.fxml" fx:id="contentView"/>
+    </SplitPane>
+    <TableView fx:id="playlist" GridPane.columnIndex="2" onKeyPressed="#removeFromPlaylist"/>
 
 </GridPane>

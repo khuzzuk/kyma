@@ -13,6 +13,9 @@
         <ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0"/>
         <ColumnConstraints hgrow="SOMETIMES" percentWidth="80.0"/>
     </columnConstraints>
+    <rowConstraints>
+        <RowConstraints valignment="CENTER"/>
+    </rowConstraints>
     <HBox spacing="5">
         <PlayButton fx:id="playButton" styleClass="roundButton" onAction="#startOrPause"/>
         <StopButton styleClass="roundButton" onAction="#stop"/>

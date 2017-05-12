@@ -1,11 +1,14 @@
+.root {
+    -fx-background-color: rgb(200, 200, 200);
+}
+
 .roundButton {
+    -fx-opacity: 10%;
     -fx-background-radius: 5em;
     -fx-min-width: 35px;
     -fx-min-height: 35px;
     -fx-pref-width: 35px;
     -fx-pref-height: 35px;
-    -fx-font-family: serif;
-    -fx-font-weight: bold;
 }
 
 /*noinspection CssUnusedSymbol*/

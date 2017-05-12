@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -33,15 +34,27 @@ public class SoundFileEditor {
 
             GridPane gridPane = new GridPane();
             gridPane.setPadding(new Insets(5, 5, 5, 5));
+            gridPane.setHgap(5);
+            gridPane.setVgap(5);
 
             MutableInt x = new MutableInt(0);
+            MutableInt y = new MutableInt(0);
+            MutableInt max = new MutableInt(0);
             fields.forEach((key, value) -> {
-                gridPane.add(new Label(key.getName()), 0, x.getValue());
-                gridPane.add(value, 1, x.getAndIncrement());
+                if (x.intValue() > 0 && x.intValue() > 15) {
+                    max.setValue(x.intValue());
+                    x.setValue(0);
+                    y.add(2);
+                }
+                gridPane.add(new Label(key.getName()), y.intValue(), x.intValue());
+                gridPane.add(value, y.intValue() + 1, x.getAndIncrement());
             });
-            gridPane.add(rate, 2, 0);
+            gridPane.add(new Label("ocena"), y.intValue(), x.incrementAndGet());
+            gridPane.add(rate, y.incrementAndGet(), x.intValue());
+            gridPane.add(new Button("ok"), y.intValue(), Math.max(max.incrementAndGet(), x.incrementAndGet()));
 
             window.setScene(new Scene(gridPane));
+            window.setOnCloseRequest(e -> window.hide());
         });
     }
 
@@ -60,37 +73,43 @@ public class SoundFileEditor {
                 StarsFactory.defineForRating(10));
 
         fields = new LinkedHashMap<>();
-        fields.put(TITLE, new TextField());
-        fields.put(YEAR, new TextField());
-        fields.put(ALBUM, new TextField());
-        fields.put(ALBUM_ARTIST, new TextField());
-        fields.put(ALBUM_ARTISTS, new TextField());
-        fields.put(ARTIST, new TextField());
-        fields.put(ARTISTS, new TextField());
-        fields.put(COMPOSER, new TextField());
-        fields.put(CONDUCTOR, new TextField());
-        fields.put(COUNTRY, new TextField());
-        fields.put(CUSTOM1, new TextField());
-        fields.put(CUSTOM2, new TextField());
-        fields.put(CUSTOM3, new TextField());
-        fields.put(CUSTOM4, new TextField());
-        fields.put(CUSTOM5, new TextField());
-        fields.put(DISC_NO, new TextField());
-        fields.put(GENRE, new TextField());
-        fields.put(GROUP, new TextField());
-        fields.put(INSTRUMENT, new TextField());
-        fields.put(MOOD, new TextField());
-        fields.put(MOVEMENT, new TextField());
-        fields.put(OCCASION, new TextField());
-        fields.put(OPUS, new TextField());
-        fields.put(ORCHESTRA, new TextField());
-        fields.put(QUALITY, new TextField());
-        fields.put(RANKING, new TextField());
-        fields.put(TEMPO, new TextField());
-        fields.put(TONALITY, new TextField());
-        fields.put(TRACK, new TextField());
-        fields.put(WORK, new TextField());
-        fields.put(WORK_TYPE, new TextField());
+        fields.put(TITLE, createNew());
+        fields.put(YEAR, createNew());
+        fields.put(ALBUM, createNew());
+        fields.put(ALBUM_ARTIST, createNew());
+        fields.put(ALBUM_ARTISTS, createNew());
+        fields.put(ARTIST, createNew());
+        fields.put(ARTISTS, createNew());
+        fields.put(COMPOSER, createNew());
+        fields.put(CONDUCTOR, createNew());
+        fields.put(COUNTRY, createNew());
+        fields.put(CUSTOM1, createNew());
+        fields.put(CUSTOM2, createNew());
+        fields.put(CUSTOM3, createNew());
+        fields.put(CUSTOM4, createNew());
+        fields.put(CUSTOM5, createNew());
+        fields.put(DISC_NO, createNew());
+        fields.put(GENRE, createNew());
+        fields.put(GROUP, createNew());
+        fields.put(INSTRUMENT, createNew());
+        fields.put(MOOD, createNew());
+        fields.put(MOVEMENT, createNew());
+        fields.put(OCCASION, createNew());
+        fields.put(OPUS, createNew());
+        fields.put(ORCHESTRA, createNew());
+        fields.put(QUALITY, createNew());
+        fields.put(RANKING, createNew());
+        fields.put(TEMPO, createNew());
+        fields.put(TONALITY, createNew());
+        fields.put(TRACK, createNew());
+        fields.put(WORK, createNew());
+        fields.put(WORK_TYPE, createNew());
+    }
+
+    private TextField createNew() {
+        TextField textField = new TextField();
+        textField.setPrefWidth(200);
+        return textField;
     }
 
     public void showEditor(SoundFile soundFile) {
@@ -99,5 +118,6 @@ public class SoundFileEditor {
         this.soundFile = soundFile;
         fields.forEach((key, value) -> value.setText(key.getGetter().apply(this.soundFile)));
         rate.getSelectionModel().select(soundFile.getRate());
+        window.show();
     }
 }

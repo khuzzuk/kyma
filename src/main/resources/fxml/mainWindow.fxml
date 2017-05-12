@@ -4,8 +4,9 @@
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuItem?>
-<SplitPane dividerPositions="0.8" orientation="VERTICAL"
-           prefHeight="800.0" prefWidth="1200.0"
+<SplitPane dividerPositions="0,0.85" orientation="VERTICAL"
+           prefHeight="900.0" prefWidth="1800.0"
+           maxHeight="Infinity" maxWidth="Infinity"
            xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="/css/player.css"
            fx:controller="net.kyma.gui.controllers.MainController"

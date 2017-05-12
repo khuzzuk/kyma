@@ -95,22 +95,6 @@ public class MainController implements Initializable {
         return chooser.showDialog(null);
     }
 
-    private void setSize(Rectangle r) {
-        mainPane.setLayoutX(r.getX());
-        mainPane.setLayoutY(r.getY());
-        mainPane.setPrefWidth(r.getWidth());
-        mainPane.setPrefHeight(r.getHeight());
-    }
-
-    private void maximize() {
-        Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
-        javafx.stage.Window window = mainPane.getScene().getWindow();
-        window.setX(bounds.getMinX());
-        window.setY(bounds.getMinY());
-        window.setWidth(bounds.getWidth());
-        window.setHeight(bounds.getHeight());
-    }
-
     private void resize(Rectangle r) {
         stage.setMaximized(false);
         stage.setX(r.getX());
