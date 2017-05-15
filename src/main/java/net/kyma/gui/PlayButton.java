@@ -19,7 +19,7 @@ public class PlayButton extends Button {
                     new LineTo(2, 10),
                     new ClosePath()
             );
-            triangle.setFill(Color.GREY);
+            triangle.getStyleClass().add("play-text");
             triangle.setStroke(null);
             play = new Group(triangle);
         }
@@ -30,10 +30,10 @@ public class PlayButton extends Button {
     public void showPause() {
         if (pause == null) {
             Rectangle first = new Rectangle(0, 0, 4, 10);
-            first.setFill(Color.GREY);
+            first.getStyleClass().add("play-text");
             first.setStroke(null);
             Rectangle second = new Rectangle(6, 0, 4, 10);
-            second.setFill(Color.GREY);
+            second.getStyleClass().add("play-text");
             second.setStroke(null);
             pause = new Group(first, second);
         }

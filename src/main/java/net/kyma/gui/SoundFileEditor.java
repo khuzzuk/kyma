@@ -22,10 +22,10 @@ import static net.kyma.dm.MetadataField.*;
 
 @Singleton
 public class SoundFileEditor {
-    private Stage window;
+    Stage window;
     private SoundFile soundFile;
     private ComboBox<Node> rate;
-    private Map<MetadataField, TextField> fields;
+    Map<MetadataField, TextField> fields;
 
     public void init() {
         Platform.runLater(() -> {
@@ -33,6 +33,7 @@ public class SoundFileEditor {
             setUpFields();
 
             GridPane gridPane = new GridPane();
+            gridPane.setId("BackgroundContainer");
             gridPane.setPadding(new Insets(5, 5, 5, 5));
             gridPane.setHgap(5);
             gridPane.setVgap(5);
@@ -53,7 +54,9 @@ public class SoundFileEditor {
             gridPane.add(rate, y.incrementAndGet(), x.intValue());
             gridPane.add(new Button("ok"), y.intValue(), Math.max(max.incrementAndGet(), x.incrementAndGet()));
 
-            window.setScene(new Scene(gridPane));
+            Scene scene = new Scene(gridPane);
+            scene.getStylesheets().add("/css/player.css");
+            window.setScene(scene);
             window.setOnCloseRequest(e -> window.hide());
         });
     }

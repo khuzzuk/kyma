@@ -9,7 +9,7 @@ import javafx.scene.shape.Rectangle;
 public class StopButton extends Button {
     public StopButton() {
         Rectangle rectangle = new Rectangle(0, 0, 10, 10);
-        rectangle.setFill(Color.GREY);
+        rectangle.getStyleClass().add("play-text");
         rectangle.setStroke(null);
         setGraphic(new Group(rectangle));
     }

@@ -4,13 +4,16 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
 import net.kyma.gui.BaseElement;
@@ -29,6 +32,8 @@ import java.util.stream.Collectors;
 @Log4j2
 @Singleton
 public class ManagerPaneController implements Initializable {
+    @FXML
+    private GridPane managerPane;
     @FXML
     private TableView<SoundFile> contentView;
     @FXML
@@ -125,4 +130,7 @@ public class ManagerPaneController implements Initializable {
         }
     }
 
+    void resizeFor(SplitPane splitPane) {
+        splitPane.heightProperty().addListener((obs, o, n) -> filesList.setMinHeight(n.doubleValue() - 150));
+    }
 }

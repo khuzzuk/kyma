@@ -1,27 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 
-<GridPane xmlns="http://javafx.com/javafx"
-          xmlns:fx="http://javafx.com/fxml"
-          fx:controller="net.kyma.gui.controllers.ManagerPaneController">
+<GridPane hgap="10" vgap="10" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1"
+          fx:controller="net.kyma.gui.controllers.ManagerPaneController"
+          fx:id="managerPane">
     <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0"/>
         <ColumnConstraints hgrow="SOMETIMES" percentWidth="60.0"/>
         <ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0"/>
     </columnConstraints>
     <rowConstraints>
-        <RowConstraints vgrow="ALWAYS"/>
-        <RowConstraints vgrow="ALWAYS"/>
-        <RowConstraints vgrow="ALWAYS"/>
+        <RowConstraints/>
+        <RowConstraints/>
+        <RowConstraints/>
     </rowConstraints>
-    <TreeView fx:id="filesList" onMouseClicked="#fillContentView"/>
-    <SplitPane dividerPositions="0.2" orientation="VERTICAL" GridPane.columnIndex="1"
-               maxHeight="Infinity" maxWidth="Infinity">
+    <TreeView fx:id="filesList" maxHeight="Infinity" onMouseClicked="#fillContentView"/>
+    <SplitPane dividerPositions="0.2" maxHeight="Infinity" maxWidth="Infinity" orientation="VERTICAL"
+               GridPane.columnIndex="1">
         <HBox/>
-        <fx:include source="contentView.fxml" fx:id="contentView"/>
+        <fx:include fx:id="contentView" source="contentView.fxml"/>
     </SplitPane>
-    <TableView fx:id="playlist" GridPane.columnIndex="2" onKeyPressed="#removeFromPlaylist"/>
-
+    <TableView fx:id="playlist" onKeyPressed="#removeFromPlaylist" GridPane.columnIndex="2"/>
 </GridPane>

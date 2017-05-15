@@ -7,11 +7,13 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.*;
 import javafx.stage.*;
 import javafx.stage.Window;
 import lombok.Setter;
@@ -44,6 +46,8 @@ public class MainController implements Initializable {
     @FXML
     private GridPane playerPane;
     @Inject
+    private ManagerPaneController managerPaneController;
+    @Inject
     private Bus bus;
     @Inject
     @Named("messages")
@@ -59,11 +63,24 @@ public class MainController implements Initializable {
         bus.<Number>setReaction(messages.getProperty("data.index.gui.amount"), n -> maxProgress = n.doubleValue());
         bus.<Number>setGuiReaction(messages.getProperty("data.index.gui.progress"), n -> indicator.setProgress(n.doubleValue() / maxProgress));
         bus.setGuiReaction(messages.getProperty("data.index.gui.finish"), () -> mainPane.getItems().remove(indicator));
-        bus.setGuiReaction(messages.getProperty("gui.window.set.fullScreen"), () -> stage.setFullScreen(true));
-        bus.setGuiReaction(messages.getProperty("gui.window.set.maximized"), () -> stage.setMaximized(true));
+        bus.setGuiReaction(messages.getProperty("gui.window.set.fullScreen"), () -> {
+            stage.setFullScreen(true); setBackground();
+        });
+        bus.setGuiReaction(messages.getProperty("gui.window.set.maximized"), () -> {
+            stage.setMaximized(true); setBackground();
+        });
         bus.setGuiReaction(messages.getProperty("gui.window.set.frame"), this::resize);
 
         bus.send(messages.getProperty("gui.window.settings"));
+        managerPaneController.resizeFor(mainPane);
+    }
+
+    private void setBackground() {
+        Rectangle2D screenSize = Screen.getPrimary().getBounds();
+        mainPane.setBackground(new Background(new BackgroundImage(new Image("/css/background.jpg"),
+                BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
+                new BackgroundSize(screenSize.getWidth(), screenSize.getHeight(),
+                        false, false, false, false))));
     }
 
     @FXML
@@ -101,5 +118,6 @@ public class MainController implements Initializable {
         stage.setY(r.getY());
         stage.setWidth(r.getWidth());
         stage.setHeight(r.getHeight());
+        setBackground();
     }
 }

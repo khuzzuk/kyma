@@ -33,7 +33,7 @@ public class SoundFileConverter {
                         docs.stream().map(this::from).collect(Collectors.toList())));
     }
 
-    public SoundFile from(File file, String indexedPath) {
+    SoundFile from(File file, String indexedPath) {
         SoundFile sound = new SoundFile();
         sound.setPath(file.getPath());
         sound.setFormat(Format.forPath(file.getPath()));

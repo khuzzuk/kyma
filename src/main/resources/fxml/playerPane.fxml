@@ -5,6 +5,7 @@
 
 <?import net.kyma.gui.PlayButton?>
 <?import net.kyma.gui.StopButton?>
+<?import javafx.geometry.Insets?>
 <GridPane hgap="5" vgap="5"
           xmlns="http://javafx.com/javafx"
           xmlns:fx="http://javafx.com/fxml"
@@ -16,6 +17,9 @@
     <rowConstraints>
         <RowConstraints valignment="CENTER"/>
     </rowConstraints>
+    <padding>
+        <Insets top="10" left="10" right="10"/>
+    </padding>
     <HBox spacing="5">
         <PlayButton fx:id="playButton" styleClass="roundButton" onAction="#startOrPause"/>
         <StopButton styleClass="roundButton" onAction="#stop"/>

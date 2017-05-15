@@ -25,13 +25,15 @@ public class StarsFactory {
             double y = cos(t) * r;
             star.getElements().add(new LineTo(x, y));
         }
-        star.getElements().add(new ClosePath());
     }
 
     private static Path getStar() {
         Path star = new Path();
         star.getElements().add(new MoveTo(0, R));
         drawStarLines(star, 0 , 9);
+        star.setStroke(Color.WHITE);
+        star.getElements().add(new ClosePath());
+        star.getStyleClass().add("star");
         return star;
     }
 
@@ -39,11 +41,16 @@ public class StarsFactory {
         Path half1 = new Path();
         half1.getElements().add(new MoveTo(0, R));
         drawStarLines(half1, 0, 5);
-        half1.setFill(Color.BLACK);
+        half1.setFill(Color.WHITE);
+        half1.setStroke(Color.WHITE);
+        half1.getElements().add(new ClosePath());
         Path half2 = new Path();
         half2.getElements().add(new MoveTo(0, R));
-        drawStarLines(half2, 5, 9);
-        return new Group(half1, half2);
+        drawStarLines(half2, 5, 10);
+        half2.setStroke(Color.WHITE);
+        Group group = new Group(half1, half2);
+        group.getStyleClass().add("star");
+        return group;
     }
 
     public static Node defineForRating(int rating) {
@@ -51,7 +58,9 @@ public class StarsFactory {
         for (int i = 0; i < 5; i++) {
             if (rating / 2 > i) {
                 Path star = getStar();
-                star.setFill(Color.BLACK);
+                star.setFill(Color.WHITE);
+                star.setStroke(Color.WHITE);
+                star.getStyleClass().add("star");
                 hBox.getChildren().add(star);
             } else if (rating / 2 == i && rating % 2 == 1) {
                 hBox.getChildren().add(getHalfStar());
