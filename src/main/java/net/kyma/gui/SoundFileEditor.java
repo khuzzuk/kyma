@@ -47,10 +47,14 @@ public class SoundFileEditor {
                     x.setValue(0);
                     y.add(2);
                 }
-                gridPane.add(new Label(key.getName()), y.intValue(), x.intValue());
+                Label label = new Label(key.getName());
+                label.getStyleClass().add("flowing");
+                gridPane.add(label, y.intValue(), x.intValue());
                 gridPane.add(value, y.intValue() + 1, x.getAndIncrement());
             });
-            gridPane.add(new Label("ocena"), y.intValue(), x.incrementAndGet());
+            Label rating = new Label("ocena");
+            rating.getStyleClass().add("flowing");
+            gridPane.add(rating, y.intValue(), x.incrementAndGet());
             gridPane.add(rate, y.incrementAndGet(), x.intValue());
             gridPane.add(new Button("ok"), y.intValue(), Math.max(max.incrementAndGet(), x.incrementAndGet()));
 

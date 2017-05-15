@@ -5,6 +5,7 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 import javafx.application.Application;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.BusModule;
@@ -40,6 +41,7 @@ public class Manager extends Application {
         injector.getInstance(PropertiesManager.class).initializeProperties();
         injector.getInstance(SoundFileEditor.class).init();
         injector.getInstance(SoundFileBulkEditor.class).init();
+        new Image("/css/background.jpg");
         bus = injector.getInstance(Bus.class);
         messages = injector.getInstance(Key.get(Properties.class, Names.named("messages")));
         launch(args);

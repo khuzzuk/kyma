@@ -8,6 +8,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
+<?import javafx.scene.control.Label?>
 <GridPane hgap="10" vgap="10" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1"
           fx:controller="net.kyma.gui.controllers.ManagerPaneController"
           fx:id="managerPane">
@@ -22,9 +23,11 @@
         <RowConstraints/>
     </rowConstraints>
     <TreeView fx:id="filesList" maxHeight="Infinity" onMouseClicked="#fillContentView"/>
-    <SplitPane dividerPositions="0.2" maxHeight="Infinity" maxWidth="Infinity" orientation="VERTICAL"
+    <SplitPane dividerPositions="0" maxHeight="Infinity" maxWidth="Infinity" orientation="VERTICAL"
                GridPane.columnIndex="1">
-        <HBox/>
+        <HBox>
+            <Label text="label" styleClass="flowing"/>
+        </HBox>
         <fx:include fx:id="contentView" source="contentView.fxml"/>
     </SplitPane>
     <TableView fx:id="playlist" onKeyPressed="#removeFromPlaylist" GridPane.columnIndex="2"/>

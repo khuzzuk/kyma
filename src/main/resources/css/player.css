@@ -5,6 +5,7 @@
     -containers-background2: rgba(10, 10, 10, 0.9);
     -elements-background: rgba(220, 220, 220, 0.8);
     -gold-color: rgb(191, 161, 0);
+    -white-text-color: rgb(220, 220, 220);
     -orange-drop-shadow: dropshadow(gaussian, -gold-color, 10, 0.2, 0, 0);
     -element-drop-shadow: dropshadow(gaussian, -elements-background, 10, 0.2, 0, 0);
     -container-drop-shadow: dropshadow(gaussian, -containers-background, 100, 1.6, 0, 0);
@@ -12,7 +13,7 @@
     -round-button-fill: radial-gradient(center 10px 10px, radius 100%, repeat, -gold-color, rgb(50, 50, 50));
 }
 
-#BackgroundContainer, #mainPane {
+#BackgroundContainer {
     -fx-background-image: url("background.jpg");
     /*<a hre='http://allswalls.com'>http://allswalls.com</a>*/
     -fx-background-repeat: stretch;
@@ -30,11 +31,11 @@
 }
 
 .roundButton {
-    -fx-background-radius: 5em;
-    -fx-min-width: 35px;
-    -fx-min-height: 35px;
-    -fx-pref-width: 35px;
-    -fx-pref-height: 35px;
+    -fx-background-radius: 45em;
+    -fx-min-width: 45px;
+    -fx-min-height: 45px;
+    -fx-pref-width: 45px;
+    -fx-pref-height: 45px;
     -fx-background-color: -elements-background;
     -fx-effect: -element-drop-shadow;
 }
@@ -42,6 +43,16 @@
 .roundButton .play-text {
     -fx-fill: -elements-background;
     -fx-effect: -dark-inner-shadow;
+}
+
+/*noinspection CssUnusedSymbol*/
+.currentlyPlayed .text {
+    -fx-fill: white;
+    -fx-effect: -element-drop-shadow;
+}
+
+.currentlyPlayed {
+    -fx-padding: 0 0 0 0.3em;
 }
 
 .slider .track {
@@ -72,10 +83,17 @@
     -fx-effect: -element-drop-shadow;
 }
 
-.scroll-bar:hover .thumb {
+.scroll-bar > .thumb:hover,
+.scroll-bar > .decrement-button:hover,
+.scroll-bar > .increment-button:hover {
     -fx-background-radius: 10px;
     -fx-background-color: -containers-background2;
     -fx-effect: -element-drop-shadow;
+}
+
+.scroll-bar > .decrement-button,
+.scroll-bar > .increment-button {
+    -fx-background-color: transparent;
 }
 
 .scroll-bar > .decrement-button,
@@ -116,48 +134,44 @@
     -fx-effect: -element-drop-shadow;
 }
 
-.text-field-with-different-values {
-    -fx-background-color: rgb(180, 180, 250);
-}
-
-.split-pane-divider {
-    -fx-padding: 0 20 0 0;
-    -fx-background-color: transparent;
-}
-
-/*noinspection CssUnusedSymbol*/
 .table-row-cell:odd {
     -fx-background: transparent;
 }
 
 /*noinspection CssUnusedSymbol*/
-.table-row-cell {
-    -fx-background-color: transparent;
-    -fx-background: transparent;
-    -fx-table-cell-border-color: transparent;
-}
 
 .table-view .column-header {
     -fx-background-color: -containers-background;
 }
 
 .table-view .column-header-background,
-.table-view .column-header-background .filler{
+.table-view .column-header-background .filler {
+    -fx-background-color: transparent;
+}
+
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-table-cell-border-color: transparent;
+}
+
+.table-row-cell:selected {
+    -fx-border-color: -gold-color;
+    -fx-effect: -element-drop-shadow;
+    -fx-padding: -1 -1 -1 -1;
+}
+
+.tree-view .tree-cell:selected {
+    -fx-border-color: -gold-color;
+    -fx-effect: -element-drop-shadow;
+}
+
+.split-pane-divider {
+    -fx-padding: 0 0 0 0;
     -fx-background-color: transparent;
 }
 
 /*noinspection CssUnusedSymbol*/
-.currentlyPlayed {
-    -fx-font-weight: bold;
-    -fx-background: #909090;
-    -fx-text-fill: black;
-}
-
-/*noinspection CssUnusedSymbol*/
-.table-row-cell:filled:selected {
-    -fx-background-color: -containers-background2;
-    -fx-table-cell-border-color: -containers-background2;
-}
 .menu-bar {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
@@ -172,7 +186,23 @@
     -fx-background-color: -containers-background2;
 }
 
-.menu-bar .text, .menu .text, .menu-item .text {
+.menu-bar .text, .menu .text, .menu-item .text, .flowing .text {
     -fx-effect: -element-drop-shadow;
-    -fx-fill: rgb(220, 220, 220);
+    -fx-fill: -white-text-color;
+}
+
+.combo-box {
+    -fx-background-color: -containers-background;
+}
+
+#BackgroundContainer > .text-field {
+    -fx-background-color: -containers-background;
+}
+
+#BackgroundContainer > .text-field .text {
+    -fx-effect: -element-drop-shadow;
+}
+
+#BackgroundContainer > .text-field-with-different-values {
+    -fx-background-color: -elements-background;
 }

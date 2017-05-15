@@ -122,9 +122,11 @@ public class TableColumnFactory {
                 super.updateItem(item, empty);
                 Label label = new Label(item);
                 if (getIndex() == property.get()) {
+                    getStyleClass().clear();
                     getStyleClass().add("currentlyPlayed");
                 } else {
-                    getStyleClass().remove("currentlyPlayed");
+                    getStyleClass().clear();
+                    getStyleClass().addAll("cell", "indexed-cell", "table-cell", "table-column");
                 }
                 setGraphic(label);
             }
