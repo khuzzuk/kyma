@@ -1,7 +1,9 @@
 package net.kyma.data;
 
 import net.kyma.dm.MetadataField;
+import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
+import net.kyma.player.Format;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.IntPoint;
 import org.apache.lucene.document.StoredField;
@@ -19,7 +21,7 @@ class DocConverter {
         addField(doc, INDEXED_PATH, file.getIndexedPath());
         addField(doc, FILE_NAME, file.getFileName());
         addField(doc, TITLE, file.getTitle());
-        addField(doc, RATE, file.getRate());
+        addField(doc, RATE, file.getRate(), file.getFormat());
         addField(doc, YEAR, file.getDate());
         addField(doc, ALBUM, file.getAlbum());
         addField(doc, ALBUM_ARTIST, file.getAlbumArtist());
@@ -62,5 +64,9 @@ class DocConverter {
     private void addField(Document doc, @SuppressWarnings("SameParameterValue") MetadataField field, int value) {
         doc.add(new StoredField(field.getName(), value));
         doc.add(new IntPoint(field.getName(), value));
+    }
+
+    private void addField(Document doc, MetadataField field, Rating rating, Format format) {
+        addField(doc, field, format.isByteScale() ? rating.getValue() : rating.getValueP());
     }
 }

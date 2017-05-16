@@ -136,13 +136,13 @@ public class SoundFileEditor {
         rate.getSelectionModel().clearSelection();
         this.soundFile = soundFile;
         fields.forEach((key, value) -> value.setText(key.getGetter().apply(this.soundFile)));
-        rate.getSelectionModel().select(Rating.getRatingBy(soundFile.getRate(), soundFile.getFormat()).getRate());
+        rate.getSelectionModel().select(soundFile.getRate().getRate());
         window.show();
     }
 
     private void saveSoundFile() {
         fields.forEach((field, value) -> field.getSetter().accept(soundFile, value.getText()));
-        soundFile.setRate(Rating.getFor(rate.getSelectionModel().getSelectedIndex(), soundFile.getFormat()));
+        soundFile.setRate(Rating.getRatingBy(rate.getSelectionModel().getSelectedIndex(), soundFile.getFormat()));
         bus.send(messages.getProperty("data.store.item"), soundFile);
         window.hide();
     }

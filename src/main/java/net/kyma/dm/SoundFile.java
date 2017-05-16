@@ -12,7 +12,7 @@ public class SoundFile implements Comparable<SoundFile> {
     private String fileName;
     private String indexedPath;
     private String title;
-    private int rate;
+    private Rating rate;
     private String date;
     private String album;
     private String albumArtist;

@@ -23,18 +23,20 @@ public enum Rating {
     FOUR(196, 196, 223, 70, 79, 70, 8),
     FOUR_HALF(224, 224, 251, 80, 89, 80, 9),
     FIVE(255, 252, 255, 90, 100, 99, 10);
+    @Getter
     private final int value;
     private final int min;
     private final int max;
     private final int minP;
     private final int maxP;
+    @Getter
     private final int valueP;
     @Getter
     private final int rate;
     private static final Set<Rating> SET = EnumSet.allOf(Rating.class);
 
     public static Node getStarFor(SoundFile soundFile) {
-        return StarsFactory.defineForRating(getRatingBy(soundFile.getRate(), soundFile.getFormat()).rate);
+        return StarsFactory.defineForRating(soundFile.getRate().rate);
     }
 
     public static Node getStarFor(int rate) {
@@ -43,8 +45,8 @@ public enum Rating {
 
     public static void setRate(int rate, SoundFile file) {
         SET.stream().filter(r -> r.rate == rate).findAny().ifPresent(r -> {
-            if (file.getFormat().isByteScale()) file.setRate(r.value);
-            else file.setRate(r.valueP);
+            if (file.getFormat().isByteScale()) file.setRate(r);
+            else file.setRate(r);
         });
     }
 
@@ -56,8 +58,7 @@ public enum Rating {
         }
     }
 
-    public static int getFor(int rate, Format format) {
-        Rating rating = SET.stream().filter(r -> r.rate == rate).findAny().orElse(UNDEFINED);
-        return format.isByteScale() ? rating.value : rating.valueP;
+    public static Rating getFor(int rate) {
+        return SET.stream().filter(r -> r.rate == rate).findAny().orElse(UNDEFINED);
     }
 }

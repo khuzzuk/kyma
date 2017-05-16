@@ -1,6 +1,7 @@
 package net.kyma.data;
 
 import lombok.extern.log4j.Log4j2;
+import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
 import net.kyma.player.Format;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -51,7 +52,7 @@ public class SoundFileConverter {
         soundFile.setIndexedPath(document.get(INDEXED_PATH.getName()));
         soundFile.setFileName(document.get(FILE_NAME.getName()));
         soundFile.setTitle(document.get(TITLE.getName()));
-        soundFile.setRate(document.getField(RATE.getName()).numericValue().intValue());
+        soundFile.setRate(Rating.getRatingBy(document.getField(RATE.getName()).numericValue().intValue(), soundFile.getFormat()));
         soundFile.setDate(document.get(YEAR.getName()));
         soundFile.setAlbum(document.get(ALBUM.getName()));
         soundFile.setAlbumArtist(document.get(ALBUM_ARTIST.getName()));
@@ -88,7 +89,8 @@ public class SoundFileConverter {
 
     private void fillData(SoundFile sound, Tag metadata) {
         sound.setTitle(metadata.getFirst(FieldKey.TITLE));
-        sound.setRate(NumberUtils.toInt(metadata.getFirst(FieldKey.RATING), 0));
+        sound.setRate(Rating.getRatingBy(NumberUtils.toInt(metadata.getFirst(FieldKey.RATING), 0),
+                sound.getFormat()));
         sound.setDate(metadata.getFirst(FieldKey.YEAR));
         sound.setAlbum(metadata.getFirst(FieldKey.ALBUM));
         sound.setAlbumArtist(metadata.getFirst(FieldKey.ALBUM_ARTIST));
