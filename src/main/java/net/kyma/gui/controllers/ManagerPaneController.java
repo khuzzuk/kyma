@@ -58,6 +58,8 @@ public class ManagerPaneController implements Initializable {
                 c -> playlist.getItems().removeAll(c));
         bus.setGuiReaction(messages.getProperty("data.view.refresh"), this::fillTreeView);
         bus.setReaction(messages.getProperty("playlist.highlight"), this::highlight);
+        bus.setReaction(messages.getProperty("data.store.item"), s -> contentView.refresh());
+        bus.setReaction(messages.getProperty("data.store.list"), s -> contentView.refresh());
 
         highlighted = new SimpleIntegerProperty(-1);
 

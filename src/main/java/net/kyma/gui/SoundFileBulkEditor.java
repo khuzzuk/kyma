@@ -3,6 +3,7 @@ package net.kyma.gui;
 import javafx.scene.control.TextField;
 import net.kyma.dm.MetadataField;
 import net.kyma.dm.SoundFile;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Singleton;
 import java.util.Collection;
@@ -35,5 +36,16 @@ public class SoundFileBulkEditor extends SoundFileEditor {
         } else {
             textField.getStyleClass().add("text-field-with-different-values");
         }
+    }
+
+    @Override
+    void saveSoundFile() {
+        fields.forEach((key, value) -> {
+            if (!StringUtils.isBlank(value.getText())) {
+                soundFiles.forEach(s -> key.getSetter().accept(s, value.getText()));
+            }
+        });
+        bus.send(messages.getProperty("data.store.list"), soundFiles);
+        window.hide();
     }
 }

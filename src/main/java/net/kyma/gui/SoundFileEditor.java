@@ -140,7 +140,7 @@ public class SoundFileEditor {
         window.show();
     }
 
-    private void saveSoundFile() {
+    void saveSoundFile() {
         fields.forEach((field, value) -> field.getSetter().accept(soundFile, value.getText()));
         soundFile.setRate(Rating.getRatingBy(rate.getSelectionModel().getSelectedIndex(), soundFile.getFormat()));
         bus.send(messages.getProperty("data.store.item"), soundFile);

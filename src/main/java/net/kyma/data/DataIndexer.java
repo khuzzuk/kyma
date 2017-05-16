@@ -6,6 +6,7 @@ import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.MetadataField;
 import net.kyma.dm.SoundFile;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
@@ -42,28 +43,15 @@ public class DataIndexer {
     public void init() {
         bus.setReaction(messages.getProperty("close"), this::close);
         bus.setReaction(messages.getProperty("data.index.list"), this::index);
+        bus.setReaction(messages.getProperty("data.store.list"), this::index);
         bus.setReaction(messages.getProperty("data.index.item"), this::indexSingleEntity);
         bus.setReaction(messages.getProperty("data.store.item"), this::indexSingleEntity);
         bus.setResponse(messages.getProperty("data.index.getAll"), this::getAll);
     }
 
     private synchronized void index(@NonNull Collection<SoundFile> files) {
-        persist(files);
+        files.forEach(this::indexSingleEntity);
         bus.sendCommunicate(messages.getProperty("data.index.getAll"), messages.getProperty("data.convert.from.doc.gui"));
-    }
-
-    private void persist(Collection<SoundFile> documents) {
-        try (DirectoryReader reader = DirectoryReader.open(writer)) {
-            IndexSearcher searcher = new IndexSearcher(reader);
-            List<Document> docs = documents.stream()
-                    .filter(s -> isNew(s, searcher))
-                    .map(docConverter::docFrom)
-                    .collect(Collectors.toList());
-            writer.addDocuments(docs);
-        } catch (IOException e) {
-            log.error("Indexing occurred error");
-            log.error(e);
-        }
     }
 
     private void indexSingleEntity(@NonNull SoundFile soundFile) {

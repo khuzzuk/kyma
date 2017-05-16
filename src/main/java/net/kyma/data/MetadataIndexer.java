@@ -16,6 +16,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Properties;
 
 @Singleton
@@ -28,7 +29,12 @@ public class MetadataIndexer {
     private Properties messages;
 
     public void init() {
-        bus.setReaction(messages.getProperty("data.store.item"), this::index);
+        bus.<SoundFile>setReaction(messages.getProperty("data.store.item"), this::index);
+        bus.<Collection<SoundFile>>setReaction(messages.getProperty("data.store.list"), this::index);
+    }
+
+    private void index(Collection<SoundFile> soundFiles) {
+        soundFiles.forEach(this::index);
     }
 
     private void index(SoundFile soundFile) {
