@@ -2,6 +2,7 @@ package net.kyma.dm;
 
 import javafx.scene.Node;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import net.kyma.gui.StarsFactory;
 import net.kyma.player.Format;
 
@@ -28,6 +29,7 @@ public enum Rating {
     private final int minP;
     private final int maxP;
     private final int valueP;
+    @Getter
     private final int rate;
     private static final Set<Rating> SET = EnumSet.allOf(Rating.class);
 
@@ -46,11 +48,16 @@ public enum Rating {
         });
     }
 
-    private static Rating getRatingBy(int tagRate, Format format) {
+    public static Rating getRatingBy(int tagRate, Format format) {
         if (format.isByteScale()) {
             return SET.stream().filter(r -> r.min <= tagRate && r.max >= tagRate).findAny().orElse(UNDEFINED);
         } else {
             return SET.stream().filter(r -> r.minP <= tagRate && r.maxP >= tagRate).findAny().orElse(UNDEFINED);
         }
+    }
+
+    public static int getFor(int rate, Format format) {
+        Rating rating = SET.stream().filter(r -> r.rate == rate).findAny().orElse(UNDEFINED);
+        return format.isByteScale() ? rating.value : rating.valueP;
     }
 }
