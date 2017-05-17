@@ -40,9 +40,20 @@
     -fx-effect: -element-drop-shadow;
 }
 
-.roundButton .play-text {
+.roundButton .play-text, .rewindButton .play-text {
     -fx-fill: -elements-background;
     -fx-effect: -dark-inner-shadow;
+    -fx-stroke-width: 0;
+}
+
+.rewindButton {
+    -fx-background-radius: 15em;
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-pref-width: 30px;
+    -fx-pref-height: 30px;
+    -fx-background-color: -elements-background;
+    -fx-effect: -element-drop-shadow;
 }
 
 /*noinspection CssUnusedSymbol*/

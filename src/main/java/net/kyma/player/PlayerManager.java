@@ -24,6 +24,7 @@ public class PlayerManager {
         bus.setReaction(messages.getProperty("player.play.mp3"), this::playMp3);
         bus.setReaction(messages.getProperty("player.pause.mp3"), this::pauseMp3);
         bus.setReaction(messages.getProperty("player.stop.mp3"), this::stopMp3);
+        bus.setReaction(messages.getProperty("player.resume"), this::resume);
         bus.setReaction(messages.getProperty("close"), this::stopMp3);
         bus.setReaction(messages.getProperty("close"), FLACPlayer::closeFLACPlayers);
         bus.setReaction(messages.getProperty("player.metadata.getLength"),
@@ -54,6 +55,15 @@ public class PlayerManager {
         log.info("start play");
         currentPlayer.start();
         timer.start();
+    }
+
+    private synchronized void resume() {
+        if (currentPlayer != null && currentPlayer.isPaused()) {
+            currentPlayer.start();
+            timer.start();
+        } else {
+            bus.send(messages.getProperty("playlist.next"));
+        }
     }
 
     private synchronized void stopMp3() {

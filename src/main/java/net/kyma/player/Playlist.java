@@ -1,15 +1,13 @@
 package net.kyma.player;
 
 import net.kyma.dm.SoundFile;
+import org.apache.commons.collections4.iterators.LoopingListIterator;
 import pl.khuzzuk.messaging.Bus;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 @Singleton
 public class Playlist {
@@ -19,25 +17,65 @@ public class Playlist {
     @Named("messages")
     private Properties messages;
     private List<SoundFile> playlist;
-    private int currentPos;
+    private LoopingListIterator<SoundFile> iterator;
+    private int index = -1;
 
     public void init() {
-        playlist = new ArrayList<>();
-        bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.add.list"), playlist::addAll);
-        bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.remove.list"), playlist::removeAll);
-        bus.setReaction(messages.getProperty("playlist.start"), this::playFirstItem);
+        playlist = new LinkedList<>();
+        bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.add.list"), this::addAll);
+        bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.remove.list"), this::removeAll);
         bus.setReaction(messages.getProperty("playlist.next"), this::playNextItem);
+        bus.setReaction(messages.getProperty("playlist.previous"), this::playPreviousItem);
     }
 
-    private void playFirstItem() {
-        currentPos = 0;
-        playNextItem();
+    private synchronized void removeAll(Collection<SoundFile> soundFiles) {
+        playlist.removeAll(soundFiles);
+        bus.send(messages.getProperty("playlist.highlight"), -1);
+        iterator = null;
+        initIterator();
     }
-    private void playNextItem() {
+
+    private synchronized void addAll(Collection<SoundFile> soundFiles) {
+        playlist.addAll(soundFiles);
+        iterator = null;
+        initIterator();
+    }
+
+    private synchronized void playNextItem() {
         if (playlist.size() == 0) return;
-        if (currentPos >= playlist.size()) currentPos = 0;
-        bus.send(messages.getProperty("player.play.mp3"), playlist.get(currentPos));
-        bus.send(messages.getProperty("playlist.highlight"), currentPos);
-        currentPos++;
+        initIterator();
+
+        int index;
+        SoundFile next;
+        do {
+            index = iterator.nextIndex();
+            next = iterator.next();
+        } while (this.index == index);
+        this.index = index;
+
+        bus.send(messages.getProperty("playlist.highlight"), index);
+        bus.send(messages.getProperty("player.play.mp3"), next);
+    }
+
+    private synchronized void playPreviousItem() {
+        if (playlist.size() == 0) return;
+        initIterator();
+
+        int index;
+        SoundFile previous;
+        do {
+            index = iterator.previousIndex();
+            previous = iterator.previous();
+        } while (this.index == index);
+        this.index = index;
+
+        bus.send(messages.getProperty("playlist.highlight"), index);
+        bus.send(messages.getProperty("player.play.mp3"), previous);
+    }
+
+    private void initIterator() {
+        if (iterator == null) {
+            iterator = new LoopingListIterator<>(playlist);
+        }
     }
 }

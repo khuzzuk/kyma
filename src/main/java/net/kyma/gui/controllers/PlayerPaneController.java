@@ -1,5 +1,6 @@
 package net.kyma.gui.controllers;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Slider;
@@ -48,7 +49,7 @@ public class PlayerPaneController implements Initializable {
             bus.send(messages.getProperty("player.pause.mp3"));
         } else {
             playButton.showPause();
-            bus.send(messages.getProperty("playlist.start"));
+            bus.send(messages.getProperty("player.resume"));
         }
     }
 
@@ -66,5 +67,14 @@ public class PlayerPaneController implements Initializable {
     @FXML
     private void stopTimer() {
         timer.stop();
+    }
+
+    @FXML
+    private void playNext() {
+        bus.send(messages.getProperty("playlist.next"));
+    }
+
+    public void playPrevious() {
+        bus.send(messages.getProperty("playlist.previous"));
     }
 }

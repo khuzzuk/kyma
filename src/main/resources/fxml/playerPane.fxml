@@ -6,6 +6,8 @@
 <?import net.kyma.gui.PlayButton?>
 <?import net.kyma.gui.StopButton?>
 <?import javafx.geometry.Insets?>
+<?import net.kyma.gui.PreviousPlayButton?>
+<?import net.kyma.gui.NextPlayButton?>
 <GridPane hgap="5" vgap="5"
           xmlns="http://javafx.com/javafx"
           xmlns:fx="http://javafx.com/fxml"
@@ -20,9 +22,11 @@
     <padding>
         <Insets top="10" left="10" right="10"/>
     </padding>
-    <HBox spacing="5">
+    <HBox spacing="5" alignment="CENTER">
         <PlayButton fx:id="playButton" styleClass="roundButton" onAction="#startOrPause"/>
         <StopButton styleClass="roundButton" onAction="#stop"/>
+        <PreviousPlayButton styleClass="rewindButton" onAction="#playPrevious"/>
+        <NextPlayButton styleClass="rewindButton" onAction="#playNext"/>
     </HBox>
     <Slider GridPane.columnIndex="1" fx:id="playbackProgress"
             onMousePressed="#stopTimer" onMouseReleased="#playFrom"/>
