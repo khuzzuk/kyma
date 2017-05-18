@@ -7,6 +7,7 @@ import net.kyma.player.Format;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexableField;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
 import pl.khuzzuk.messaging.Bus;
@@ -49,40 +50,11 @@ public class SoundFileConverter {
         SoundFile soundFile = new SoundFile();
         soundFile.setPath(document.get(PATH.getName()));
         soundFile.setFormat(Format.forPath(soundFile.getPath()));
-        soundFile.setIndexedPath(document.get(INDEXED_PATH.getName()));
-        soundFile.setFileName(document.get(FILE_NAME.getName()));
-        soundFile.setTitle(document.get(TITLE.getName()));
-        soundFile.setRate(Rating.getRatingBy(document.getField(RATE.getName()).numericValue().intValue(), soundFile.getFormat()));
-        soundFile.setDate(document.get(YEAR.getName()));
-        soundFile.setAlbum(document.get(ALBUM.getName()));
-        soundFile.setAlbumArtist(document.get(ALBUM_ARTIST.getName()));
-        soundFile.setAlbumArtists(document.get(ALBUM_ARTISTS.getName()));
-        soundFile.setArtist(document.get(ARTIST.getName()));
-        soundFile.setArtists(document.get(ARTISTS.getName()));
-        soundFile.setComposer(document.get(COMPOSER.getName()));
-        soundFile.setConductor(document.get(CONDUCTOR.getName()));
-        soundFile.setCountry(document.get(COUNTRY.getName()));
-        soundFile.setCustom1(document.get(CUSTOM1.getName()));
-        soundFile.setCustom2(document.get(CUSTOM2.getName()));
-        soundFile.setCustom3(document.get(CUSTOM3.getName()));
-        soundFile.setCustom4(document.get(CUSTOM4.getName()));
-        soundFile.setCustom5(document.get(CUSTOM5.getName()));
-        soundFile.setDiscNo(document.get(DISC_NO.getName()));
-        soundFile.setGenre(document.get(GENRE.getName()));
-        soundFile.setGroup(document.get(GROUP.getName()));
-        soundFile.setInstrument(document.get(INSTRUMENT.getName()));
-        soundFile.setMood(document.get(MOOD.getName()));
-        soundFile.setMovement(document.get(MOVEMENT.getName()));
-        soundFile.setOccasion(document.get(OCCASION.getName()));
-        soundFile.setOpus(document.get(OPUS.getName()));
-        soundFile.setOrchestra(document.get(ORCHESTRA.getName()));
-        soundFile.setQuality(document.get(QUALITY.getName()));
-        soundFile.setRanking(document.get(RANKING.getName()));
-        soundFile.setTempo(document.get(TEMPO.getName()));
-        soundFile.setTonality(document.get(TONALITY.getName()));
-        soundFile.setTrack(document.get(TRACK.getName()));
-        soundFile.setWork(document.get(WORK.getName()));
-        soundFile.setWorkType(document.get(WORK_TYPE.getName()));
+        SET.forEach(m -> m.getSetter().accept(soundFile, document.get(m.getName())));
+
+        soundFile.setCounter(Optional.ofNullable(document.getField("counter"))
+                .map(IndexableField::numericValue)
+                .map(Number::intValue).orElse(0));
 
         return soundFile;
     }

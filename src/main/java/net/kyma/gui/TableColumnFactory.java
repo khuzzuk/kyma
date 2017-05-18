@@ -114,6 +114,12 @@ public class TableColumnFactory {
         return column;
     }
 
+    public TableColumn<SoundFile, Integer> getCounterColumn() {
+        TableColumn<SoundFile, Integer> column = new TableColumn<>("Odtworzono");
+        column.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue().getCounter()));
+        return column;
+    }
+
     public TableColumn<SoundFile, String> getTitleColumn(IntegerProperty property) {
         TableColumn<SoundFile, String> column = getTitleColumn();
         column.setCellFactory(param -> new TableCell<SoundFile, String>() {

@@ -57,10 +57,12 @@ public class ContentView implements Initializable {
                 columnFactory.getAlbumArtistColumn(),
                 columnFactory.getAlbumArtistsColumn(),
                 columnFactory.getArtistColumn(),
-                columnFactory.getArtistsColumn());
+                columnFactory.getArtistsColumn(),
+                columnFactory.getCounterColumn());
 
         bus.<String>setReaction(messages.getProperty("data.edit.title.commit"), v -> update(v, (n, s) -> s.setTitle(n)));
         bus.<String>setReaction(messages.getProperty("data.edit.year.commit"), v -> update(v, (n, s) -> s.setDate(n)));
+        bus.setReaction(messages.getProperty("playlist.next"), contentView::refresh);
     }
 
     private <T> void update(T value, BiConsumer<T, SoundFile> updater) {

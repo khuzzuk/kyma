@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.math.NumberUtils;
 
+import java.util.EnumSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -50,4 +53,6 @@ public enum MetadataField {
     private final String name;
     private final Function<SoundFile, String> getter;
     private final BiConsumer<SoundFile, String> setter;
+
+    public static final Set<MetadataField> SET = EnumSet.allOf(MetadataField.class);
 }

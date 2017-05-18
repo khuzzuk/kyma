@@ -71,6 +71,7 @@ public class ManagerPaneController implements Initializable {
     private void initPlaylistView() {
         playlist.getColumns().clear();
         playlist.getColumns().add(columnFactory.getTitleColumn(highlighted));
+        playlist.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     }
 
     private void fillTreeView(Collection<SoundFile> sounds) {
