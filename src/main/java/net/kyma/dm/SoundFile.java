@@ -49,4 +49,8 @@ public class SoundFile implements Comparable<SoundFile> {
     public int compareTo(SoundFile o) {
         return getPath().compareTo(o.getPath());
     }
+
+    public int getRateValue() {
+        return format.isByteScale() ? rate.getValue() : rate.getValueP();
+    }
 }

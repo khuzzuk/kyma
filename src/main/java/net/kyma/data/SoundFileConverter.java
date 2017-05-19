@@ -5,20 +5,20 @@ import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
 import net.kyma.player.Format;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
+import org.jaudiotagger.tag.TagField;
+import org.jaudiotagger.tag.id3.ID3v23Tag;
+import org.jaudiotagger.tag.vorbiscomment.VorbisCommentTagField;
 import pl.khuzzuk.messaging.Bus;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.File;
-import java.text.ParseException;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static net.kyma.dm.MetadataField.*;
@@ -27,6 +27,7 @@ import static net.kyma.dm.MetadataField.*;
 @Singleton
 public class SoundFileConverter {
     private static final String[] dateParsers = new String[]{"yyyy", "yyyy-mm-dd"};
+
     @Inject
     public SoundFileConverter(Bus bus, @Named("messages") Properties messages) {
         bus.<File, SoundFile>setResponse(messages.getProperty("playlist.add.file"), f -> from(f, f.getParent()));
@@ -93,5 +94,25 @@ public class SoundFileConverter {
         sound.setTrack(metadata.getFirst(FieldKey.TRACK));
         sound.setWork(metadata.getFirst(FieldKey.WORK));
         sound.setWorkType(metadata.getFirst(FieldKey.WORK_TYPE));
+
+        String comment = getComment(metadata);
+        if (comment.contains(":")) {
+            String counter = comment.substring(0, comment.indexOf(":"));
+            if (NumberUtils.isDigits(counter)) {
+                sound.setCounter(NumberUtils.toInt(counter));
+            }
+        }
+    }
+
+    private String getComment(Tag metadata) {
+        List<TagField> commFields = metadata.getFields(FieldKey.COMMENT);
+        if (commFields.isEmpty()) return "";
+        TagField tagField = commFields.get(commFields.size() - 1);
+        String commentField = tagField.toString();
+        if (tagField instanceof VorbisCommentTagField) {
+            return commentField;
+        }
+        int i = commentField.indexOf("Text=") + 6;
+        return commentField.substring(i, commentField.indexOf('"', i));
     }
 }

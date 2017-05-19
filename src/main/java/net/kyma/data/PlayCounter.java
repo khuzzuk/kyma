@@ -22,6 +22,6 @@ public class PlayCounter {
 
     private void addToSoundFile(SoundFile soundFile) {
         soundFile.setCounter(soundFile.getCounter() + 1);
-        bus.send(messages.getProperty("data.index.item"), soundFile);
+        bus.send(messages.getProperty("data.store.item"), soundFile);
     }
 }

@@ -16,8 +16,8 @@ public enum MetadataField {
     PATH("path", SoundFile::getPath, SoundFile::setPath),
     INDEXED_PATH("indexedPath", SoundFile::getIndexedPath, SoundFile::setIndexedPath),
     FILE_NAME("fileName", SoundFile::getFileName, SoundFile::setFileName),
-    RATE("rate", s -> String.valueOf(s.getRate()),
-            (s, v) -> s.setRate(Rating.getRatingBy(NumberUtils.toInt(v), s.getFormat()))),
+    RATE("rate", s -> s.getRate().name(),
+            (s, v) -> s.setRate(Rating.valueOf(v))),
     TITLE("title", SoundFile::getTitle, SoundFile::setTitle),
     YEAR("year", SoundFile::getDate, SoundFile::setDate),
     ALBUM("album", SoundFile::getAlbum, SoundFile::setAlbum),
@@ -48,7 +48,9 @@ public enum MetadataField {
     TONALITY("tonality", SoundFile::getTonality, SoundFile::setTonality),
     TRACK("track", SoundFile::getTrack, SoundFile::setTrack),
     WORK("work", SoundFile::getWork, SoundFile::setWork),
-    WORK_TYPE("workType", SoundFile::getWorkType, SoundFile::setWorkType);
+    WORK_TYPE("workType", SoundFile::getWorkType, SoundFile::setWorkType),
+    COUNTER("playCounter", s -> String.valueOf(s.getCounter()),
+            (s, v) -> s.setCounter(NumberUtils.toInt(v)));
 
     private final String name;
     private final Function<SoundFile, String> getter;

@@ -2,6 +2,7 @@ package net.kyma.data;
 
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.exceptions.CannotReadException;
@@ -38,8 +39,11 @@ class MetadataConverter {
 
     static void updateMetadata(Tag metadata, SoundFile updateSource) throws FieldDataInvalidException {
         metadata.setField(TITLE, updateSource.getTitle());
-        metadata.setField(RATING, String.valueOf(updateSource.getRate()));
-        metadata.setField(YEAR, updateSource.getDate());
+        metadata.deleteField(RATING);
+        metadata.setField(RATING, String.valueOf(updateSource.getRateValue()));
+        if (!StringUtils.isBlank(updateSource.getDate())) {
+            metadata.setField(YEAR, updateSource.getDate());
+        }
         metadata.setField(ALBUM, updateSource.getAlbum());
         metadata.setField(ALBUM_ARTIST, updateSource.getAlbumArtist());
         metadata.setField(ARTIST, updateSource.getArtist());
@@ -69,6 +73,14 @@ class MetadataConverter {
 
         if (NumberUtils.isDigits(updateSource.getDiscNo())) {
             metadata.setField(DISC_NO, updateSource.getDiscNo());
+        }
+
+        String comment = metadata.getFirst(COMMENT);
+        if (comment.contains(":") && NumberUtils.isDigits(comment.substring(0, comment.indexOf(":")))) {
+            metadata.setField(COMMENT, updateSource.getCounter() + ":" +
+                    comment.substring(comment.indexOf(":")));
+        } else {
+            metadata.setField(COMMENT, updateSource.getCounter() + ":" + comment);
         }
     }
 }

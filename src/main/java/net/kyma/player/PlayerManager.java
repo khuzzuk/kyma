@@ -76,7 +76,9 @@ public class PlayerManager {
 
     private synchronized void pauseMp3() {
         timer.stop();
-        currentPlayer.pause();
+        if (currentPlayer != null) {
+            currentPlayer.pause();
+        }
     }
 
     private synchronized void startFrom(Long millis) {
