@@ -40,6 +40,7 @@ public class Manager extends Application {
         injector.getInstance(SoundFileBulkEditor.class).init();
         injector.getInstance(PlayCounter.class).init();
         injector.getInstance(DataReader.class).init();
+        injector.getInstance(FileCleaner.class).init();
         new Image("/css/background.jpg");
         bus = injector.getInstance(Bus.class);
         messages = injector.getInstance(Key.get(Properties.class, Names.named("messages")));

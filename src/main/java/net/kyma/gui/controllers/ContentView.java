@@ -1,5 +1,6 @@
 package net.kyma.gui.controllers;
 
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.SelectionMode;
@@ -19,6 +20,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -39,11 +41,16 @@ public class ContentView implements Initializable {
     private SoundFileEditor editor;
     @Inject
     private SoundFileBulkEditor bulkEditor;
+    private Collection<SoundFile> selected;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        contentView.setEditable(true);
         initContentView();
+
+        contentView.setEditable(true);
+        bus.<String>setReaction(messages.getProperty("data.edit.title.commit"), v -> update(v, (n, s) -> s.setTitle(n)));
+        bus.<String>setReaction(messages.getProperty("data.edit.year.commit"), v -> update(v, (n, s) -> s.setDate(n)));
+        bus.setReaction(messages.getProperty("playlist.next"), contentView::refresh);
     }
 
     @SuppressWarnings("unchecked")
@@ -59,10 +66,7 @@ public class ContentView implements Initializable {
                 columnFactory.getArtistColumn(),
                 columnFactory.getArtistsColumn(),
                 columnFactory.getCounterColumn());
-
-        bus.<String>setReaction(messages.getProperty("data.edit.title.commit"), v -> update(v, (n, s) -> s.setTitle(n)));
-        bus.<String>setReaction(messages.getProperty("data.edit.year.commit"), v -> update(v, (n, s) -> s.setDate(n)));
-        bus.setReaction(messages.getProperty("playlist.next"), contentView::refresh);
+        selected = contentView.getSelectionModel().getSelectedItems();
     }
 
     private <T> void update(T value, BiConsumer<T, SoundFile> updater) {
@@ -75,15 +79,11 @@ public class ContentView implements Initializable {
         return contentView.getSelectionModel().getSelectedItem();
     }
 
-    private Collection<SoundFile> getAllSelected() {
-        return contentView.getSelectionModel().getSelectedItems();
-    }
-
     @FXML
     private void addToPlaylist(MouseEvent mouseEvent) {
         //TODO extend TreeView so it can return of selected BaseElement or SoundElement instead of casting and instanceof
         if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && mouseEvent.getClickCount() == 2) {
-            bus.send(messages.getProperty("playlist.add.list"), getAllSelected());
+            bus.send(messages.getProperty("playlist.add.list"), selected);
         }
         if (mouseEvent.getButton().equals(MouseButton.MIDDLE)) {
             editor.showEditor(getSelected());
@@ -93,12 +93,17 @@ public class ContentView implements Initializable {
     @FXML
     private void onKeyPressed(KeyEvent keyEvent) {
         if (keyEvent.getCode().equals(KeyCode.ENTER)) {
-            Collection<SoundFile> allSelected = getAllSelected();
+            Collection<SoundFile> allSelected = selected;
             if (allSelected.size() == 1) {
                 editor.showEditor(getSelected());
             } else {
                 bulkEditor.showEditor(allSelected);
             }
+        } else if (keyEvent.getCode().equals(KeyCode.BACK_SPACE) || keyEvent.getCode().equals(KeyCode.DELETE)) {
+            Collection<SoundFile> selected = new ArrayList<>(this.selected);
+            bus.send(messages.getProperty("data.remove.item"), selected);
+            contentView.getItems().removeAll(selected);
+            contentView.refresh();
         }
     }
 }

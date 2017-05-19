@@ -1,11 +1,13 @@
 package net.kyma.dm;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyma.player.Format;
 
 @Getter
 @Setter
+@EqualsAndHashCode(of = "path")
 public class SoundFile implements Comparable<SoundFile> {
     private Format format;
     private String path;

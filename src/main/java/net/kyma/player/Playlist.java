@@ -26,19 +26,18 @@ public class Playlist {
         bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.remove.list"), this::removeAll);
         bus.setReaction(messages.getProperty("playlist.next"), this::playNextItem);
         bus.setReaction(messages.getProperty("playlist.previous"), this::playPreviousItem);
+        bus.setReaction(messages.getProperty("data.remove.item"), this::maybeRemove);
     }
 
     private synchronized void removeAll(Collection<SoundFile> soundFiles) {
         playlist.removeAll(soundFiles);
         bus.send(messages.getProperty("playlist.highlight"), -1);
         iterator = null;
-        initIterator();
     }
 
     private synchronized void addAll(Collection<SoundFile> soundFiles) {
         playlist.addAll(soundFiles);
         iterator = null;
-        initIterator();
     }
 
     private synchronized void playNextItem() {
@@ -77,5 +76,15 @@ public class Playlist {
         if (iterator == null) {
             iterator = new LoopingListIterator<>(playlist);
         }
+    }
+
+    private void maybeRemove(Collection<SoundFile> soundFile) {
+        if (index > 0 && index < playlist.size() && playlist.get(index).equals(soundFile)) {
+            bus.send(messages.getProperty("player.stop.mp3"));
+            bus.send(messages.getProperty("playlist.next"));
+        }
+        removeAll(soundFile);
+        iterator = null;
+        bus.send(messages.getProperty("file.remove"), soundFile);
     }
 }

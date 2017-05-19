@@ -47,6 +47,7 @@ public class DataIndexer {
         bus.setReaction(messages.getProperty("data.index.item"), this::indexSingleEntity);
         bus.setReaction(messages.getProperty("data.store.item"), this::indexSingleEntity);
         bus.setResponse(messages.getProperty("data.index.getAll"), this::getAll);
+        bus.<Collection<SoundFile>>setReaction(messages.getProperty("data.remove.item"), c -> c.forEach(this::remove));
     }
 
     private synchronized void index(@NonNull Collection<SoundFile> files) {
@@ -88,17 +89,6 @@ public class DataIndexer {
         return documents;
     }
 
-    private boolean isNew(Document document, IndexSearcher searcher) {
-        try {
-            return searcher.search(new TermQuery(termForPath(document.get(MetadataField.PATH.getName()))), 1)
-                    .scoreDocs.length == 0;
-        } catch (IOException e) {
-            log.error("Cannot read data");
-            log.error(e);
-        }
-        return false;
-    }
-
     private boolean isNew(SoundFile soundFile, IndexSearcher searcher) {
         try {
             return searcher.search(new TermQuery(termForPath(soundFile.getPath())), 1)
@@ -110,12 +100,13 @@ public class DataIndexer {
         return false;
     }
 
-    private Document getByPath(SoundFile soundFile, IndexSearcher searcher) throws IOException {
-        TopDocs search = searcher.search(new TermQuery(new Term(MetadataField.PATH.getName(), soundFile.getPath())), 1);
-        if (search.scoreDocs.length == 0) {
-            return null;
+    private void remove(SoundFile soundFile) {
+        try {
+            writer.deleteDocuments(termForPath(soundFile.getPath()));
+        } catch (IOException e) {
+            log.error("Cannot delete document, problem with accessing the index files");
+            log.error(e);
         }
-        return searcher.doc(search.scoreDocs[0].doc);
     }
 
     private void close() {
@@ -127,16 +118,5 @@ public class DataIndexer {
         }
         //TODO refactoring, change place where bus is closed
         bus.closeBus();
-    }
-
-    private void closeSearcher(IndexSearcher searcher) {
-        try {
-            if (searcher != null) {
-                searcher.getIndexReader().close();
-            }
-        } catch (IOException e) {
-            log.error("Error when closing IndexSearcher");
-            log.error(e);
-        }
     }
 }
