@@ -3,6 +3,7 @@ package net.kyma.data;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
+import net.kyma.dm.SupportedFields;
 import net.kyma.player.Format;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.lucene.document.Document;
@@ -10,7 +11,6 @@ import org.apache.lucene.index.IndexableField;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagField;
-import org.jaudiotagger.tag.id3.ID3v23Tag;
 import org.jaudiotagger.tag.vorbiscomment.VorbisCommentTagField;
 import pl.khuzzuk.messaging.Bus;
 
@@ -21,7 +21,7 @@ import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static net.kyma.dm.MetadataField.*;
+import static net.kyma.dm.SupportedFields.*;
 
 @Log4j2
 @Singleton
@@ -57,39 +57,9 @@ public class SoundFileConverter {
     }
 
     private void fillData(SoundFile sound, Tag metadata) {
-        sound.setTitle(metadata.getFirst(FieldKey.TITLE));
+        SupportedFields.SUPPORTED_TAG.forEach(f -> f.getSetter().accept(sound, metadata.getFirst(f.getMappedKey())));
         sound.setRate(Rating.getRatingBy(NumberUtils.toInt(metadata.getFirst(FieldKey.RATING), 0),
                 sound.getFormat()));
-        sound.setDate(metadata.getFirst(FieldKey.YEAR));
-        sound.setAlbum(metadata.getFirst(FieldKey.ALBUM));
-        sound.setAlbumArtist(metadata.getFirst(FieldKey.ALBUM_ARTIST));
-        sound.setAlbumArtists(metadata.getFirst(FieldKey.ALBUM_ARTISTS));
-        sound.setArtist(metadata.getFirst(FieldKey.ARTIST));
-        sound.setArtists(metadata.getFirst(FieldKey.ARTISTS));
-        sound.setComposer(metadata.getFirst(FieldKey.COMPOSER));
-        sound.setConductor(metadata.getFirst(FieldKey.CONDUCTOR));
-        sound.setCountry(metadata.getFirst(FieldKey.COUNTRY));
-        sound.setCustom1(metadata.getFirst(FieldKey.CUSTOM1));
-        sound.setCustom2(metadata.getFirst(FieldKey.CUSTOM2));
-        sound.setCustom3(metadata.getFirst(FieldKey.CUSTOM3));
-        sound.setCustom4(metadata.getFirst(FieldKey.CUSTOM4));
-        sound.setCustom5(metadata.getFirst(FieldKey.CUSTOM5));
-        sound.setDiscNo(metadata.getFirst(FieldKey.DISC_NO));
-        sound.setGenre(metadata.getFirst(FieldKey.GENRE));
-        sound.setGroup(metadata.getFirst(FieldKey.GROUP));
-        sound.setInstrument(metadata.getFirst(FieldKey.INSTRUMENT));
-        sound.setMood(metadata.getFirst(FieldKey.MOOD));
-        sound.setMovement(metadata.getFirst(FieldKey.MOVEMENT));
-        sound.setOccasion(metadata.getFirst(FieldKey.OCCASION));
-        sound.setOpus(metadata.getFirst(FieldKey.OPUS));
-        sound.setOrchestra(metadata.getFirst(FieldKey.ORCHESTRA));
-        sound.setQuality(metadata.getFirst(FieldKey.QUALITY));
-        sound.setRanking(metadata.getFirst(FieldKey.RANKING));
-        sound.setTempo(metadata.getFirst(FieldKey.TEMPO));
-        sound.setTonality(metadata.getFirst(FieldKey.TONALITY));
-        sound.setTrack(metadata.getFirst(FieldKey.TRACK));
-        sound.setWork(metadata.getFirst(FieldKey.WORK));
-        sound.setWorkType(metadata.getFirst(FieldKey.WORK_TYPE));
 
         String comment = getComment(metadata);
         if (comment.contains(":")) {
@@ -108,7 +78,8 @@ public class SoundFileConverter {
         if (tagField instanceof VorbisCommentTagField) {
             return commentField;
         }
-        int i = commentField.indexOf("Text=") + 6;
-        return commentField.substring(i, commentField.indexOf('"', i));
+        int startIndex = commentField.indexOf("Text=") + 6;
+        int endIndex = commentField.indexOf('"', startIndex);
+        return startIndex > 0 && endIndex > startIndex ? commentField.substring(startIndex, endIndex) : "";
     }
 }

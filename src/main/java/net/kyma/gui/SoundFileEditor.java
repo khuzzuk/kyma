@@ -11,7 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import net.kyma.dm.MetadataField;
+import net.kyma.dm.SupportedFields;
 import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -23,7 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import static net.kyma.dm.MetadataField.*;
+import static net.kyma.dm.SupportedFields.*;
 
 @Singleton
 public class SoundFileEditor {
@@ -35,7 +35,7 @@ public class SoundFileEditor {
     Stage window;
     private SoundFile soundFile;
     private ComboBox<Node> rate;
-    Map<MetadataField, TextField> fields;
+    Map<SupportedFields, TextField> fields;
 
     public void init() {
         Platform.runLater(() -> {

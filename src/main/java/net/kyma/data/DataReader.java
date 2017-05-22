@@ -2,7 +2,7 @@ package net.kyma.data;
 
 import com.google.inject.Inject;
 import lombok.extern.log4j.Log4j2;
-import net.kyma.dm.MetadataField;
+import net.kyma.dm.SupportedFields;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import pl.khuzzuk.messaging.Bus;
@@ -27,7 +27,7 @@ public class DataReader {
         bus.setResponse(messages.getProperty("data.index.get.distinct"), this::getDistinctValues);
     }
 
-    private Set<String> getDistinctValues(MetadataField field) {
+    private Set<String> getDistinctValues(SupportedFields field) {
         Set<String> values = new TreeSet<>();
         try (DirectoryReader reader = DirectoryReader.open(writer)) {
             IndexSearcher searcher = new IndexSearcher(reader);

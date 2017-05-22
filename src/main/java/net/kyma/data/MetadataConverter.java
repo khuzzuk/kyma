@@ -2,6 +2,7 @@ package net.kyma.data;
 
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
+import net.kyma.dm.SupportedFields;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.jaudiotagger.audio.AudioFileIO;
@@ -38,42 +39,8 @@ class MetadataConverter {
     }
 
     static void updateMetadata(Tag metadata, SoundFile updateSource) throws FieldDataInvalidException {
-        metadata.setField(TITLE, updateSource.getTitle());
-        metadata.deleteField(RATING);
-        metadata.setField(RATING, String.valueOf(updateSource.getRateValue()));
-        if (!StringUtils.isBlank(updateSource.getDate())) {
-            metadata.setField(YEAR, updateSource.getDate());
-        }
-        metadata.setField(ALBUM, updateSource.getAlbum());
-        metadata.setField(ALBUM_ARTIST, updateSource.getAlbumArtist());
-        metadata.setField(ARTIST, updateSource.getArtist());
-        metadata.setField(COMPOSER, updateSource.getComposer());
-        metadata.setField(CONDUCTOR, updateSource.getConductor());
-        metadata.setField(COUNTRY, updateSource.getCountry());
-        metadata.setField(CUSTOM1, updateSource.getCustom1());
-        metadata.setField(CUSTOM2, updateSource.getCustom2());
-        metadata.setField(CUSTOM3, updateSource.getCustom3());
-        metadata.setField(CUSTOM4, updateSource.getCustom4());
-        metadata.setField(CUSTOM5, updateSource.getCustom5());
-        metadata.setField(GENRE, updateSource.getGenre());
-        metadata.setField(GROUP, updateSource.getGroup());
-        metadata.setField(INSTRUMENT, updateSource.getInstrument());
-        metadata.setField(MOOD, updateSource.getMood());
-        metadata.setField(MOVEMENT, updateSource.getMovement());
-        metadata.setField(OCCASION, updateSource.getOccasion());
-        metadata.setField(OPUS, updateSource.getOpus());
-        metadata.setField(ORCHESTRA, updateSource.getOrchestra());
-        metadata.setField(QUALITY, updateSource.getQuality());
-        metadata.setField(RANKING, updateSource.getRanking());
-        metadata.setField(TEMPO, updateSource.getTempo());
-        metadata.setField(TONALITY, updateSource.getTonality());
-        metadata.setField(TRACK, updateSource.getTrack());
-        metadata.setField(WORK, updateSource.getWork());
-        metadata.setField(WORK_TYPE, updateSource.getWorkType());
-
-        if (NumberUtils.isDigits(updateSource.getDiscNo())) {
-            metadata.setField(DISC_NO, updateSource.getDiscNo());
-        }
+        SupportedFields.SUPPORTED_TAG.forEach(f -> f.setField(metadata, updateSource));
+        SupportedFields.RATE.setField(metadata, updateSource);
 
         String comment = metadata.getFirst(COMMENT);
         if (comment.contains(":") && NumberUtils.isDigits(comment.substring(0, comment.indexOf(":")))) {

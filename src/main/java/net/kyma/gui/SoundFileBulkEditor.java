@@ -1,7 +1,7 @@
 package net.kyma.gui;
 
 import javafx.scene.control.TextField;
-import net.kyma.dm.MetadataField;
+import net.kyma.dm.SupportedFields;
 import net.kyma.dm.SoundFile;
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,7 +27,7 @@ public class SoundFileBulkEditor extends SoundFileEditor {
         window.show();
     }
 
-    private void fillField(MetadataField field, TextField textField) {
+    private void fillField(SupportedFields field, TextField textField) {
         values.clear();
         soundFiles.forEach(s -> values.add(field.getGetter().apply(s)));
         if (values.size() == 1) {

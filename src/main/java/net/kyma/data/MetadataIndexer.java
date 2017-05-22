@@ -43,6 +43,7 @@ public class MetadataIndexer {
             MetadataConverter.updateMetadata(file.getTag(), soundFile);
             file.commit();
         } catch (CannotReadException | IOException | TagException | ReadOnlyFileException | InvalidAudioFrameException e) {
+            //TODO if InvalidAudioFrameException, ask user if file should be removed from index, or deleted
             log.error(" cannot read from file: " + soundFile.getPath());
             log.error(e);
         } catch (CannotWriteException e) {

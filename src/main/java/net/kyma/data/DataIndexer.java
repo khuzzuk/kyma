@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
-import net.kyma.dm.MetadataField;
+import net.kyma.dm.SupportedFields;
 import net.kyma.dm.SoundFile;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -83,8 +83,8 @@ public class DataIndexer {
         try {
             ScoreDoc[] scoreDocs = searcher.search(new TermQuery(termForPath(soundFile.getPath())), 1).scoreDocs;
             if (scoreDocs.length == 1) {
-                previousPath = searcher.doc(scoreDocs[0].doc, Collections.singleton(MetadataField.INDEXED_PATH.getName()))
-                        .get(MetadataField.INDEXED_PATH.getName());
+                previousPath = searcher.doc(scoreDocs[0].doc, Collections.singleton(SupportedFields.INDEXED_PATH.getName()))
+                        .get(SupportedFields.INDEXED_PATH.getName());
             }
         } catch (IOException e) {
             log.error("Cannot read data");
@@ -136,7 +136,7 @@ public class DataIndexer {
     private void refreshIndexedPaths() {
         bus.send(messages.getProperty("data.index.get.distinct"),
                 messages.getProperty("data.index.get.directories"),
-                MetadataField.INDEXED_PATH);
+                SupportedFields.INDEXED_PATH);
     }
 
     private void close() {
