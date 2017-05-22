@@ -26,8 +26,6 @@ import static net.kyma.dm.MetadataField.*;
 @Log4j2
 @Singleton
 public class SoundFileConverter {
-    private static final String[] dateParsers = new String[]{"yyyy", "yyyy-mm-dd"};
-
     @Inject
     public SoundFileConverter(Bus bus, @Named("messages") Properties messages) {
         bus.<File, SoundFile>setResponse(messages.getProperty("playlist.add.file"), f -> from(f, f.getParent()));
@@ -41,7 +39,7 @@ public class SoundFileConverter {
         sound.setPath(file.getPath());
         sound.setFormat(Format.forPath(file.getPath()));
         sound.setFileName(file.getName());
-        sound.setIndexedPath(file.getPath().replace(indexedPath, ""));
+        sound.setIndexedPath(indexedPath);
 
         Optional.ofNullable(MetadataConverter.getMetadataFrom(file)).ifPresent(m -> fillData(sound, m));
         return sound;
@@ -49,8 +47,6 @@ public class SoundFileConverter {
 
     private SoundFile from(Document document) {
         SoundFile soundFile = new SoundFile();
-        soundFile.setPath(document.get(PATH.getName()));
-        soundFile.setFormat(Format.forPath(soundFile.getPath()));
         SET.forEach(m -> m.getSetter().accept(soundFile, document.get(m.getName())));
 
         soundFile.setCounter(Optional.ofNullable(document.getField("counter"))

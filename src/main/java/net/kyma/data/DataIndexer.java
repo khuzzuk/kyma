@@ -6,15 +6,13 @@ import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.MetadataField;
 import net.kyma.dm.SoundFile;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.MultiFields;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.Bits;
 import pl.khuzzuk.messaging.Bus;
 
@@ -22,7 +20,6 @@ import javax.annotation.PostConstruct;
 import javax.inject.Named;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static net.kyma.data.QueryUtils.termForPath;
 
@@ -38,6 +35,7 @@ public class DataIndexer {
     private IndexWriter writer;
     @Inject
     private DocConverter docConverter;
+    private Set<String> indexedPaths;
 
     @PostConstruct
     public void init() {
@@ -48,11 +46,21 @@ public class DataIndexer {
         bus.setReaction(messages.getProperty("data.store.item"), this::indexSingleEntity);
         bus.setResponse(messages.getProperty("data.index.getAll"), this::getAll);
         bus.<Collection<SoundFile>>setReaction(messages.getProperty("data.remove.item"), c -> c.forEach(this::remove));
+        bus.<Set<String>>setReaction(messages.getProperty("data.index.get.directories"),
+                paths -> indexedPaths = paths);
+        refreshIndexedPaths();
     }
 
     private synchronized void index(@NonNull Collection<SoundFile> files) {
+        if (files.isEmpty()) return;
+
+        String path = files.iterator().next().getIndexedPath();
+        indexedPaths.stream().filter(path::startsWith).findAny()
+                .ifPresent(indexed -> files.forEach(f -> f.setIndexedPath(indexed)));
+
         files.forEach(this::indexSingleEntity);
         bus.sendCommunicate(messages.getProperty("data.index.getAll"), messages.getProperty("data.convert.from.doc.gui"));
+        refreshIndexedPaths();
     }
 
     private void indexSingleEntity(@NonNull SoundFile soundFile) {
@@ -61,12 +69,28 @@ public class DataIndexer {
             if (isNew(soundFile, searcher)) {
                 writer.addDocument(docConverter.docFrom(soundFile));
             } else {
+                normalizeIndexingPath(soundFile, searcher);
                 writer.updateDocument(termForPath(soundFile.getPath()), docConverter.docFrom(soundFile));
             }
         } catch (IOException e) {
             log.error("Indexing occurred error");
             log.error(e);
         }
+    }
+
+    private void normalizeIndexingPath(SoundFile soundFile, IndexSearcher searcher) {
+        String previousPath = soundFile.getIndexedPath();
+        try {
+            ScoreDoc[] scoreDocs = searcher.search(new TermQuery(termForPath(soundFile.getPath())), 1).scoreDocs;
+            if (scoreDocs.length == 1) {
+                previousPath = searcher.doc(scoreDocs[0].doc, Collections.singleton(MetadataField.INDEXED_PATH.getName()))
+                        .get(MetadataField.INDEXED_PATH.getName());
+            }
+        } catch (IOException e) {
+            log.error("Cannot read data");
+            log.error(e);
+        }
+        soundFile.setIndexedPath(previousPath);
     }
 
     private synchronized Collection<Document> getAll() {
@@ -107,6 +131,12 @@ public class DataIndexer {
             log.error("Cannot delete document, problem with accessing the index files");
             log.error(e);
         }
+    }
+
+    private void refreshIndexedPaths() {
+        bus.send(messages.getProperty("data.index.get.distinct"),
+                messages.getProperty("data.index.get.directories"),
+                MetadataField.INDEXED_PATH);
     }
 
     private void close() {

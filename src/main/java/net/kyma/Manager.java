@@ -30,6 +30,7 @@ public class Manager extends Application {
     public static void main(String[] args) {
         injector = Guice.createInjector(new ControllersModule(), new BusModule(),
                 new DatabaseModule(), new PropertiesModule());
+        injector.getInstance(DataReader.class).init();
         injector.getInstance(DataIndexer.class).init();
         injector.getInstance(Playlist.class).init();
         injector.getInstance(PlayerManager.class).init();
@@ -39,7 +40,6 @@ public class Manager extends Application {
         injector.getInstance(SoundFileEditor.class).init();
         injector.getInstance(SoundFileBulkEditor.class).init();
         injector.getInstance(PlayCounter.class).init();
-        injector.getInstance(DataReader.class).init();
         injector.getInstance(FileCleaner.class).init();
         new Image("/css/background.jpg");
         bus = injector.getInstance(Bus.class);

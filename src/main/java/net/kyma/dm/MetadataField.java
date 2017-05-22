@@ -2,6 +2,7 @@ package net.kyma.dm;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import net.kyma.player.Format;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.util.EnumSet;
@@ -15,6 +16,7 @@ import java.util.function.Function;
 public enum MetadataField {
     PATH("path", SoundFile::getPath, SoundFile::setPath),
     INDEXED_PATH("indexedPath", SoundFile::getIndexedPath, SoundFile::setIndexedPath),
+    FORMAT("format", s -> s.getFormat().name(), (s, v) -> s.setFormat(Format.forPath(s.getPath()))),
     FILE_NAME("fileName", SoundFile::getFileName, SoundFile::setFileName),
     RATE("rate", s -> s.getRate().name(),
             (s, v) -> s.setRate(Rating.valueOf(v))),

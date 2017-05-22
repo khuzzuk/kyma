@@ -4,10 +4,7 @@ import com.google.inject.Inject;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.MetadataField;
 import org.apache.lucene.index.*;
-import org.apache.lucene.search.FieldValueQuery;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.*;
 import pl.khuzzuk.messaging.Bus;
 
 import javax.inject.Named;
@@ -34,12 +31,12 @@ public class DataReader {
         Set<String> values = new TreeSet<>();
         try (DirectoryReader reader = DirectoryReader.open(writer)) {
             IndexSearcher searcher = new IndexSearcher(reader);
-            TopDocs search = searcher.search(new FieldValueQuery(field.getName()), Integer.MAX_VALUE);
+            TopDocs search = searcher.search(new MatchAllDocsQuery(), Integer.MAX_VALUE);
             for (ScoreDoc doc : search.scoreDocs) {
                 values.add(searcher.doc(doc.doc, Collections.singleton(field.getName())).get(field.getName()));
             }
         } catch (IOException e) {
-            log.error("cannot wuery index");
+            log.error("cannot query index");
             log.error(e);
         }
         return values;

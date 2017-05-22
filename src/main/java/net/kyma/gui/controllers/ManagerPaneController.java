@@ -78,7 +78,7 @@ public class ManagerPaneController implements Initializable {
         BaseElement root = new RootElement();
         List<SoundFile> soundFiles = sounds.stream().sorted().collect(Collectors.toList());
         for (SoundFile f : soundFiles) {
-            String[] path = f.getIndexedPath().split("[\\\\/]+");
+            String[] path = f.getPath().replace(f.getIndexedPath(), "").split("[\\\\/]+");
             if (path.length == 0) log.error("Database inconsistency!");
             fillChild(root, path, 0, f);
         }
