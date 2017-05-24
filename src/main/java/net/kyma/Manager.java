@@ -8,7 +8,6 @@ import javafx.application.Application;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import lombok.extern.log4j.Log4j2;
-import net.kyma.BusModule;
 import net.kyma.data.DataIndexer;
 import net.kyma.data.DatabaseModule;
 import net.kyma.data.DirectoryIndexer;
@@ -19,6 +18,7 @@ import net.kyma.gui.SoundFileBulkEditor;
 import net.kyma.gui.SoundFileEditor;
 import net.kyma.player.PlayerManager;
 import net.kyma.player.Playlist;
+import net.kyma.properties.ColumnManager;
 import net.kyma.properties.PropertiesManager;
 import net.kyma.properties.PropertiesModule;
 import pl.khuzzuk.messaging.Bus;
@@ -30,6 +30,7 @@ public class Manager extends Application {
     private static Injector injector;
     private static Bus bus;
     private static Properties messages;
+
     public static void main(String[] args) {
         injector = Guice.createInjector(new ControllersModule(), new BusModule(),
                 new DatabaseModule(), new PropertiesModule());
@@ -38,12 +39,16 @@ public class Manager extends Application {
         injector.getInstance(PlayerManager.class).init();
         injector.getInstance(DirectoryIndexer.class).init();
         injector.getInstance(MetadataIndexer.class).init();
-        injector.getInstance(PropertiesManager.class).initializeProperties();
+        injector.getInstance(PropertiesManager.class).init();
         injector.getInstance(SoundFileEditor.class).init();
         injector.getInstance(SoundFileBulkEditor.class).init();
+        injector.getInstance(ColumnManager.class).init();
+
         new Image("/css/background.jpg");
+
         bus = injector.getInstance(Bus.class);
         messages = injector.getInstance(Key.get(Properties.class, Names.named("messages")));
+
         launch(args);
     }
 
