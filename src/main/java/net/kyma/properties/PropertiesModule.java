@@ -1,5 +1,6 @@
 package net.kyma.properties;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 import lombok.extern.log4j.Log4j2;
@@ -27,5 +28,6 @@ public class PropertiesModule extends AbstractModule {
             e.printStackTrace();
         }
         bind(Properties.class).annotatedWith(Names.named("userProperties")).toInstance(properties);
+        bind(ObjectMapper.class).toInstance(new ObjectMapper());
     }
 }

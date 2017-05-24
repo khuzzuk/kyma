@@ -30,7 +30,7 @@ public class PropertiesManager {
     @Named("propertiesFile")
     private File propertiesFile;
 
-    public void initializeProperties() {
+    public void init() {
         bus.setReaction(messages.getProperty("gui.window.settings"), this::windowGetSettings);
         bus.setReaction(messages.getProperty("properties.window.store.frame"), this::windowStoreRectangle);
         bus.<Boolean>setReaction(messages.getProperty("properties.window.store.maximized"),

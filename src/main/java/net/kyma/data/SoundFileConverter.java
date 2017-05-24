@@ -5,7 +5,6 @@ import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
 import net.kyma.player.Format;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.lucene.document.Document;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
@@ -15,9 +14,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.File;
-import java.text.ParseException;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static net.kyma.dm.MetadataField.*;
