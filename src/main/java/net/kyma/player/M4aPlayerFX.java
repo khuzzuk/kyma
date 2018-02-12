@@ -1,5 +1,9 @@
 package net.kyma.player;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
 import javafx.scene.media.MediaPlayer;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
@@ -10,17 +14,12 @@ import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.tag.TagException;
 import pl.khuzzuk.messaging.Bus;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
 @Log4j2
 class M4aPlayerFX extends Mp3PlayerFX {
     M4aPlayerFX(SoundFile file, Bus bus, Properties messages) {
         super(file, bus, messages);
     }
 
-    @Override
     long calculateLength(MediaPlayer player) {
         if (player == null) return 0;
         int retry = 20;
