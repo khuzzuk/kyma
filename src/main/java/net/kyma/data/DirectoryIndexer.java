@@ -1,15 +1,21 @@
 package net.kyma.data;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import net.kyma.dm.SoundFile;
 import net.kyma.player.Format;
 import pl.khuzzuk.messaging.Bus;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class DirectoryIndexer {
     @Inject
@@ -20,7 +26,6 @@ public class DirectoryIndexer {
     @Inject
     private SoundFileConverter converter;
 
-    @PostConstruct
     public void init() {
         bus.<File>setReaction(messages.getProperty("data.index.directory"), d -> bus.send(messages.getProperty("data.index.list"), indexCatalogue(d)));
     }

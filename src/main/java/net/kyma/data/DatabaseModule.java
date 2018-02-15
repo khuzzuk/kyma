@@ -1,14 +1,14 @@
 package net.kyma.data;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+
 import com.google.inject.AbstractModule;
 import lombok.extern.log4j.Log4j2;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NIOFSDirectory;
-
-import java.io.IOException;
-import java.nio.file.Paths;
 
 @Log4j2
 public class DatabaseModule extends AbstractModule {
