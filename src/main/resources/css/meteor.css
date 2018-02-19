@@ -14,7 +14,7 @@
 }
 
 #BackgroundContainer {
-    -fx-background-image: url("background.jpg");
+    -fx-background-image: url("meteor-background.jpg");
     /*<a hre='http://allswalls.com'>http://allswalls.com</a>*/
     -fx-background-repeat: stretch;
     -fx-background-size: 100%;

@@ -1,39 +1,35 @@
 package net.kyma.gui.controllers;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.image.*;
-import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
-import javafx.stage.*;
-import javafx.stage.Window;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
-import net.kyma.data.SoundFileConverter;
-import net.kyma.gui.BaseElement;
-import net.kyma.gui.RootElement;
-import net.kyma.gui.SoundElement;
-import net.kyma.dm.SoundFile;
-import net.kyma.gui.TableColumnFactory;
-import pl.khuzzuk.messaging.Bus;
+import java.awt.*;
+import java.io.File;
+import java.net.URL;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.ResourceBundle;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.awt.*;
-import java.io.File;
-import java.net.URL;
-import java.util.*;
-import java.util.stream.Collectors;
+
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.SplitPane;
+import javafx.scene.image.Image;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.GridPane;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+import pl.khuzzuk.messaging.Bus;
 
 @SuppressWarnings("WeakerAccess")
 @Singleton
@@ -77,7 +73,7 @@ public class MainController implements Initializable {
 
     private void setBackground() {
         Rectangle2D screenSize = Screen.getPrimary().getBounds();
-        mainPane.setBackground(new Background(new BackgroundImage(new Image("/css/background.jpg"),
+        mainPane.setBackground(new Background(new BackgroundImage(new Image("/css/classic-background.png"),
                 BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
                 new BackgroundSize(screenSize.getWidth(), screenSize.getHeight(),
                         false, false, false, false))));

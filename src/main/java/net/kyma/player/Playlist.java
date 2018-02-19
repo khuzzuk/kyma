@@ -1,13 +1,17 @@
 package net.kyma.player;
 
-import net.kyma.dm.SoundFile;
-import org.apache.commons.collections4.iterators.LoopingListIterator;
-import pl.khuzzuk.messaging.Bus;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.util.*;
+
+import net.kyma.dm.SoundFile;
+import org.apache.commons.collections4.iterators.LoopingListIterator;
+import pl.khuzzuk.messaging.Bus;
 
 @Singleton
 public class Playlist {
@@ -22,8 +26,8 @@ public class Playlist {
 
     public void init() {
         playlist = new LinkedList<>();
-        bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.add.list"), this::addAll);
-        bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.remove.list"), this::removeAll);
+        bus.setReaction(messages.getProperty("playlist.add.list"), this::addAll);
+        bus.setReaction(messages.getProperty("playlist.remove.list"), this::removeAll);
         bus.setReaction(messages.getProperty("playlist.next"), this::playNextItem);
         bus.setReaction(messages.getProperty("playlist.previous"), this::playPreviousItem);
         bus.setReaction(messages.getProperty("data.remove.item"), this::maybeRemove);
@@ -49,6 +53,7 @@ public class Playlist {
         do {
             index = iterator.nextIndex();
             next = iterator.next();
+            if (this.index == 0 && index == 0) break; //TODO refactor this
         } while (this.index == index);
         this.index = index;
 

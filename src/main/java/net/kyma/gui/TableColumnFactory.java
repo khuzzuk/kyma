@@ -1,5 +1,14 @@
 package net.kyma.gui;
 
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.function.BiConsumer;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -12,13 +21,6 @@ import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
 import org.apache.commons.lang3.StringUtils;
 import pl.khuzzuk.messaging.Bus;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.function.BiConsumer;
 
 @Singleton
 public class TableColumnFactory {
@@ -50,17 +52,21 @@ public class TableColumnFactory {
 
     public TableColumn<SoundFile, SoundFile> getRateColumn() {
         TableColumn<SoundFile, SoundFile> column = new TableColumn<>("Ocena");
+        column.setComparator(Comparator.comparingInt(soundFile -> soundFile.getRate().getValue()));
         column.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue()));
-        column.setCellFactory(param -> new TableCell<SoundFile, SoundFile>() {
+        column.setCellFactory(param -> new TableCell<>()
+        {
             @Override
-            protected void updateItem(SoundFile item, boolean empty) {
+            protected void updateItem(SoundFile item, boolean empty)
+            {
                 super.updateItem(item, empty);
                 graphicSetter.accept(item, this);
                 setOnMouseMoved(e -> Optional.ofNullable(item).ifPresent(i ->
-                        setGraphic(Rating.getStarFor((int) (e.getX() * 10 / getWidth() + 1)))));
+                      setGraphic(Rating.getStarFor((int) (e.getX() * 10 / getWidth() + 1)))));
                 setOnMouseExited(e -> graphicSetter.accept(item, this));
                 setOnMouseClicked(e -> {
-                    if (e.getButton().equals(MouseButton.PRIMARY)) {
+                    if (e.getButton().equals(MouseButton.PRIMARY))
+                    {
                         Rating.setRate((int) (e.getX() * 10 / getWidth() + 1), item);
                         bus.send(messages.getProperty("data.store.item"), item);
                     }

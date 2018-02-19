@@ -1,15 +1,21 @@
 package net.kyma;
 
+import java.util.Properties;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 import javafx.application.Application;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import lombok.extern.log4j.Log4j2;
-import net.kyma.BusModule;
-import net.kyma.data.*;
+import net.kyma.data.DataIndexer;
+import net.kyma.data.DataReader;
+import net.kyma.data.DatabaseModule;
+import net.kyma.data.DirectoryIndexer;
+import net.kyma.data.FileCleaner;
+import net.kyma.data.MetadataIndexer;
+import net.kyma.data.PlayCounter;
 import net.kyma.gui.ControllersModule;
 import net.kyma.gui.MainWindow;
 import net.kyma.gui.SoundFileBulkEditor;
@@ -19,8 +25,6 @@ import net.kyma.player.Playlist;
 import net.kyma.properties.PropertiesManager;
 import net.kyma.properties.PropertiesModule;
 import pl.khuzzuk.messaging.Bus;
-
-import java.util.Properties;
 
 @Log4j2
 public class Manager extends Application {
@@ -41,7 +45,6 @@ public class Manager extends Application {
         injector.getInstance(SoundFileBulkEditor.class).init();
         injector.getInstance(PlayCounter.class).init();
         injector.getInstance(FileCleaner.class).init();
-        new Image("/css/background.jpg");
         bus = injector.getInstance(Bus.class);
         messages = injector.getInstance(Key.get(Properties.class, Names.named("messages")));
         launch(args);
