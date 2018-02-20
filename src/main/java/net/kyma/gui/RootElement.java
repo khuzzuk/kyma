@@ -1,8 +1,15 @@
 package net.kyma.gui;
 
 public class RootElement extends BaseElement {
-    public RootElement() {
-        setValue("Pliki");
-        setName("Pliki");
+    private String rootPath;
+    public RootElement(String indexedPath) {
+        rootPath = indexedPath;
+        setName(indexedPath.substring(indexedPath.lastIndexOf("/") + 1));
+    }
+
+    @Override
+    public String getPath()
+    {
+        return rootPath + getName();
     }
 }

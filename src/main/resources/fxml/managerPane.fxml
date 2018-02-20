@@ -22,7 +22,7 @@
         <RowConstraints/>
         <RowConstraints/>
     </rowConstraints>
-    <TreeView fx:id="filesList" maxHeight="Infinity" onMouseClicked="#fillContentView"/>
+    <TreeView fx:id="filesList" maxHeight="Infinity" onMouseClicked="#fillContentView" onKeyReleased="#onKeyReleased"/>
     <SplitPane dividerPositions="0" maxHeight="Infinity" maxWidth="Infinity" orientation="VERTICAL"
                GridPane.columnIndex="1">
         <HBox>

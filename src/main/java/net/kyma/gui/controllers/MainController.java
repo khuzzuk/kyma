@@ -56,7 +56,7 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         bus.setGuiReaction(messages.getProperty("data.view.refresh"), o -> mainPane.getItems().remove(indicator));
-        bus.<Number>setReaction(messages.getProperty("data.index.gui.amount"), n -> maxProgress = n.doubleValue());
+        bus.setGuiReaction(messages.getProperty("data.index.gui.amount"), this::showIndicator);
         bus.<Number>setGuiReaction(messages.getProperty("data.index.gui.progress"), n -> indicator.setProgress(n.doubleValue() / maxProgress));
         bus.setGuiReaction(messages.getProperty("data.index.gui.finish"), () -> mainPane.getItems().remove(indicator));
         bus.setGuiReaction(messages.getProperty("gui.window.set.fullScreen"), () -> {
@@ -69,6 +69,14 @@ public class MainController implements Initializable {
 
         bus.send(messages.getProperty("gui.window.settings"));
         managerPaneController.resizeFor(mainPane);
+    }
+
+    private void showIndicator(int maxProgress)
+    {
+        this.maxProgress = maxProgress;
+        indicator = new ProgressIndicator();
+        mainPane.getItems().add(indicator);
+        indicator.setVisible(true);
     }
 
     private void setBackground() {
@@ -88,9 +96,6 @@ public class MainController implements Initializable {
     @FXML
     private void indexCatalogue() {
         Optional.ofNullable(getFile()).ifPresent(f -> {
-            indicator = new ProgressIndicator();
-            mainPane.getItems().add(indicator);
-            indicator.setVisible(true);
             bus.send(messages.getProperty("data.index.directory"), f);
         });
     }

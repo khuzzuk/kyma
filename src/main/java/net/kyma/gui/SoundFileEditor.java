@@ -1,5 +1,14 @@
 package net.kyma.gui;
 
+import static net.kyma.dm.SupportedFields.*;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import com.google.inject.Inject;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -11,19 +20,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import net.kyma.dm.SupportedFields;
 import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
+import net.kyma.dm.SupportedFields;
 import org.apache.commons.lang3.mutable.MutableInt;
 import pl.khuzzuk.messaging.Bus;
-
-import javax.inject.Named;
-import javax.inject.Singleton;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import static net.kyma.dm.SupportedFields.*;
 
 @Singleton
 public class SoundFileEditor {
@@ -71,7 +72,7 @@ public class SoundFileEditor {
             gridPane.add(ok, y.intValue(), Math.max(max.incrementAndGet(), x.incrementAndGet()));
 
             Scene scene = new Scene(gridPane);
-            scene.getStylesheets().add("/css/player.css");
+            scene.getStylesheets().add("/css/classic.css");
             window.setScene(scene);
             window.setOnCloseRequest(e -> window.hide());
         });
@@ -142,7 +143,7 @@ public class SoundFileEditor {
 
     void saveSoundFile() {
         fields.forEach((field, value) -> field.getSetter().accept(soundFile, value.getText()));
-        soundFile.setRate(Rating.getRatingBy(rate.getSelectionModel().getSelectedIndex(), soundFile.getFormat()));
+        soundFile.setRate(Rating.getFor(rate.getSelectionModel().getSelectedIndex()));
         bus.send(messages.getProperty("data.store.item"), soundFile);
         window.hide();
     }

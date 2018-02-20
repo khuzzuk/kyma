@@ -1,13 +1,18 @@
 package net.kyma.gui;
 
-import javafx.scene.control.TreeItem;
-import lombok.*;
-
 import java.util.HashMap;
 import java.util.Map;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
+import javafx.scene.control.TreeItem;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@Setter
+@EqualsAndHashCode(of = "name", callSuper = false)
+@ToString(of = "name")
 public class BaseElement extends TreeItem<String> {
     private String name;
     private BaseElement parentElement;
@@ -33,4 +38,13 @@ public class BaseElement extends TreeItem<String> {
         return childElements.get(name);
     }
 
+    public boolean isBranch()
+    {
+        return true;
+    }
+
+    public String getPath()
+    {
+        return parentElement.getPath() + "/" + name;
+    }
 }

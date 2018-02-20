@@ -14,4 +14,9 @@ public class SoundElement extends BaseElement {
         setName(soundFile.getFileName());
     }
 
+    @Override
+    public boolean isBranch()
+    {
+        return false;
+    }
 }

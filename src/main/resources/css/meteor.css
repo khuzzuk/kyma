@@ -131,6 +131,10 @@
     -fx-background-color: transparent;
 }
 
+.tree-view .corner {
+    -fx-background-color: transparent;
+}
+
 .text-field {
     -fx-background-color: transparent;
     -fx-text-fill: -elements-background;

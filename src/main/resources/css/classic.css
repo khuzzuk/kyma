@@ -69,6 +69,7 @@
 
 .currentlyPlayed {
     -fx-padding: 0 0 0 0.3em;
+    -fx-background-color: -containers-background2;
 }
 
 .slider .track {
@@ -87,6 +88,10 @@
     -fx-background-color: transparent;
     -fx-pref-width: 14px;
     -fx-padding: 2px;
+}
+
+.tree-view .corner {
+    -fx-background-color: transparent;
 }
 
 .scroll-bar .track {

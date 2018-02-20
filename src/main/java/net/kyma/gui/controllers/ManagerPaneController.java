@@ -1,18 +1,27 @@
 package net.kyma.gui.controllers;
 
+import java.io.File;
+import java.net.URL;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
@@ -21,13 +30,6 @@ import net.kyma.gui.RootElement;
 import net.kyma.gui.SoundElement;
 import net.kyma.gui.TableColumnFactory;
 import pl.khuzzuk.messaging.Bus;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-import java.net.URL;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Log4j2
 @Singleton
@@ -75,7 +77,7 @@ public class ManagerPaneController implements Initializable {
     }
 
     private void fillTreeView(Collection<SoundFile> sounds) {
-        BaseElement root = new RootElement();
+        RootElement root = new RootElement("Pliki");
         List<SoundFile> soundFiles = sounds.stream().sorted().collect(Collectors.toList());
         for (SoundFile f : soundFiles) {
             String[] path = f.getPath().replace(f.getIndexedPath(), "").split("[\\\\/]+");
@@ -97,10 +99,11 @@ public class ManagerPaneController implements Initializable {
         } else {
             BaseElement catalogue = parent.getChildElement(path[pos]);
             if (catalogue == null) {
-                element = new BaseElement();
+                element = pos == 0 ? new RootElement(soundFile.getIndexedPath()) : new BaseElement();
                 element.setName(path[pos]);
                 fillChild(element, path, pos + 1, soundFile);
                 parent.addChild(element);
+                element.setParentElement(parent);
             } else {
                 fillChild(catalogue, path, pos + 1, soundFile);
             }
@@ -122,7 +125,7 @@ public class ManagerPaneController implements Initializable {
     @FXML
     private void fillContentView() {
         BaseElement selectedItem = (BaseElement) filesList.getSelectionModel().getSelectedItem();
-        if (selectedItem != null && !(selectedItem instanceof SoundElement)) {
+        if (selectedItem != null) {
             contentView.getItems().clear();
             contentView.refresh();
             contentView.getItems().addAll(selectedItem.getChildElements().values()
@@ -130,6 +133,22 @@ public class ManagerPaneController implements Initializable {
                     .map(e -> (SoundElement) e)
                     .map(SoundElement::getSoundFile)
                     .collect(Collectors.toList()));
+        }
+    }
+    
+    @FXML
+    private void onKeyReleased(KeyEvent keyEvent)
+    {
+        List<BaseElement> selected = filesList.getSelectionModel().getSelectedItems()
+              .stream().map(BaseElement.class::cast)
+              .collect(Collectors.toList());
+        switch (keyEvent.getCode())
+        {
+            case INSERT:
+                selected.stream()
+                      .map(BaseElement::getPath)
+                      .map(File::new)
+                      .forEach(path -> bus.send("data.index.directory", path));
         }
     }
 

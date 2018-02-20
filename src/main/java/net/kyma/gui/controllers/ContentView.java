@@ -1,6 +1,16 @@
 package net.kyma.gui.controllers;
 
-import javafx.collections.ObservableList;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.function.BiConsumer;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.SelectionMode;
@@ -15,16 +25,6 @@ import net.kyma.gui.SoundFileBulkEditor;
 import net.kyma.gui.SoundFileEditor;
 import net.kyma.gui.TableColumnFactory;
 import pl.khuzzuk.messaging.Bus;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.function.BiConsumer;
 
 @Log4j2
 @Singleton
@@ -91,7 +91,7 @@ public class ContentView implements Initializable {
     }
 
     @FXML
-    private void onKeyPressed(KeyEvent keyEvent) {
+    private void onKeyReleased(KeyEvent keyEvent) {
         if (keyEvent.getCode().equals(KeyCode.ENTER)) {
             Collection<SoundFile> allSelected = selected;
             if (allSelected.size() == 1) {
