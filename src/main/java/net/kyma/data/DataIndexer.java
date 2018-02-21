@@ -16,7 +16,7 @@ import com.google.inject.Singleton;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
-import net.kyma.dm.SupportedFields;
+import net.kyma.dm.SupportedField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
@@ -103,8 +103,8 @@ public class DataIndexer
          ScoreDoc[] scoreDocs = searcher.search(new TermQuery(termForPath(soundFile.getPath())), 1).scoreDocs;
          if (scoreDocs.length == 1)
          {
-            previousPath = searcher.doc(scoreDocs[0].doc, Collections.singleton(SupportedFields.INDEXED_PATH.getName()))
-                  .get(SupportedFields.INDEXED_PATH.getName());
+            previousPath = searcher.doc(scoreDocs[0].doc, Collections.singleton(SupportedField.INDEXED_PATH.getName()))
+                  .get(SupportedField.INDEXED_PATH.getName());
          }
       }
       catch (IOException e)
@@ -179,7 +179,7 @@ public class DataIndexer
    {
       bus.send(messages.getProperty("data.index.get.distinct"),
             messages.getProperty("data.index.get.directories"),
-            SupportedFields.INDEXED_PATH);
+            SupportedField.INDEXED_PATH);
    }
 
    private void commit()

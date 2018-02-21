@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.function.BiConsumer;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -21,6 +20,8 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
+import net.kyma.dm.SupportedField;
+import net.kyma.dm.TagUpdateRequest;
 import net.kyma.gui.SoundFileBulkEditor;
 import net.kyma.gui.SoundFileEditor;
 import net.kyma.gui.TableColumnFactory;
@@ -48,8 +49,7 @@ public class ContentView implements Initializable {
         initContentView();
 
         contentView.setEditable(true);
-        bus.<String>setReaction(messages.getProperty("data.edit.title.commit"), v -> update(v, (n, s) -> s.setTitle(n)));
-        bus.<String>setReaction(messages.getProperty("data.edit.year.commit"), v -> update(v, (n, s) -> s.setDate(n)));
+        bus.setReaction("data.update.request", this::update);
         bus.setReaction(messages.getProperty("playlist.next"), contentView::refresh);
     }
 
@@ -57,22 +57,22 @@ public class ContentView implements Initializable {
     private void initContentView() {
         contentView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         contentView.getColumns().clear();
-        contentView.getColumns().addAll(columnFactory.getTitleColumn(),
-                columnFactory.getRateColumn(),
-                columnFactory.getYearColumn(),
-                columnFactory.getAlbumColumn(),
-                columnFactory.getAlbumArtistColumn(),
-                columnFactory.getAlbumArtistsColumn(),
-                columnFactory.getArtistColumn(),
-                columnFactory.getArtistsColumn(),
-                columnFactory.getCounterColumn());
+        contentView.getColumns().addAll(
+              columnFactory.getStringColumn(SupportedField.TITLE),
+              columnFactory.getRateColumn(),
+              columnFactory.getStringColumn(SupportedField.YEAR),
+              columnFactory.getStringColumn(SupportedField.ALBUM),
+              columnFactory.getStringColumn(SupportedField.ARTIST),
+              columnFactory.getStringColumn(SupportedField.MOOD),
+              columnFactory.getStringColumn(SupportedField.TEMPO),
+              columnFactory.getStringColumn(SupportedField.OCCASION),
+              columnFactory.getCounterColumn());
         selected = contentView.getSelectionModel().getSelectedItems();
     }
 
-    private <T> void update(T value, BiConsumer<T, SoundFile> updater) {
-        SoundFile selected = getSelected();
-        updater.accept(value, selected);
-        bus.send(messages.getProperty("data.store.item"), selected);
+    private void update(TagUpdateRequest updateRequest)
+    {
+        bus.send("data.store.item", updateRequest.update(getSelected()));
     }
 
     private SoundFile getSelected() {

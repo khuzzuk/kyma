@@ -3,7 +3,7 @@ package net.kyma.data;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
-import net.kyma.dm.SupportedFields;
+import net.kyma.dm.SupportedField;
 import net.kyma.player.Format;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.lucene.document.Document;
@@ -21,7 +21,7 @@ import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static net.kyma.dm.SupportedFields.*;
+import static net.kyma.dm.SupportedField.*;
 
 @Log4j2
 @Singleton
@@ -57,7 +57,7 @@ public class SoundFileConverter {
     }
 
     private void fillData(SoundFile sound, Tag metadata) {
-        SupportedFields.SUPPORTED_TAG.forEach(f -> f.getSetter().accept(sound, metadata.getFirst(f.getMappedKey())));
+        SupportedField.SUPPORTED_TAG.forEach(f -> f.getSetter().accept(sound, metadata.getFirst(f.getMappedKey())));
         sound.setRate(Rating.getRatingBy(NumberUtils.toInt(metadata.getFirst(FieldKey.RATING), 0),
                 sound.getFormat()));
 

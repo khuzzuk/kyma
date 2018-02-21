@@ -1,6 +1,6 @@
 package net.kyma.gui;
 
-import static net.kyma.dm.SupportedFields.*;
+import static net.kyma.dm.SupportedField.*;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -22,7 +22,7 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
-import net.kyma.dm.SupportedFields;
+import net.kyma.dm.SupportedField;
 import org.apache.commons.lang3.mutable.MutableInt;
 import pl.khuzzuk.messaging.Bus;
 
@@ -36,7 +36,7 @@ public class SoundFileEditor {
     Stage window;
     private SoundFile soundFile;
     private ComboBox<Node> rate;
-    Map<SupportedFields, TextField> fields;
+    Map<SupportedField, TextField> fields;
 
     public void init() {
         Platform.runLater(() -> {

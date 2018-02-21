@@ -19,6 +19,8 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseButton;
 import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
+import net.kyma.dm.SupportedField;
+import net.kyma.dm.TagUpdateRequest;
 import org.apache.commons.lang3.StringUtils;
 import pl.khuzzuk.messaging.Bus;
 
@@ -30,7 +32,7 @@ public class TableColumnFactory {
     @Named("messages")
     private Properties messages;
 
-    private static BiConsumer<SoundFile, TableCell<?, ?>> graphicSetter =
+    private static BiConsumer<SoundFile, TableCell<?, ?>> startFactory =
             (s, cell) -> Optional.ofNullable(s).map(Rating::getStarFor).ifPresent(cell::setGraphic);
 
     public TableColumn<SoundFile, String> getTitleColumn() {
@@ -60,10 +62,10 @@ public class TableColumnFactory {
             protected void updateItem(SoundFile item, boolean empty)
             {
                 super.updateItem(item, empty);
-                graphicSetter.accept(item, this);
+                startFactory.accept(item, this);
                 setOnMouseMoved(e -> Optional.ofNullable(item).ifPresent(i ->
                       setGraphic(Rating.getStarFor((int) (e.getX() * 10 / getWidth() + 1)))));
-                setOnMouseExited(e -> graphicSetter.accept(item, this));
+                setOnMouseExited(e -> startFactory.accept(item, this));
                 setOnMouseClicked(e -> {
                     if (e.getButton().equals(MouseButton.PRIMARY))
                     {
@@ -78,45 +80,13 @@ public class TableColumnFactory {
         return column;
     }
 
-    public TableColumn<SoundFile, String> getYearColumn() {
-        TableColumn<SoundFile, String> column = new TableColumn<>("rok");
-        column.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue().getDate()));
+    public TableColumn<SoundFile, String> getStringColumn(SupportedField field)
+    {
+        TableColumn<SoundFile, String> column = new TableColumn<>(field.getName());
+        column.setCellValueFactory(data -> new SimpleStringProperty(field.getGetter().apply(data.getValue())));
         column.setCellFactory(TextFieldTableCell.forTableColumn());
-        column.setOnEditCommit(v -> bus.send(messages.getProperty("data.edit.year.commit"), v.getNewValue()));
-        return column;
-    }
-
-    public TableColumn<SoundFile, String> getAlbumColumn() {
-        TableColumn<SoundFile, String> column = new TableColumn<>("album");
-        column.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getAlbum()));
-        return column;
-    }
-
-    public TableColumn<SoundFile, String> getAlbumArtistColumn() {
-        TableColumn<SoundFile, String> column = new TableColumn<>("Wykonawca albumu");
-        column.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue().getAlbumArtist()));
-        column.setCellFactory(TextFieldTableCell.forTableColumn());
-        return column;
-    }
-
-    public TableColumn<SoundFile, String> getAlbumArtistsColumn() {
-        TableColumn<SoundFile, String> column = new TableColumn<>("Wykonawcy albumu");
-        column.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue().getAlbumArtists()));
-        column.setCellFactory(TextFieldTableCell.forTableColumn());
-        return column;
-    }
-
-    public TableColumn<SoundFile, String> getArtistColumn() {
-        TableColumn<SoundFile, String> column = new TableColumn<>("Wykonawca");
-        column.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue().getArtist()));
-        column.setCellFactory(TextFieldTableCell.forTableColumn());
-        return column;
-    }
-
-    public TableColumn<SoundFile, String> getArtistsColumn() {
-        TableColumn<SoundFile, String> column = new TableColumn<>("Wykonawcy");
-        column.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue().getArtists()));
-        column.setCellFactory(TextFieldTableCell.forTableColumn());
+        column.setOnEditCommit(value ->
+              bus.send("data.update.request", new TagUpdateRequest(field, value.getNewValue())));
         return column;
     }
 
