@@ -1,30 +1,33 @@
 package net.kyma.data;
 
-import com.google.inject.Inject;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Set;
+import java.util.TreeSet;
+
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import net.kyma.EventType;
+import net.kyma.Loadable;
 import net.kyma.dm.SupportedField;
-import org.apache.lucene.index.*;
-import org.apache.lucene.search.*;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
 import pl.khuzzuk.messaging.Bus;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
-import java.io.IOException;
-import java.util.*;
-
-@Singleton
 @Log4j2
-public class DataReader {
-    @Inject
-    private Bus bus;
-    @Inject
-    @Named("messages")
-    private Properties messages;
-    @Inject
+@AllArgsConstructor
+public class DataReader implements Loadable
+{
+    private Bus<EventType> bus;
     private IndexWriter writer;
 
-    public void init() {
-        bus.setResponse(messages.getProperty("data.index.get.distinct"), this::getDistinctValues);
+    @Override
+    public void load() {
+        bus.setResponse(EventType.DATA_INDEX_GET_DISTINCT, this::getDistinctValues);
     }
 
     private Set<String> getDistinctValues(SupportedField field) {

@@ -1,34 +1,36 @@
 package net.kyma.gui;
 
+import static net.kyma.EventType.CLOSE;
+import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_FRAME;
+import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_FULLSCREEN;
+import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_MAXIMIZED;
+
+import java.awt.*;
+import java.io.IOException;
+
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.stage.*;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.Window;
+import javafx.stage.WindowEvent;
+import net.kyma.EventType;
 import net.kyma.gui.controllers.ControllerDistributor;
 import net.kyma.gui.controllers.MainController;
 import pl.khuzzuk.messaging.Bus;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.awt.*;
-import java.io.IOException;
-import java.util.Properties;
-
 public class MainWindow extends Stage {
-    private final ControllerDistributor controllerDistributor;
-    private final MainController mainController;
-    private Bus bus;
-    private Properties messages;
+    private Bus<EventType> bus;
+    private ControllerDistributor controllerDistributor;
+    private MainController mainController;
 
-    @Inject
-    public MainWindow(ControllerDistributor controllerDistributor, MainController mainController,
-                      Bus bus, @Named("messages") Properties messages) {
+    public MainWindow(Bus<EventType> bus, ControllerDistributor controllerDistributor, MainController mainController) {
         super(StageStyle.DECORATED);
+        this.bus = bus;
         initModality(Modality.WINDOW_MODAL);
         this.controllerDistributor = controllerDistributor;
         this.mainController = mainController;
-        this.bus = bus;
-        this.messages = messages;
     }
 
     public void initMainWindow(Window parent) {
@@ -46,17 +48,17 @@ public class MainWindow extends Stage {
 
     private void onClose(WindowEvent e) {
         if (isFullScreen()) {
-            bus.send(messages.getProperty("properties.window.store.fullScreen"), Boolean.TRUE);
+            bus.send(PROPERTIES_STORE_WINDOW_FULLSCREEN, Boolean.TRUE);
         } else if (isMaximized()) {
-            bus.send(messages.getProperty("properties.window.store.fullScreen"), Boolean.FALSE);
-            bus.send(messages.getProperty("properties.window.store.maximized"), Boolean.TRUE);
+            bus.send(PROPERTIES_STORE_WINDOW_FULLSCREEN, Boolean.FALSE);
+            bus.send(PROPERTIES_STORE_WINDOW_MAXIMIZED, Boolean.TRUE);
         } else {
             Rectangle rectangle = new Rectangle();
             rectangle.setRect(getX(), getY(), getWidth(), getHeight());
-            bus.send(messages.getProperty("properties.window.store.frame"), rectangle);
-            bus.send(messages.getProperty("properties.window.store.fullScreen"), Boolean.FALSE);
-            bus.send(messages.getProperty("properties.window.store.maximized"), Boolean.FALSE);
+            bus.send(PROPERTIES_STORE_WINDOW_FRAME, rectangle);
+            bus.send(PROPERTIES_STORE_WINDOW_FULLSCREEN, Boolean.FALSE);
+            bus.send(PROPERTIES_STORE_WINDOW_MAXIMIZED, Boolean.FALSE);
         }
-        bus.send("close");
+        bus.send(CLOSE);
     }
 }

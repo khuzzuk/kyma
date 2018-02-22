@@ -4,12 +4,7 @@ import static net.kyma.dm.SupportedField.*;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Properties;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
-
-import com.google.inject.Inject;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -20,19 +15,15 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import net.kyma.EventType;
 import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
 import org.apache.commons.lang3.mutable.MutableInt;
 import pl.khuzzuk.messaging.Bus;
 
-@Singleton
 public class SoundFileEditor {
-    @Inject
-    Bus bus;
-    @Inject
-    @Named("messages")
-    Properties messages;
+    Bus<EventType> bus;
     Stage window;
     private SoundFile soundFile;
     private ComboBox<Node> rate;
@@ -144,7 +135,8 @@ public class SoundFileEditor {
     void saveSoundFile() {
         fields.forEach((field, value) -> field.getSetter().accept(soundFile, value.getText()));
         soundFile.setRate(Rating.getFor(rate.getSelectionModel().getSelectedIndex()));
-        bus.send(messages.getProperty("data.store.item"), soundFile);
+        bus.send(EventType.DATA_STORE_ITEM, soundFile);
         window.hide();
+        soundFile = null;
     }
 }

@@ -1,13 +1,12 @@
 package net.kyma.gui;
 
+import static net.kyma.EventType.DATA_STORE_ITEM;
+import static net.kyma.EventType.DATA_UPDATE_REQUEST;
+import static net.kyma.dm.SupportedField.TITLE;
+
 import java.util.Comparator;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.function.BiConsumer;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -17,6 +16,8 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseButton;
+import lombok.AllArgsConstructor;
+import net.kyma.EventType;
 import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
@@ -24,13 +25,9 @@ import net.kyma.dm.TagUpdateRequest;
 import org.apache.commons.lang3.StringUtils;
 import pl.khuzzuk.messaging.Bus;
 
-@Singleton
+@AllArgsConstructor
 public class TableColumnFactory {
-    @Inject
-    private Bus bus;
-    @Inject
-    @Named("messages")
-    private Properties messages;
+    private Bus<EventType> bus;
 
     private static BiConsumer<SoundFile, TableCell<?, ?>> startFactory =
             (s, cell) -> Optional.ofNullable(s).map(Rating::getStarFor).ifPresent(cell::setGraphic);
@@ -39,7 +36,9 @@ public class TableColumnFactory {
         TableColumn<SoundFile, String> title = new TableColumn<>("Tytuł");
         title.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getTitle()));
         title.setCellFactory(TextFieldTableCell.forTableColumn());
-        title.setOnEditCommit(v -> bus.send(messages.getProperty("data.edit.title.commit"), v.getNewValue()));
+        title.setOnEditCommit(v ->
+              bus.send(DATA_UPDATE_REQUEST, new TagUpdateRequest(TITLE, v.getNewValue())));
+
         title.setCellValueFactory(param -> {
             if (!StringUtils.isEmpty(param.getValue().getTitle())) {
                 return new SimpleStringProperty(param.getValue().getTitle());
@@ -70,7 +69,7 @@ public class TableColumnFactory {
                     if (e.getButton().equals(MouseButton.PRIMARY))
                     {
                         Rating.setRate((int) (e.getX() * 10 / getWidth() + 1), item);
-                        bus.send(messages.getProperty("data.store.item"), item);
+                        bus.send(DATA_STORE_ITEM, item);
                     }
                 });
             }
@@ -86,7 +85,7 @@ public class TableColumnFactory {
         column.setCellValueFactory(data -> new SimpleStringProperty(field.getGetter().apply(data.getValue())));
         column.setCellFactory(TextFieldTableCell.forTableColumn());
         column.setOnEditCommit(value ->
-              bus.send("data.update.request", new TagUpdateRequest(field, value.getNewValue())));
+              bus.send(DATA_UPDATE_REQUEST, new TagUpdateRequest(field, value.getNewValue())));
         return column;
     }
 
@@ -96,7 +95,7 @@ public class TableColumnFactory {
         return column;
     }
 
-    public TableColumn<SoundFile, String> getTitleColumn(IntegerProperty property) {
+    public TableColumn<SoundFile, String> getTitleColumnForPlaylist(IntegerProperty property) {
         TableColumn<SoundFile, String> column = getTitleColumn();
         column.setCellFactory(param -> new TableCell<SoundFile, String>() {
             @Override
@@ -113,7 +112,8 @@ public class TableColumnFactory {
                 setGraphic(label);
             }
         });
-        column.setOnEditCommit(v -> bus.send(messages.getProperty("data.edit.title.commit.playlist"), v));
+        column.setOnEditCommit(v -> bus.send(DATA_UPDATE_REQUEST,
+              new TagUpdateRequest(TITLE, v.getNewValue())));
         return column;
     }
 }

@@ -14,7 +14,7 @@ import org.apache.lucene.document.StringField;
 
 @SuppressWarnings("unused")
 @Log4j2
-class DocConverter {
+public class DocConverter {
     Document docFrom(SoundFile file) {
         Document doc = new Document();
         SupportedField.SET.forEach(m -> addField(doc, m, m.getGetter().apply(file)));

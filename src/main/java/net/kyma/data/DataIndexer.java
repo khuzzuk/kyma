@@ -1,20 +1,28 @@
 package net.kyma.data;
 
+import static net.kyma.EventType.CLOSE;
+import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
+import static net.kyma.EventType.DATA_INDEX_GET_ALL;
+import static net.kyma.EventType.DATA_INDEX_GET_DIRECTORIES;
+import static net.kyma.EventType.DATA_INDEX_GET_DISTINCT;
+import static net.kyma.EventType.DATA_INDEX_ITEM;
+import static net.kyma.EventType.DATA_INDEX_LIST;
+import static net.kyma.EventType.DATA_REMOVE_ITEM;
+import static net.kyma.EventType.DATA_STORE_ITEM;
+import static net.kyma.EventType.DATA_STORE_LIST;
 import static net.kyma.data.QueryUtils.termForPath;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Properties;
 import java.util.Set;
 
-import javax.inject.Named;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import net.kyma.EventType;
+import net.kyma.Loadable;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
 import org.apache.lucene.document.Document;
@@ -27,32 +35,26 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.Bits;
 import pl.khuzzuk.messaging.Bus;
 
-@Singleton
 @Log4j2
-public class DataIndexer
+@RequiredArgsConstructor
+public class DataIndexer implements Loadable
 {
-   @Inject
-   private Bus bus;
-   @Inject
-   @Named("messages")
-   private Properties messages;
-   @Inject
-   private IndexWriter writer;
-   @Inject
-   private DocConverter docConverter;
+   private final Bus<EventType> bus;
+   private final IndexWriter writer;
+   private final DocConverter docConverter;
    private Set<String> indexedPaths;
 
-   public void init()
+   @Override
+   public void load()
    {
-      bus.setReaction(messages.getProperty("close"), this::close);
-      bus.setReaction(messages.getProperty("data.index.list"), this::index);
-      bus.setReaction(messages.getProperty("data.store.list"), this::index);
-      bus.setReaction(messages.getProperty("data.index.item"), this::indexSingleEntity);
-      bus.setReaction(messages.getProperty("data.store.item"), this::indexSingleEntity);
-      bus.setResponse(messages.getProperty("data.index.getAll"), this::getAll);
-      bus.<Collection<SoundFile>>setReaction(messages.getProperty("data.remove.item"), this::remove);
-      bus.<Set<String>>setReaction(messages.getProperty("data.index.get.directories"),
-            paths -> indexedPaths = paths);
+      bus.setReaction(CLOSE, this::close);
+      bus.setReaction(DATA_INDEX_LIST, this::index);
+      bus.setReaction(DATA_STORE_LIST, this::index);
+      bus.setReaction(DATA_INDEX_ITEM, this::indexSingleEntity);
+      bus.setReaction(DATA_STORE_ITEM, this::indexSingleEntity);
+      bus.setResponse(DATA_INDEX_GET_ALL, this::getAll);
+      bus.<Collection<SoundFile>>setReaction(DATA_REMOVE_ITEM, this::remove);
+      bus.<Set<String>>setReaction(DATA_INDEX_GET_DIRECTORIES, paths -> indexedPaths = paths);
       refreshIndexedPaths();
    }
 
@@ -69,7 +71,7 @@ public class DataIndexer
 
       files.forEach(this::indexSingleEntity);
       commit();
-      bus.sendCommunicate(messages.getProperty("data.index.getAll"), messages.getProperty("data.convert.from.doc.gui"));
+      bus.sendMessage(DATA_INDEX_GET_ALL, DATA_CONVERT_FROM_DOC);
       refreshIndexedPaths();
    }
 
@@ -177,9 +179,7 @@ public class DataIndexer
 
    private void refreshIndexedPaths()
    {
-      bus.send(messages.getProperty("data.index.get.distinct"),
-            messages.getProperty("data.index.get.directories"),
-            SupportedField.INDEXED_PATH);
+      bus.send(DATA_INDEX_GET_DISTINCT, DATA_INDEX_GET_DIRECTORIES, SupportedField.INDEXED_PATH);
    }
 
    private void commit()

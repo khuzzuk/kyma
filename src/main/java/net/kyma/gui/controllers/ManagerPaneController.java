@@ -1,16 +1,22 @@
 package net.kyma.gui.controllers;
 
+import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
+import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
+import static net.kyma.EventType.DATA_INDEX_GET_ALL;
+import static net.kyma.EventType.DATA_REFRESH;
+import static net.kyma.EventType.DATA_STORE_ITEM;
+import static net.kyma.EventType.DATA_STORE_LIST;
+import static net.kyma.EventType.PLAYLIST_ADD_LIST;
+import static net.kyma.EventType.PLAYLIST_ADD_SOUND;
+import static net.kyma.EventType.PLAYLIST_HIGHLIGHT;
+import static net.kyma.EventType.PLAYLIST_REMOVE_LIST;
+
 import java.io.File;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -24,6 +30,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import lombok.extern.log4j.Log4j2;
+import net.kyma.EventType;
 import net.kyma.dm.SoundFile;
 import net.kyma.gui.BaseElement;
 import net.kyma.gui.RootElement;
@@ -32,7 +39,6 @@ import net.kyma.gui.TableColumnFactory;
 import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
-@Singleton
 public class ManagerPaneController implements Initializable {
     @FXML
     private GridPane managerPane;
@@ -42,37 +48,37 @@ public class ManagerPaneController implements Initializable {
     private TreeView<String> filesList;
     @FXML
     private TableView<SoundFile> playlist;
-    @Inject
-    private Bus bus;
-    @Inject
-    @Named("messages")
-    private Properties messages;
-    @Inject
+    private Bus<EventType> bus;
     private TableColumnFactory columnFactory;
     private IntegerProperty highlighted;
 
+    public ManagerPaneController(Bus<EventType> bus, TableColumnFactory columnFactory)
+    {
+        this.bus = bus;
+        this.columnFactory = columnFactory;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        bus.<SoundFile>setReaction(messages.getProperty("playlist.add.sound"), playlist.getItems()::add);
-        bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.add.list"),
-                c -> playlist.getItems().addAll(c));
-        bus.<Collection<SoundFile>>setReaction(messages.getProperty("playlist.remove.list"),
-                c -> playlist.getItems().removeAll(c));
-        bus.setGuiReaction(messages.getProperty("data.view.refresh"), this::fillTreeView);
-        bus.setReaction(messages.getProperty("playlist.highlight"), this::highlight);
-        bus.setReaction(messages.getProperty("data.store.item"), s -> contentView.refresh());
-        bus.setReaction(messages.getProperty("data.store.list"), s -> contentView.refresh());
+        Collection<SoundFile> playlistItems = playlist.getItems();
+        bus.setReaction(PLAYLIST_ADD_SOUND, playlistItems::add);
+        bus.setReaction(PLAYLIST_ADD_LIST, playlistItems::addAll);
+        bus.setReaction(PLAYLIST_REMOVE_LIST, playlistItems::removeAll);
+        bus.setFXReaction(DATA_REFRESH, this::fillTreeView);
+        bus.setReaction(PLAYLIST_HIGHLIGHT, this::highlight);
+        bus.setReaction(DATA_STORE_ITEM, s -> contentView.refresh());
+        bus.setReaction(DATA_STORE_LIST, s -> contentView.refresh());
 
         highlighted = new SimpleIntegerProperty(-1);
 
         initPlaylistView();
 
-        bus.sendCommunicate(messages.getProperty("data.index.getAll"), messages.getProperty("data.convert.from.doc.gui"));
+        bus.sendMessage(DATA_INDEX_GET_ALL, DATA_CONVERT_FROM_DOC);
     }
 
     private void initPlaylistView() {
         playlist.getColumns().clear();
-        playlist.getColumns().add(columnFactory.getTitleColumn(highlighted));
+        playlist.getColumns().add(columnFactory.getTitleColumnForPlaylist(highlighted));
         playlist.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     }
 
@@ -113,7 +119,7 @@ public class ManagerPaneController implements Initializable {
     @FXML
     private void removeFromPlaylist(KeyEvent keyEvent) {
         if (keyEvent.getCode().equals(KeyCode.DELETE) || keyEvent.getCode().equals(KeyCode.BACK_SPACE)) {
-            bus.send(messages.getProperty("playlist.remove.list"), playlist.getSelectionModel().getSelectedItems());
+            bus.send(PLAYLIST_REMOVE_LIST, playlist.getSelectionModel().getSelectedItems());
         }
     }
 
@@ -148,7 +154,7 @@ public class ManagerPaneController implements Initializable {
                 selected.stream()
                       .map(BaseElement::getPath)
                       .map(File::new)
-                      .forEach(path -> bus.send("data.index.directory", path));
+                      .forEach(path -> bus.send(DATA_INDEX_DIRECTORY, path));
         }
     }
 

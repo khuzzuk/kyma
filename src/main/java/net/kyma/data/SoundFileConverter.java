@@ -1,19 +1,18 @@
 package net.kyma.data;
 
+import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
+import static net.kyma.EventType.DATA_REFRESH;
+import static net.kyma.EventType.PLAYLIST_ADD_FILE;
 import static net.kyma.dm.SupportedField.SET;
 
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-
 import lombok.extern.log4j.Log4j2;
+import net.kyma.EventType;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
 import net.kyma.player.Format;
@@ -30,14 +29,11 @@ import org.jaudiotagger.tag.vorbiscomment.VorbisCommentTagField;
 import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
-@Singleton
 public class SoundFileConverter {
-    @Inject
-    public SoundFileConverter(Bus bus, @Named("messages") Properties messages) {
-        bus.<File, SoundFile>setResponse(messages.getProperty("playlist.add.file"), f -> from(f, f.getParent()));
-        bus.<Collection<Document>>setReaction(messages.getProperty("data.convert.from.doc.gui"),
-                docs -> bus.send(messages.getProperty("data.view.refresh"),
-                        docs.stream().map(this::from).collect(Collectors.toList())));
+    public SoundFileConverter(Bus<EventType> bus) {
+        bus.setResponse(PLAYLIST_ADD_FILE, (File f) -> from(f, f.getParent()));
+        bus.setReaction(DATA_CONVERT_FROM_DOC, (Collection<Document> docs) ->
+              bus.send(DATA_REFRESH, docs.stream().map(this::from).collect(Collectors.toList())));
     }
 
     SoundFile from(File file, String indexedPath) {

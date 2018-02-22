@@ -1,16 +1,15 @@
 package net.kyma.gui;
 
-import javafx.scene.control.TextField;
-import net.kyma.dm.SupportedField;
-import net.kyma.dm.SoundFile;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.inject.Singleton;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-@Singleton
+import javafx.scene.control.TextField;
+import net.kyma.EventType;
+import net.kyma.dm.SoundFile;
+import net.kyma.dm.SupportedField;
+import org.apache.commons.lang3.StringUtils;
+
 public class SoundFileBulkEditor extends SoundFileEditor {
     private Collection<SoundFile> soundFiles;
     private Set<String> values;
@@ -45,7 +44,7 @@ public class SoundFileBulkEditor extends SoundFileEditor {
                 soundFiles.forEach(s -> key.getSetter().accept(s, value.getText()));
             }
         });
-        bus.send(messages.getProperty("data.store.list"), soundFiles);
+        bus.send(EventType.DATA_STORE_LIST, soundFiles);
         window.hide();
     }
 }

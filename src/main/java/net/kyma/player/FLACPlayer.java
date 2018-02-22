@@ -1,7 +1,20 @@
 package net.kyma.player;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.SourceDataLine;
+
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import net.kyma.EventType;
 import net.kyma.dm.SoundFile;
 import org.kc7bfi.jflac.FLACDecoder;
 import org.kc7bfi.jflac.frame.Frame;
@@ -9,21 +22,11 @@ import org.kc7bfi.jflac.metadata.StreamInfo;
 import org.kc7bfi.jflac.util.ByteData;
 import pl.khuzzuk.messaging.Bus;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.SourceDataLine;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
-import java.util.concurrent.*;
-
 @Log4j2
 public class FLACPlayer implements Player {
     private static ExecutorService thread = Executors.newFixedThreadPool(1);
     private static BlockingQueue<Object> meetingPoint = new SynchronousQueue<>();
-    private Bus bus;
-    private Properties messages;
+    private Bus<EventType> bus;
     private SoundFile file;
     private FLACDecoder decoder;
     private AudioFormat format;
@@ -34,10 +37,9 @@ public class FLACPlayer implements Player {
     private volatile long current;
     private Emitter emitter;
 
-    FLACPlayer(SoundFile file, Bus bus, Properties messages) {
+    FLACPlayer(SoundFile file, Bus<EventType> bus) {
         this.file = file;
         this.bus = bus;
-        this.messages = messages;
     }
 
     public void start() {
@@ -125,7 +127,7 @@ public class FLACPlayer implements Player {
                 }
                 line.close();
                 if (!(closed)) {
-                    bus.send(messages.getProperty("playlist.next"));
+                    bus.send(EventType.PLAYLIST_NEXT);
                 }
             } catch (LineUnavailableException | IOException e) {
                 log.error("problem with opening flac file");

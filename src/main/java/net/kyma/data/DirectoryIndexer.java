@@ -1,5 +1,11 @@
 package net.kyma.data;
 
+import static net.kyma.EventType.DATA_INDEXING_AMOUNT;
+import static net.kyma.EventType.DATA_INDEXING_FINISH;
+import static net.kyma.EventType.DATA_INDEXING_PROGRESS;
+import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
+import static net.kyma.EventType.DATA_INDEX_LIST;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,27 +13,23 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
+import lombok.AllArgsConstructor;
+import net.kyma.EventType;
+import net.kyma.Loadable;
 import net.kyma.dm.SoundFile;
 import net.kyma.player.Format;
 import pl.khuzzuk.messaging.Bus;
 
-public class DirectoryIndexer {
-    @Inject
-    private Bus bus;
-    @Inject
-    @Named("messages")
-    private Properties messages;
-    @Inject
+@AllArgsConstructor
+public class DirectoryIndexer implements Loadable {
+    private Bus<EventType> bus;
     private SoundFileConverter converter;
 
-    public void init() {
-        bus.<File>setReaction(messages.getProperty("data.index.directory"), d -> bus.send(messages.getProperty("data.index.list"), indexCatalogue(d)));
+    @Override
+    public void load() {
+        bus.<File>setReaction(DATA_INDEX_DIRECTORY, d -> bus.send(DATA_INDEX_LIST, indexCatalogue(d)));
     }
 
     private List<File> getFilesFromDirectory(File file) {
@@ -49,15 +51,15 @@ public class DirectoryIndexer {
         List<File> files = getFilesFromDirectory(file)
                 .stream().filter(f -> !f.isHidden()).collect(Collectors.toList());
         Collection<SoundFile> soundFiles = new ArrayList<>();
-        bus.send(messages.getProperty("data.index.gui.amount"), files.size());
+        bus.send(DATA_INDEXING_AMOUNT, files.size());
         for (int x = 0; x < files.size(); x++) {
             if (x % 10 == 0) {
-                bus.send(messages.getProperty("data.index.gui.progress"), x);
+                bus.send(DATA_INDEXING_PROGRESS, x);
             }
             soundFiles.add(converter.from(files.get(x),
                     file.getPath().substring(0, file.getPath().length() - file.getName().length())));
         }
-        bus.send(messages.getProperty("data.index.gui.finish"));
+        bus.send(DATA_INDEXING_FINISH);
         return soundFiles;
     }
 }

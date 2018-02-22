@@ -1,41 +1,46 @@
 package net.kyma.player;
 
+import static net.kyma.EventType.FILES_REMOVE;
+import static net.kyma.EventType.PLAYER_PLAY;
+import static net.kyma.EventType.PLAYER_STOP;
+import static net.kyma.EventType.PLAYLIST_ADD_LIST;
+import static net.kyma.EventType.PLAYLIST_HIGHLIGHT;
+import static net.kyma.EventType.PLAYLIST_NEXT;
+import static net.kyma.EventType.PLAYLIST_PREVIOUS;
+import static net.kyma.EventType.PLAYLIST_REMOVE_LIST;
+import static net.kyma.EventType.PLAYLIST_REMOVE_SOUND;
+
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-
+import lombok.RequiredArgsConstructor;
+import net.kyma.EventType;
+import net.kyma.Loadable;
 import net.kyma.dm.SoundFile;
 import org.apache.commons.collections4.iterators.LoopingListIterator;
 import pl.khuzzuk.messaging.Bus;
 
-@Singleton
-public class Playlist {
-    @Inject
-    private Bus bus;
-    @Inject
-    @Named("messages")
-    private Properties messages;
+@RequiredArgsConstructor
+public class Playlist implements Loadable {
+    private final Bus<EventType> bus;
     private List<SoundFile> playlist;
     private LoopingListIterator<SoundFile> iterator;
     private int index = -1;
 
-    public void init() {
+    @Override
+    public void load() {
         playlist = new LinkedList<>();
-        bus.setReaction(messages.getProperty("playlist.add.list"), this::addAll);
-        bus.setReaction(messages.getProperty("playlist.remove.list"), this::removeAll);
-        bus.setReaction(messages.getProperty("playlist.next"), this::playNextItem);
-        bus.setReaction(messages.getProperty("playlist.previous"), this::playPreviousItem);
-        bus.setReaction(messages.getProperty("data.remove.item"), this::maybeRemove);
+        bus.setReaction(PLAYLIST_ADD_LIST, this::addAll);
+        bus.setReaction(PLAYLIST_REMOVE_LIST, this::removeAll);
+        bus.setReaction(PLAYLIST_NEXT, this::playNextItem);
+        bus.setReaction(PLAYLIST_PREVIOUS, this::playPreviousItem);
+        bus.setReaction(PLAYLIST_REMOVE_SOUND, this::maybeRemove);
     }
 
     private synchronized void removeAll(Collection<SoundFile> soundFiles) {
         playlist.removeAll(soundFiles);
-        bus.send(messages.getProperty("playlist.highlight"), -1);
+        bus.send(PLAYLIST_HIGHLIGHT, -1);
         iterator = null;
     }
 
@@ -57,8 +62,8 @@ public class Playlist {
         } while (this.index == index);
         this.index = index;
 
-        bus.send(messages.getProperty("playlist.highlight"), index);
-        bus.send(messages.getProperty("player.play.mp3"), next);
+        bus.send(PLAYLIST_HIGHLIGHT, index);
+        bus.send(PLAYER_PLAY, next);
     }
 
     private synchronized void playPreviousItem() {
@@ -73,8 +78,8 @@ public class Playlist {
         } while (this.index == index);
         this.index = index;
 
-        bus.send(messages.getProperty("playlist.highlight"), index);
-        bus.send(messages.getProperty("player.play.mp3"), previous);
+        bus.send(PLAYLIST_HIGHLIGHT, index);
+        bus.send(PLAYER_PLAY, previous);
     }
 
     private void initIterator() {
@@ -83,13 +88,13 @@ public class Playlist {
         }
     }
 
-    private void maybeRemove(Collection<SoundFile> soundFile) {
-        if (index > 0 && index < playlist.size() && playlist.get(index).equals(soundFile)) {
-            bus.send(messages.getProperty("player.stop.mp3"));
-            bus.send(messages.getProperty("playlist.next"));
+    private void maybeRemove(Collection<SoundFile> soundFiles) {
+        if (index > 0 && index < playlist.size() && playlist.get(index).equals(soundFiles)) {
+            bus.send(PLAYER_STOP);
+            bus.send(PLAYLIST_NEXT);
         }
-        removeAll(soundFile);
+        removeAll(soundFiles);
         iterator = null;
-        bus.send(messages.getProperty("file.remove"), soundFile);
+        bus.send(FILES_REMOVE, soundFiles);
     }
 }

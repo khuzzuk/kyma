@@ -1,15 +1,22 @@
 package net.kyma.gui.controllers;
 
+import static net.kyma.EventType.DATA_INDEXING_AMOUNT;
+import static net.kyma.EventType.DATA_INDEXING_FINISH;
+import static net.kyma.EventType.DATA_INDEXING_PROGRESS;
+import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
+import static net.kyma.EventType.DATA_REFRESH;
+import static net.kyma.EventType.GUI_WINDOW_SETTINGS;
+import static net.kyma.EventType.GUI_WINDOW_SET_FRAME;
+import static net.kyma.EventType.GUI_WINDOW_SET_FULLSCREEN;
+import static net.kyma.EventType.GUI_WINDOW_SET_MAXIMIZED;
+import static net.kyma.EventType.PLAYLIST_ADD_FILE;
+import static net.kyma.EventType.PLAYLIST_ADD_SOUND;
+
 import java.awt.*;
 import java.io.File;
 import java.net.URL;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.ResourceBundle;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -29,10 +36,10 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import net.kyma.EventType;
 import pl.khuzzuk.messaging.Bus;
 
 @SuppressWarnings("WeakerAccess")
-@Singleton
 @Log4j2
 public class MainController implements Initializable {
     @FXML
@@ -41,33 +48,34 @@ public class MainController implements Initializable {
     private GridPane managerPane;
     @FXML
     private GridPane playerPane;
-    @Inject
+    private Bus<EventType> bus;
     private ManagerPaneController managerPaneController;
-    @Inject
-    private Bus bus;
-    @Inject
-    @Named("messages")
-    private Properties messages;
     private ProgressIndicator indicator;
     private double maxProgress;
     @Setter
     private Stage stage;
 
+    public MainController(Bus<EventType> bus, ManagerPaneController managerPaneController)
+    {
+        this.bus = bus;
+        this.managerPaneController = managerPaneController;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        bus.setGuiReaction(messages.getProperty("data.view.refresh"), o -> mainPane.getItems().remove(indicator));
-        bus.setGuiReaction(messages.getProperty("data.index.gui.amount"), this::showIndicator);
-        bus.<Number>setGuiReaction(messages.getProperty("data.index.gui.progress"), n -> indicator.setProgress(n.doubleValue() / maxProgress));
-        bus.setGuiReaction(messages.getProperty("data.index.gui.finish"), () -> mainPane.getItems().remove(indicator));
-        bus.setGuiReaction(messages.getProperty("gui.window.set.fullScreen"), () -> {
+        bus.setFXReaction(DATA_REFRESH, o -> mainPane.getItems().remove(indicator));
+        bus.setFXReaction(DATA_INDEXING_AMOUNT, this::showIndicator);
+        bus.<Number>setFXReaction(DATA_INDEXING_PROGRESS, n -> indicator.setProgress(n.doubleValue() / maxProgress));
+        bus.setFXReaction(DATA_INDEXING_FINISH, () -> mainPane.getItems().remove(indicator));
+        bus.setFXReaction(GUI_WINDOW_SET_FULLSCREEN, () -> {
             stage.setFullScreen(true); setBackground();
         });
-        bus.setGuiReaction(messages.getProperty("gui.window.set.maximized"), () -> {
+        bus.setFXReaction(GUI_WINDOW_SET_MAXIMIZED, () -> {
             stage.setMaximized(true); setBackground();
         });
-        bus.setGuiReaction(messages.getProperty("gui.window.set.frame"), this::resize);
+        bus.setFXReaction(GUI_WINDOW_SET_FRAME, this::resize);
 
-        bus.send(messages.getProperty("gui.window.settings"));
+        bus.send(GUI_WINDOW_SETTINGS);
         managerPaneController.resizeFor(mainPane);
     }
 
@@ -90,13 +98,13 @@ public class MainController implements Initializable {
     @FXML
     private void openFile() {
         Optional.ofNullable(getFile(new FileChooser.ExtensionFilter("Pliki dźwiękowe", "*.mp3")))
-                .ifPresent(f -> bus.send(messages.getProperty("playlist.add.file"), messages.getProperty("playlist.add.sound"), f));
+                .ifPresent(f -> bus.send(PLAYLIST_ADD_FILE, PLAYLIST_ADD_SOUND, f));
     }
 
     @FXML
     private void indexCatalogue() {
         Optional.ofNullable(getFile()).ifPresent(f -> {
-            bus.send(messages.getProperty("data.index.directory"), f);
+            bus.send(DATA_INDEX_DIRECTORY, f);
         });
     }
 

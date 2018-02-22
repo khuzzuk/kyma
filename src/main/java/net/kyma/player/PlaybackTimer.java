@@ -1,29 +1,30 @@
 package net.kyma.player;
 
-import lombok.extern.log4j.Log4j2;
-import pl.khuzzuk.messaging.Bus;
+import static net.kyma.EventType.METADATA_TIME_CURRENT;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import lombok.extern.log4j.Log4j2;
+import net.kyma.EventType;
+import net.kyma.Loadable;
+import pl.khuzzuk.messaging.Bus;
+
 @SuppressWarnings("unused")
 @Log4j2
-@Singleton
-public class PlaybackTimer {
+public class PlaybackTimer implements Loadable {
     @SuppressWarnings("FieldCanBeLocal")
     private final int refreshLatency = 32;
-    @Inject
-    private Bus bus;
-    @Inject
-    @Named("messages")
-    private Properties messages;
+    private Bus<EventType> bus;
     private BlockingQueue<TimerAction> channel;
 
-    void init() {
+    public PlaybackTimer(Bus<EventType> bus)
+    {
+        this.bus = bus;
+    }
+
+    @Override
+    public void load() {
         channel = new ArrayBlockingQueue<>(8);
         Thread t = new Thread(this::run);
         t.setDaemon(true);
@@ -38,12 +39,12 @@ public class PlaybackTimer {
                 if (action == TimerAction.STOP) {
                     channel.clear();
                 } else if (action == TimerAction.START) {
-                    bus.send(messages.getProperty("player.metadata.getLength"));
+                    bus.sendMessage(EventType.METADATA_GET_LENGTH, EventType.METADATA_LENGTH);
                     channel.clear();
                     channel.add(TimerAction.CONTINUE);
                 } else {
                     channel.add(TimerAction.CONTINUE);
-                    bus.send(messages.getProperty("player.metadata.getCurrentTime"));
+                    bus.sendMessage(EventType.METADATA_GET_TIME_CURRENT, METADATA_TIME_CURRENT);
                     Thread.sleep(refreshLatency);
                 }
             }

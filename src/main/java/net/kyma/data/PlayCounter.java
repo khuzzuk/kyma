@@ -1,27 +1,25 @@
 package net.kyma.data;
 
+import static net.kyma.EventType.DATA_STORE_ITEM;
+import static net.kyma.EventType.PLAYER_PLAY;
+
+import lombok.AllArgsConstructor;
+import net.kyma.EventType;
+import net.kyma.Loadable;
 import net.kyma.dm.SoundFile;
 import pl.khuzzuk.messaging.Bus;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-import java.util.Properties;
+@AllArgsConstructor
+public class PlayCounter implements Loadable {
+    private Bus<EventType> bus;
 
-@Singleton
-public class PlayCounter {
-    @Inject
-    private Bus bus;
-    @Inject
-    @Named("messages")
-    private Properties messages;
-
-    public void init() {
-        bus.setReaction(messages.getProperty("player.play.mp3"), this::addToSoundFile);
+    @Override
+    public void load() {
+        bus.setReaction(PLAYER_PLAY, this::addToSoundFile);
     }
 
     private void addToSoundFile(SoundFile soundFile) {
         soundFile.setCounter(soundFile.getCounter() + 1);
-        bus.send(messages.getProperty("data.store.item"), soundFile);
+        bus.send(DATA_STORE_ITEM, soundFile);
     }
 }

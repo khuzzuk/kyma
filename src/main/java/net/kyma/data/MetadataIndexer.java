@@ -1,6 +1,13 @@
 package net.kyma.data;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import net.kyma.EventType;
+import net.kyma.Loadable;
 import net.kyma.dm.SoundFile;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
@@ -11,26 +18,15 @@ import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.tag.TagException;
 import pl.khuzzuk.messaging.Bus;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Properties;
-
-@Singleton
 @Log4j2
-public class MetadataIndexer {
-    @Inject
-    private Bus bus;
-    @Inject
-    @Named("messages")
-    private Properties messages;
+@AllArgsConstructor
+public class MetadataIndexer implements Loadable {
+    private Bus<EventType> bus;
 
-    public void init() {
-        bus.<SoundFile>setReaction(messages.getProperty("data.store.item"), this::index);
-        bus.<Collection<SoundFile>>setReaction(messages.getProperty("data.store.list"), this::index);
+    @Override
+    public void load() {
+        bus.<SoundFile>setReaction(EventType.DATA_STORE_ITEM, this::index);
+        bus.<Collection<SoundFile>>setReaction(EventType.DATA_STORE_LIST, this::index);
     }
 
     private void index(Collection<SoundFile> soundFiles) {

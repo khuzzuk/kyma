@@ -1,33 +1,31 @@
 package net.kyma.player;
 
+import java.nio.file.Paths;
+import java.util.Optional;
+
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.util.Duration;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import net.kyma.EventType;
 import net.kyma.dm.SoundFile;
 import pl.khuzzuk.messaging.Bus;
-
-import java.nio.file.Paths;
-import java.util.Optional;
-import java.util.Properties;
 
 @Log4j2
 class Mp3PlayerFX implements Player {
     private MediaPlayer player;
     private final MediaView mediaView;
-    private final Bus bus;
-    private final Properties messages;
+    private final Bus<EventType> bus;
     @Getter
     private long length;
     @Getter
     private final String path;
 
-    Mp3PlayerFX(SoundFile file, Bus bus, Properties messages) {
+    Mp3PlayerFX(SoundFile file, Bus<EventType> bus) {
         this.path = file.getPath();
         this.bus = bus;
-        this.messages = messages;
         mediaView = new MediaView();
     }
 
@@ -36,7 +34,7 @@ class Mp3PlayerFX implements Player {
         if (player == null) {
             Media sound = new Media(Paths.get(path).toUri().toString());
             player = new MediaPlayer(sound);
-            player.setOnEndOfMedia(() -> bus.send(messages.getProperty("playlist.next")));
+            player.setOnEndOfMedia(() -> bus.send(EventType.PLAYLIST_NEXT));
             length = calculateLength(player);
         }
         mediaView.setMediaPlayer(player);

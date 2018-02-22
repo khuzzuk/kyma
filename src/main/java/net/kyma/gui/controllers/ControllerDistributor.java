@@ -1,18 +1,14 @@
 package net.kyma.gui.controllers;
 
-import javafx.fxml.Initializable;
-import javafx.util.Callback;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.HashMap;
 import java.util.Map;
 
-@Singleton
+import javafx.fxml.Initializable;
+import javafx.util.Callback;
+
 public class ControllerDistributor implements Callback<Class<?>, Object> {
     private final Map<Class<?>, Initializable> controllers;
 
-    @Inject
     public ControllerDistributor(MainController controller,
                                  PlayerPaneController playerPaneController,
                                  ManagerPaneController managerPaneController,
