@@ -1,5 +1,10 @@
 package net.kyma.data;
 
+import static org.jaudiotagger.tag.FieldKey.COMMENT;
+
+import java.io.File;
+import java.io.IOException;
+
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
@@ -11,11 +16,6 @@ import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.tag.FieldDataInvalidException;
 import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagException;
-
-import java.io.File;
-import java.io.IOException;
-
-import static org.jaudiotagger.tag.FieldKey.*;
 
 @Log4j2
 class MetadataConverter {
@@ -42,8 +42,7 @@ class MetadataConverter {
 
         String comment = metadata.getFirst(COMMENT);
         if (comment.contains(":") && NumberUtils.isDigits(comment.substring(0, comment.indexOf(":")))) {
-            metadata.setField(COMMENT, updateSource.getCounter() + ":" +
-                    comment.substring(comment.indexOf(":")));
+            metadata.setField(COMMENT, updateSource.getCounter() + comment.substring(comment.indexOf(":")));
         } else {
             metadata.setField(COMMENT, updateSource.getCounter() + ":" + comment);
         }

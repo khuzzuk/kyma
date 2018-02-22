@@ -1,7 +1,19 @@
 package net.kyma.data;
 
+import static net.kyma.dm.SupportedField.SET;
+
+import java.io.File;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import lombok.extern.log4j.Log4j2;
-import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
 import net.kyma.player.Format;
@@ -11,17 +23,11 @@ import org.apache.lucene.index.IndexableField;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagField;
+import org.jaudiotagger.tag.id3.AbstractTagFrameBody;
+import org.jaudiotagger.tag.id3.ID3v23Frame;
+import org.jaudiotagger.tag.id3.ID3v23Tag;
 import org.jaudiotagger.tag.vorbiscomment.VorbisCommentTagField;
 import pl.khuzzuk.messaging.Bus;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static net.kyma.dm.SupportedField.*;
 
 @Log4j2
 @Singleton
@@ -57,9 +63,7 @@ public class SoundFileConverter {
     }
 
     private void fillData(SoundFile sound, Tag metadata) {
-        SupportedField.SUPPORTED_TAG.forEach(f -> f.getSetter().accept(sound, metadata.getFirst(f.getMappedKey())));
-        sound.setRate(Rating.getRatingBy(NumberUtils.toInt(metadata.getFirst(FieldKey.RATING), 0),
-                sound.getFormat()));
+        SupportedField.SUPPORTED_TAG.forEach(f -> f.putTagValueToSoundFile(metadata, sound));
 
         String comment = getComment(metadata);
         if (comment.contains(":")) {
@@ -73,13 +77,29 @@ public class SoundFileConverter {
     private String getComment(Tag metadata) {
         List<TagField> commFields = metadata.getFields(FieldKey.COMMENT);
         if (commFields.isEmpty()) return "";
-        TagField tagField = commFields.get(commFields.size() - 1);
-        String commentField = tagField.toString();
-        if (tagField instanceof VorbisCommentTagField) {
-            return commentField;
+
+        if (metadata instanceof ID3v23Tag)
+        {
+            return commFields.stream()
+                  .filter(frame -> frame instanceof ID3v23Frame)
+                  .map(ID3v23Frame.class::cast)
+                  .map(ID3v23Frame::getBody)
+                  .filter(body -> body.getBriefDescription().contains("Text="))
+                  .findFirst()
+                  .map(AbstractTagFrameBody::getUserFriendlyValue)
+                  .orElse("");
         }
-        int startIndex = commentField.indexOf("Text=") + 6;
-        int endIndex = commentField.indexOf('"', startIndex);
-        return startIndex > 0 && endIndex > startIndex ? commentField.substring(startIndex, endIndex) : "";
+
+        TagField tagField = commFields.get(commFields.size() - 1);
+        if (tagField instanceof VorbisCommentTagField) {
+            return tagField.toString();
+        }
+
+        return commFields.stream()
+              .map(TagField::toString)
+              .filter(text -> text.contains("Text="))
+              .findFirst()
+              .map(value -> value.substring(value.indexOf("Text=") + 6, value.lastIndexOf('"')))
+              .orElse("");
     }
 }
