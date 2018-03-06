@@ -2,6 +2,7 @@ package net.kyma.gui;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javafx.scene.control.TextField;
@@ -9,14 +10,20 @@ import net.kyma.EventType;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
 import org.apache.commons.lang3.StringUtils;
+import pl.khuzzuk.messaging.Bus;
 
 public class SoundFileBulkEditor extends SoundFileEditor {
     private Collection<SoundFile> soundFiles;
     private Set<String> values;
 
+    public SoundFileBulkEditor(Bus<EventType> bus)
+    {
+        super(bus);
+    }
+
     @Override
-    public void init() {
-        super.init();
+    public void init(Map<SupportedField, Collection<String>> suggestions) {
+        super.init(suggestions);
         values = new HashSet<>();
     }
 

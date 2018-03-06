@@ -4,6 +4,7 @@ import static net.kyma.EventType.DATA_STORE_ITEM;
 import static net.kyma.EventType.DATA_UPDATE_REQUEST;
 import static net.kyma.dm.SupportedField.TITLE;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -16,6 +17,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseButton;
+import javafx.util.Callback;
 import lombok.AllArgsConstructor;
 import net.kyma.EventType;
 import net.kyma.dm.Rating;
@@ -31,25 +33,6 @@ public class TableColumnFactory {
 
     private static BiConsumer<SoundFile, TableCell<?, ?>> startFactory =
             (s, cell) -> Optional.ofNullable(s).map(Rating::getStarFor).ifPresent(cell::setGraphic);
-
-    public TableColumn<SoundFile, String> getTitleColumn() {
-        TableColumn<SoundFile, String> title = new TableColumn<>("Tytuł");
-        title.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getTitle()));
-        title.setCellFactory(TextFieldTableCell.forTableColumn());
-        title.setOnEditCommit(v ->
-              bus.send(DATA_UPDATE_REQUEST, new TagUpdateRequest(TITLE, v.getNewValue())));
-
-        title.setCellValueFactory(param -> {
-            if (!StringUtils.isEmpty(param.getValue().getTitle())) {
-                return new SimpleStringProperty(param.getValue().getTitle());
-            }
-            else {
-                String name = param.getValue().getFileName();
-                return new SimpleObjectProperty(name.substring(0, name.lastIndexOf(".")));
-            }
-        });
-        return title;
-    }
 
     public TableColumn<SoundFile, SoundFile> getRateColumn() {
         TableColumn<SoundFile, SoundFile> column = new TableColumn<>("Ocena");
@@ -81,9 +64,20 @@ public class TableColumnFactory {
 
     public TableColumn<SoundFile, String> getStringColumn(SupportedField field)
     {
+        return createStringColumn(field, TextFieldTableCell.forTableColumn());
+    }
+
+    public TableColumn<SoundFile, String> getStringColumnWithSuggestion(SupportedField field, Collection<String> values)
+    {
+        return createStringColumn(field, __ -> AutoCompleteTableCell.create(values));
+    }
+
+    private TableColumn<SoundFile, String> createStringColumn(SupportedField field,
+          Callback<TableColumn<SoundFile, String>, TableCell<SoundFile, String>> cellFactory)
+    {
         TableColumn<SoundFile, String> column = new TableColumn<>(field.getName());
         column.setCellValueFactory(data -> new SimpleStringProperty(field.getGetter().apply(data.getValue())));
-        column.setCellFactory(TextFieldTableCell.forTableColumn());
+        column.setCellFactory(cellFactory);
         column.setOnEditCommit(value ->
               bus.send(DATA_UPDATE_REQUEST, new TagUpdateRequest(field, value.getNewValue())));
         return column;
@@ -95,17 +89,37 @@ public class TableColumnFactory {
         return column;
     }
 
+    public TableColumn<SoundFile, String> createTitleColumn() {
+        TableColumn<SoundFile, String> column =
+              createStringColumn(SupportedField.TITLE, TextFieldTableCell.forTableColumn());
+        column.setCellValueFactory(param -> {
+            if (!StringUtils.isEmpty(param.getValue().getTitle())) {
+                return new SimpleStringProperty(param.getValue().getTitle());
+            }
+            else {
+                String name = param.getValue().getFileName();
+                return new SimpleObjectProperty(name.substring(0, name.lastIndexOf(".")));
+            }
+        });
+        return column;
+    }
+
     public TableColumn<SoundFile, String> getTitleColumnForPlaylist(IntegerProperty property) {
-        TableColumn<SoundFile, String> column = getTitleColumn();
-        column.setCellFactory(param -> new TableCell<SoundFile, String>() {
+        TableColumn<SoundFile, String> column = createTitleColumn();
+        column.setCellFactory(param -> new TableCell<>()
+        {
             @Override
-            protected void updateItem(String item, boolean empty) {
+            protected void updateItem(String item, boolean empty)
+            {
                 super.updateItem(item, empty);
                 Label label = new Label(item);
-                if (getIndex() == property.get()) {
+                if (getIndex() == property.get())
+                {
                     getStyleClass().clear();
                     getStyleClass().add("currentlyPlayed");
-                } else {
+                }
+                else
+                {
                     getStyleClass().clear();
                     getStyleClass().addAll("cell", "indexed-cell", "table-cell", "table-column");
                 }

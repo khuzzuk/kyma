@@ -19,10 +19,6 @@ import org.jaudiotagger.tag.TagException;
 
 @Log4j2
 class MetadataConverter {
-    static Tag tagFrom(SoundFile soundFile) {
-        return getMetadataFrom(new File(soundFile.getPath()));
-    }
-
     static Tag getMetadataFrom(File file) {
         try {
             return AudioFileIO.read(file).getTag();
@@ -37,7 +33,10 @@ class MetadataConverter {
     }
 
     static void updateMetadata(Tag metadata, SoundFile updateSource) throws FieldDataInvalidException {
-        SupportedField.SUPPORTED_TAG.forEach(f -> f.setField(metadata, updateSource));
+        for (SupportedField field : SupportedField.SUPPORTED_TAG)
+        {
+            field.setField(metadata, updateSource);
+        }
         SupportedField.RATE.setField(metadata, updateSource);
 
         String comment = metadata.getFirst(COMMENT);

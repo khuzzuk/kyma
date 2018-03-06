@@ -15,13 +15,19 @@ public class MoodConverter implements BiFunction<Tag, SoundFile, String>
    @Override
    public String apply(Tag tag, SoundFile soundFile)
    {
-      return Optional.ofNullable(tag.getFirst(FieldKey.MOOD.name()))
+      return Optional.ofNullable(tag.getFirst(FieldKey.MOOD))
             .filter(StringUtils::isNoneBlank)
-            .orElseGet(() -> tag.getFields(FieldKey.COMMENT).stream()
-                  .map(ID3v23Frame.class::cast)
-                  .map(AbstractTagFrame::getBody)
-                  .filter(body -> body.getBriefDescription().contains("MusicMatch_Mood"))
-                  .map(AbstractTagFrameBody::getUserFriendlyValue)
-                  .findAny().orElse(null));
+            .orElseGet(() -> getFromComment(tag));
+   }
+
+   private String getFromComment(Tag tag)
+   {
+      return tag.getFields(FieldKey.COMMENT).stream()
+            .filter(rawTag -> rawTag instanceof ID3v23Frame)
+            .map(ID3v23Frame.class::cast)
+            .map(AbstractTagFrame::getBody)
+            .filter(body -> body.getBriefDescription().contains("MusicMatch_Mood"))
+            .map(AbstractTagFrameBody::getUserFriendlyValue)
+            .findAny().orElse(null);
    }
 }

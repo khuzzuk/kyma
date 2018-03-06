@@ -18,6 +18,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.jaudiotagger.tag.FieldDataInvalidException;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
+import pl.khuzzuk.functions.Validators;
 
 @Getter
 @Log4j2
@@ -59,7 +60,7 @@ public enum SupportedField
    TRACK("track", FieldKey.TRACK, SoundFile::getTrack, SoundFile::setTrack),
    WORK("work", FieldKey.WORK, SoundFile::getWork, SoundFile::setWork),
    WORK_TYPE("workType", FieldKey.WORK_TYPE, SoundFile::getWorkType, SoundFile::setWorkType),
-   MOOD("mood", FieldKey.MOOD, SoundFile::getMood, SoundFile::setMood, __ -> true, new MoodConverter()),
+   MOOD("mood", FieldKey.MOOD, SoundFile::getMood, SoundFile::setMood, Validators.nullSafe(), new MoodConverter()),
 
    // Not in Supported Tags, but implements tag setter
    RATE("rate", FieldKey.RATING, s -> s.getRate() != null ? s.getRate().name() : Rating.UNDEFINED.name(),
@@ -101,7 +102,7 @@ public enum SupportedField
    SupportedField(String name, FieldKey mappedKey,
          Function<SoundFile, String> getter, BiConsumer<SoundFile, String> setter)
    {
-      this(name, mappedKey, getter, setter, __ -> true);
+      this(name, mappedKey, getter, setter, Validators.alwaysTrue());
    }
 
    SupportedField(String name, FieldKey mappedKey,

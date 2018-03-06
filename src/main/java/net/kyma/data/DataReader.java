@@ -12,10 +12,11 @@ import net.kyma.Loadable;
 import net.kyma.dm.SupportedField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.WildcardQuery;
 import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
@@ -34,9 +35,10 @@ public class DataReader implements Loadable
         Set<String> values = new TreeSet<>();
         try (DirectoryReader reader = DirectoryReader.open(writer)) {
             IndexSearcher searcher = new IndexSearcher(reader);
-            TopDocs search = searcher.search(new MatchAllDocsQuery(), Integer.MAX_VALUE);
+            TopDocs search = searcher.search(new WildcardQuery(new Term(field.getName(), "*")), Integer.MAX_VALUE);
+            Set<String> queryField = Collections.singleton(field.getName());
             for (ScoreDoc doc : search.scoreDocs) {
-                values.add(searcher.doc(doc.doc, Collections.singleton(field.getName())).get(field.getName()));
+                values.add(searcher.doc(doc.doc, queryField).get(field.getName()));
             }
         } catch (IOException e) {
             log.error("cannot query index");

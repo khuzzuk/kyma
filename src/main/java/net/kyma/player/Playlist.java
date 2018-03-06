@@ -89,7 +89,7 @@ public class Playlist implements Loadable {
     }
 
     private void maybeRemove(Collection<SoundFile> soundFiles) {
-        if (index > 0 && index < playlist.size() && playlist.get(index).equals(soundFiles)) {
+        if (index > 0 && index < playlist.size() && soundFiles.contains(playlist.get(index))) {
             bus.send(PLAYER_STOP);
             bus.send(PLAYLIST_NEXT);
         }
