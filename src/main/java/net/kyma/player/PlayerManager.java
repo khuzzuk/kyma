@@ -20,6 +20,7 @@ public class PlayerManager implements Loadable
     private Player currentPlayer;
     @Setter
     private Slider slider;
+    private int volume = 100;
 
     @Override
     public void load() {
@@ -31,6 +32,7 @@ public class PlayerManager implements Loadable
         bus.setReaction(EventType.CLOSE, this::stopMp3);
         bus.setReaction(EventType.CLOSE, FLACPlayer::closeFLACPlayers);
         bus.setReaction(EventType.PLAYER_PLAY_FROM, this::startFrom);
+        bus.setReaction(EventType.PLAYER_SET_VOLUME, this::setVolume);
 
         timer = new PlaybackTimer(bus, this);
         timer.load();
@@ -53,6 +55,7 @@ public class PlayerManager implements Loadable
         }
         log.info("sta play");
         currentPlayer.start();
+        currentPlayer.setVolume(volume);
         slider.setMax(currentPlayer.getLength());
         timer.start();
     }
@@ -86,6 +89,15 @@ public class PlayerManager implements Loadable
             currentPlayer.startFrom(millis);
             slider.setMax(currentPlayer.getLength());
             timer.start();
+        }
+    }
+
+    private void setVolume(int percent)
+    {
+        volume = percent;
+        if (currentPlayer != null)
+        {
+            currentPlayer.setVolume(percent);
         }
     }
 

@@ -14,4 +14,6 @@ public interface Player {
     void startFrom(long millis);
 
     long getLength();
+
+    void setVolume(int percent);
 }

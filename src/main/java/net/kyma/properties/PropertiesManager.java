@@ -1,9 +1,11 @@
 package net.kyma.properties;
 
+import static net.kyma.EventType.GUI_VOLUME_GET;
 import static net.kyma.EventType.GUI_WINDOW_SETTINGS;
 import static net.kyma.EventType.GUI_WINDOW_SET_FRAME;
 import static net.kyma.EventType.GUI_WINDOW_SET_FULLSCREEN;
 import static net.kyma.EventType.GUI_WINDOW_SET_MAXIMIZED;
+import static net.kyma.EventType.PLAYER_SET_VOLUME;
 import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_FRAME;
 import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_FULLSCREEN;
 import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_MAXIMIZED;
@@ -11,6 +13,7 @@ import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_MAXIMIZED;
 import java.awt.*;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Optional;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -24,6 +27,7 @@ import pl.khuzzuk.messaging.Bus;
 @AllArgsConstructor
 public class PropertiesManager implements Loadable
 {
+    private static final String PLAYER_VOLUME_PROPERTY = "player.volume";
     private Bus<EventType> bus;
     private PropertiesLoader propertiesLoader;
 
@@ -33,6 +37,11 @@ public class PropertiesManager implements Loadable
         bus.setReaction(PROPERTIES_STORE_WINDOW_FRAME, this::windowStoreRectangle);
         bus.<Boolean>setReaction(PROPERTIES_STORE_WINDOW_MAXIMIZED, b -> set("player.window.maximized", b));
         bus.<Boolean>setReaction(PROPERTIES_STORE_WINDOW_FULLSCREEN, b -> set("player.window.fullScreen", b));
+        bus.<Integer>setReaction(PLAYER_SET_VOLUME, value -> set(PLAYER_VOLUME_PROPERTY, value));
+        bus.setResponse(GUI_VOLUME_GET, () -> Optional
+              .ofNullable(propertiesLoader.getProperty(PLAYER_VOLUME_PROPERTY))
+              .map(Double::valueOf)
+              .orElse(100d));
     }
 
     private void windowGetSettings() {
@@ -83,6 +92,11 @@ public class PropertiesManager implements Loadable
 
     private void set(String key, Boolean value) {
         propertiesLoader.setProperty(key, String.valueOf(Boolean.TRUE.equals(value)));
+        store();
+    }
+
+    private void set(String key, Integer value) {
+        propertiesLoader.setProperty(key, value.toString());
         store();
     }
 }

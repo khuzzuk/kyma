@@ -9,6 +9,7 @@ import java.util.concurrent.SynchronousQueue;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
@@ -92,6 +93,12 @@ public class FLACPlayer implements Player {
         emitter.skipTo(frame);
     }
 
+    @Override
+    public void setVolume(int percent)
+    {
+        emitter.control.setValue(((float) percent) / 100f);
+    }
+
     private void refreshDecoder() {
         try {
             decoder = new FLACDecoder(new FileInputStream(file.getPath()));
@@ -105,11 +112,14 @@ public class FLACPlayer implements Player {
     }
     private class Emitter implements Runnable {
 
+        private FloatControl control;
+
         @Override
         public void run() {
             try {
                 line.open(format);
                 line.start();
+                control = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
                 Frame frame;
                 while ((frame = decoder.readNextFrame()) != null) {
                     if (closed) {
