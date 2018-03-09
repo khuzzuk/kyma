@@ -1,12 +1,12 @@
 package net.kyma.gui.controllers;
 
 import static java.lang.Math.round;
-import static net.kyma.EventType.METADATA_LENGTH;
-import static net.kyma.EventType.METADATA_TIME_CURRENT;
 import static net.kyma.EventType.PLAYER_PAUSE;
 import static net.kyma.EventType.PLAYER_PLAY_FROM;
 import static net.kyma.EventType.PLAYER_RESUME;
+import static net.kyma.EventType.PLAYER_SET_SLIDER;
 import static net.kyma.EventType.PLAYER_STOP;
+import static net.kyma.EventType.PLAYER_STOP_TIMER;
 import static net.kyma.EventType.PLAYLIST_NEXT;
 import static net.kyma.EventType.PLAYLIST_PREVIOUS;
 
@@ -17,31 +17,24 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
+import lombok.RequiredArgsConstructor;
 import net.kyma.EventType;
 import net.kyma.gui.PlayButton;
-import net.kyma.player.PlaybackTimer;
 import pl.khuzzuk.messaging.Bus;
 
 @SuppressWarnings("WeakerAccess")
+@RequiredArgsConstructor
 public class PlayerPaneController implements Initializable {
     @FXML
     private PlayButton playButton;
     @FXML
     private Slider playbackProgress;
-    private Bus<EventType> bus;
-    private PlaybackTimer timer;
-
-    public PlayerPaneController(Bus<EventType> bus, PlaybackTimer timer)
-    {
-        this.bus = bus;
-        this.timer = timer;
-    }
+    private final Bus<EventType> bus;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         playbackProgress.setMajorTickUnit(0.01D);
-        bus.setReaction(METADATA_LENGTH, (Long max) -> playbackProgress.setMax(max));
-        bus.setReaction(METADATA_TIME_CURRENT, (Long current) -> playbackProgress.setValue(current));
+        bus.send(PLAYER_SET_SLIDER, playbackProgress);
         playButton.showPlay();
     }
 
@@ -68,7 +61,7 @@ public class PlayerPaneController implements Initializable {
 
     @FXML
     private void stopTimer() {
-        timer.stop();
+        bus.send(PLAYER_STOP_TIMER);
     }
 
     @FXML

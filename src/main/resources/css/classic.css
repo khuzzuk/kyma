@@ -141,6 +141,12 @@
     -fx-background-color: transparent;
 }
 
+.table-view .table-column {
+    -fx-border-color: -containers-background2;
+    -fx-border-width: 0 0 0 1;
+    -fx-border-style: dashed;
+}
+
 .text-field {
     -fx-background-color: transparent;
     -fx-text-fill: -fore-text-color;

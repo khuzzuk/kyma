@@ -22,7 +22,6 @@ import net.kyma.gui.controllers.ControllerDistributor;
 import net.kyma.gui.controllers.MainController;
 import net.kyma.gui.controllers.ManagerPaneController;
 import net.kyma.gui.controllers.PlayerPaneController;
-import net.kyma.player.PlaybackTimer;
 import net.kyma.player.PlayerManager;
 import net.kyma.player.Playlist;
 import net.kyma.properties.PropertiesLoader;
@@ -47,9 +46,7 @@ public class Manager extends Application {
         ManagerPaneController managerPaneController = new ManagerPaneController(bus, columnFactory);
         MainController mainController = new MainController(bus, managerPaneController);
 
-        PlaybackTimer playbackTimer = new PlaybackTimer(bus);
-        playbackTimer.load();
-        PlayerPaneController playerPaneController = new PlayerPaneController(bus, playbackTimer);
+        PlayerPaneController playerPaneController = new PlayerPaneController(bus);
 
         ObjectContainer container = new ObjectContainer(bus);
         ContentView contentView = new ContentView(bus, columnFactory);
@@ -92,7 +89,7 @@ public class Manager extends Application {
         //Player
         Playlist playlist = new Playlist(bus);
         playlist.load();
-        PlayerManager playerManager = new PlayerManager(bus, playbackTimer);
+        PlayerManager playerManager = new PlayerManager(bus);
         playerManager.load();
 
         launch(args);
