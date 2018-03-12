@@ -49,7 +49,10 @@ public class PropertiesManager implements Loadable
       bus.setReaction(PROPERTIES_STORE_WINDOW_FRAME, this::windowStoreRectangle);
       bus.<Boolean>setReaction(PROPERTIES_STORE_WINDOW_MAXIMIZED, b -> propertiesData.getUiProperties().setMaximized(b));
       bus.<Boolean>setReaction(PROPERTIES_STORE_WINDOW_FULLSCREEN, b -> propertiesData.getUiProperties().setFullScreen(b));
-      bus.<Integer>setReaction(PLAYER_SET_VOLUME, value -> propertiesData.getPlayerProperties().setVolume(value));
+      bus.<Integer>setReaction(PLAYER_SET_VOLUME, value -> {
+         propertiesData.getPlayerProperties().setVolume(value);
+         store();
+      });
       bus.setResponse(GUI_VOLUME_GET, () -> (double) propertiesData.getPlayerProperties().getVolume());
    }
 

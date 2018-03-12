@@ -2,6 +2,7 @@ package net.kyma.player;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,14 +28,17 @@ import pl.khuzzuk.messaging.Bus;
 public class FLACPlayer implements Player {
     private static ExecutorService thread = Executors.newFixedThreadPool(1);
     private static BlockingQueue<Object> meetingPoint = new SynchronousQueue<>();
+    private static FLACPlayer currentPlayer;
     private Bus<EventType> bus;
     private SoundFile file;
     private FLACDecoder decoder;
     private AudioFormat format;
-    private static boolean paused, closed;
+    private boolean closed;
+    private static boolean paused;
     private SourceDataLine line;
     @Getter
     private long length;
+    private float volume = 100;
     private volatile long current;
     private Emitter emitter;
 
@@ -46,25 +50,33 @@ public class FLACPlayer implements Player {
     public void start() {
         try {
             if (paused && line != null) {
+                meetingPoint.take();
                 paused = false;
                 return;
-            } else {
-                closed = true;
+            } else if (currentPlayer != null) {
+                currentPlayer.closed = true;
             }
             refreshDecoder();
             line = AudioSystem.getSourceDataLine(format);
             emitter = new Emitter();
-            closed = false;
             thread.submit(emitter);
+            currentPlayer = this;
         } catch (LineUnavailableException e) {
             log.error("problem with opening flac file");
             log.error(e);
+        }
+        catch (InterruptedException e)
+        {
+            log.error("Error during starting FLAC Player", e);
         }
     }
 
     @Override
     public void stop() {
-        closed = true;
+        if (emitter != null)
+        {
+            closed = true;
+        }
     }
 
     @Override
@@ -96,7 +108,10 @@ public class FLACPlayer implements Player {
     @Override
     public void setVolume(int percent)
     {
-        emitter.control.setValue(((float) percent) / 100f);
+        volume = -30f * (1 - ((float) percent / 100f));
+        Optional.ofNullable(emitter)
+              .map(Emitter::getControl)
+              .ifPresent(floatControl -> floatControl.setValue(volume));
     }
 
     private void refreshDecoder() {
@@ -112,6 +127,7 @@ public class FLACPlayer implements Player {
     }
     private class Emitter implements Runnable {
 
+        @Getter
         private FloatControl control;
 
         @Override
@@ -120,6 +136,7 @@ public class FLACPlayer implements Player {
                 line.open(format);
                 line.start();
                 control = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
+                control.setValue(volume);
                 Frame frame;
                 while ((frame = decoder.readNextFrame()) != null) {
                     if (closed) {

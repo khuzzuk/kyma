@@ -39,7 +39,7 @@ public class PlayerPaneController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         playbackProgress.setMajorTickUnit(0.01D);
-        bus.setReaction(GUI_VOLUME_SET, this::setVolumeSliderValue);
+        bus.setReaction(GUI_VOLUME_SET, volumeSlider::setValue);
         bus.sendMessage(GUI_VOLUME_GET, GUI_VOLUME_SET);
         bus.send(PLAYER_SET_SLIDER, playbackProgress);
         playButton.showPlay();
@@ -68,14 +68,7 @@ public class PlayerPaneController implements Initializable {
 
     public void setVolume(MouseEvent mouseEvent)
     {
-        double sliderValue = volumeSlider.getValue();
-        bus.send(PLAYER_SET_VOLUME, (int) (sliderValue * (sliderValue / 100d)));
-    }
-
-    public void setVolumeSliderValue(double sliderValue)
-    {
-        volumeSlider.setValue(Math.sqrt(sliderValue * 100));
-        bus.send(PLAYER_SET_VOLUME, (int) sliderValue);
+        bus.send(PLAYER_SET_VOLUME, (int) volumeSlider.getValue());
     }
 
     @FXML

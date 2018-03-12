@@ -75,7 +75,7 @@ class Mp3PlayerFX implements Player {
     @Override
     public void setVolume(int percent)
     {
-        player.setVolume(((float)percent) / 100f);
+        player.setVolume(((float)percent * percent) / 100f / 100f);
     }
 
     long calculateLength(MediaPlayer player) {

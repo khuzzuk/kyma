@@ -15,94 +15,111 @@ import pl.khuzzuk.messaging.Bus;
 @RequiredArgsConstructor
 public class PlayerManager implements Loadable
 {
-    private final Bus<EventType> bus;
-    private PlaybackTimer timer;
-    private Player currentPlayer;
-    @Setter
-    private Slider slider;
-    private int volume = 100;
+   private final Bus<EventType> bus;
+   private PlaybackTimer timer;
+   private Player currentPlayer;
+   @Setter
+   private Slider slider;
+   private int volume = 100;
 
-    @Override
-    public void load() {
-        bus.setReaction(PLAYER_SET_SLIDER, this::setSlider);
-        bus.setReaction(EventType.PLAYER_PLAY, this::playMp3);
-        bus.setReaction(EventType.PLAYER_PAUSE, this::pauseMp3);
-        bus.setReaction(EventType.PLAYER_STOP, this::stopMp3);
-        bus.setReaction(EventType.PLAYER_RESUME, this::resume);
-        bus.setReaction(EventType.CLOSE, this::stopMp3);
-        bus.setReaction(EventType.CLOSE, FLACPlayer::closeFLACPlayers);
-        bus.setReaction(EventType.PLAYER_PLAY_FROM, this::startFrom);
-        bus.setReaction(EventType.PLAYER_SET_VOLUME, this::setVolume);
+   @Override
+   public void load()
+   {
+      bus.setReaction(PLAYER_SET_SLIDER, this::setSlider);
+      bus.setReaction(EventType.PLAYER_PLAY, this::playMp3);
+      bus.setReaction(EventType.PLAYER_PAUSE, this::pauseMp3);
+      bus.setReaction(EventType.PLAYER_STOP, this::stopMp3);
+      bus.setReaction(EventType.PLAYER_RESUME, this::resume);
+      bus.setReaction(EventType.CLOSE, this::stopMp3);
+      bus.setReaction(EventType.CLOSE, FLACPlayer::closeFLACPlayers);
+      bus.setReaction(EventType.PLAYER_PLAY_FROM, this::startFrom);
+      bus.setReaction(EventType.PLAYER_SET_VOLUME, this::setVolume);
 
-        timer = new PlaybackTimer(bus, this);
-        timer.load();
-    }
+      timer = new PlaybackTimer(bus, this);
+      timer.load();
+   }
 
-    private synchronized void playMp3(SoundFile file) {
-        if (currentPlayer != null) {
-            if (currentPlayer.isPaused()) {
-                currentPlayer.start();
-                timer.start();
-                return;
-            } else {
-                currentPlayer.stop();
-            }
-        }
-        currentPlayer = file.getFormat().getPlayer(file, bus);
-        if (currentPlayer == null) {
-            //TODO send communicate to the user
-            return;
-        }
-        log.info("sta play");
-        currentPlayer.start();
-        currentPlayer.setVolume(volume);
-        slider.setMax(currentPlayer.getLength());
-        timer.start();
-    }
-
-    private synchronized void resume() {
-        if (currentPlayer != null && currentPlayer.isPaused()) {
+   private synchronized void playMp3(SoundFile file)
+   {
+      if (currentPlayer != null)
+      {
+         if (currentPlayer.isPaused())
+         {
             currentPlayer.start();
             timer.start();
-        } else {
-            bus.send(EventType.PLAYLIST_NEXT);
-        }
-    }
-
-    private synchronized void stopMp3() {
-        timer.stop();
-        if (currentPlayer != null) {
+            return;
+         }
+         else
+         {
             currentPlayer.stop();
-            currentPlayer = null;
-        }
-    }
+         }
+      }
+      currentPlayer = file.getFormat().getPlayer(file, bus);
+      if (currentPlayer == null)
+      {
+         //TODO send communicate to the user
+         return;
+      }
+      log.info("start play");
+      currentPlayer.start();
+      currentPlayer.setVolume(volume);
+      slider.setMax(currentPlayer.getLength());
+      timer.start();
+   }
 
-    private synchronized void pauseMp3() {
-        timer.stop();
-        if (currentPlayer != null) {
-            currentPlayer.pause();
-        }
-    }
+   private synchronized void resume()
+   {
+      if (currentPlayer != null && currentPlayer.isPaused())
+      {
+         currentPlayer.start();
+         timer.start();
+      }
+      else
+      {
+         bus.send(EventType.PLAYLIST_NEXT);
+      }
+   }
 
-    private synchronized void startFrom(Long millis) {
-        if (currentPlayer != null) {
-            currentPlayer.startFrom(millis);
-            slider.setMax(currentPlayer.getLength());
-            timer.start();
-        }
-    }
+   private synchronized void stopMp3()
+   {
+      timer.stop();
+      if (currentPlayer != null)
+      {
+         currentPlayer.stop();
+         currentPlayer = null;
+      }
+   }
 
-    private void setVolume(int percent)
-    {
-        volume = percent;
-        if (currentPlayer != null)
-        {
-            currentPlayer.setVolume(percent);
-        }
-    }
+   private synchronized void pauseMp3()
+   {
+      timer.stop();
+      if (currentPlayer != null)
+      {
+         currentPlayer.pause();
+      }
+   }
 
-    void updateSlider()
-    {
-        slider.setValue(currentPlayer.playbackStatus());
-    }
+   private synchronized void startFrom(Long millis)
+   {
+      if (currentPlayer != null)
+      {
+         currentPlayer.startFrom(millis);
+         slider.setMax(currentPlayer.getLength());
+         timer.start();
+      }
+   }
+
+   private void setVolume(int percent)
+   {
+      volume = percent;
+      if (currentPlayer != null)
+      {
+         currentPlayer.setVolume(percent);
+      }
+   }
+
+   void updateSlider()
+   {
+      slider.setValue(currentPlayer.playbackStatus());
+   }
 }
