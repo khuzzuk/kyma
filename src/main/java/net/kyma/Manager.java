@@ -24,8 +24,6 @@ import net.kyma.gui.controllers.ManagerPaneController;
 import net.kyma.gui.controllers.PlayerPaneController;
 import net.kyma.player.PlayerManager;
 import net.kyma.player.Playlist;
-import net.kyma.properties.PropertiesLoader;
-import net.kyma.properties.PropertiesManager;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
@@ -49,6 +47,8 @@ public class Manager extends Application {
         PlayerPaneController playerPaneController = new PlayerPaneController(bus);
 
         ObjectContainer container = new ObjectContainer(bus);
+        container.createContainer();
+
         ContentView contentView = new ContentView(bus, columnFactory);
         container.putToContainer(EventType.RET_CONTENT_VIEW, contentView);
 
@@ -60,11 +60,6 @@ public class Manager extends Application {
 
         Platform.runLater(() -> mainWindow = new MainWindow(bus, controllerDistributor, mainController));
 
-        //Properties
-        PropertiesLoader propertiesLoader = new PropertiesLoader();
-        propertiesLoader.load();
-        PropertiesManager propertiesManager = new PropertiesManager(bus, propertiesLoader);
-        propertiesManager.load();
 
         //Data
         Directory directory = new NIOFSDirectory(Paths.get("index/"));

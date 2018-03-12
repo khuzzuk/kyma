@@ -6,97 +6,128 @@ import static net.kyma.EventType.GUI_WINDOW_SET_FRAME;
 import static net.kyma.EventType.GUI_WINDOW_SET_FULLSCREEN;
 import static net.kyma.EventType.GUI_WINDOW_SET_MAXIMIZED;
 import static net.kyma.EventType.PLAYER_SET_VOLUME;
+import static net.kyma.EventType.PROPERTIES_SET_OBJECT_MAPPER;
 import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_FRAME;
 import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_FULLSCREEN;
 import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_MAXIMIZED;
+import static net.kyma.EventType.RET_OBJECT_MAPPER;
 
 import java.awt.*;
-import java.io.FileWriter;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.Optional;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.Loadable;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PropertiesManager implements Loadable
 {
-    private static final String PLAYER_VOLUME_PROPERTY = "player.volume";
-    private Bus<EventType> bus;
-    private PropertiesLoader propertiesLoader;
+   private static final Path settingsPath = Paths.get("settings.json");
 
-    @Override
-    public void load() {
-        bus.setReaction(GUI_WINDOW_SETTINGS, this::windowGetSettings);
-        bus.setReaction(PROPERTIES_STORE_WINDOW_FRAME, this::windowStoreRectangle);
-        bus.<Boolean>setReaction(PROPERTIES_STORE_WINDOW_MAXIMIZED, b -> set("player.window.maximized", b));
-        bus.<Boolean>setReaction(PROPERTIES_STORE_WINDOW_FULLSCREEN, b -> set("player.window.fullScreen", b));
-        bus.<Integer>setReaction(PLAYER_SET_VOLUME, value -> set(PLAYER_VOLUME_PROPERTY, value));
-        bus.setResponse(GUI_VOLUME_GET, () -> Optional
-              .ofNullable(propertiesLoader.getProperty(PLAYER_VOLUME_PROPERTY))
-              .map(Double::valueOf)
-              .orElse(100d));
-    }
+   private final Bus<EventType> bus;
+   private ObjectMapper objectMapper;
+   private PropertiesData propertiesData;
 
-    private void windowGetSettings() {
+   @Override
+   public void load()
+   {
+      bus.setReaction(PROPERTIES_SET_OBJECT_MAPPER, this::setObjectMapper);
+      bus.sendMessage(RET_OBJECT_MAPPER, PROPERTIES_SET_OBJECT_MAPPER);
 
-        if (BooleanUtils.toBoolean(propertiesLoader.getProperty("player.window.fullScreen"))) {
-            bus.send(GUI_WINDOW_SET_FULLSCREEN);
-            return;
-        }
+      propertiesData = PropertiesData.defaultProperties();
 
-        String maximizedFromProperties = propertiesLoader.getProperty("player.window.maximized");
-        if (BooleanUtils.toBoolean(maximizedFromProperties)) {
-            bus.send(GUI_WINDOW_SET_MAXIMIZED);
-            return;
-        }
+      bus.setReaction(GUI_WINDOW_SETTINGS, this::windowGetSettings);
+      bus.setReaction(PROPERTIES_STORE_WINDOW_FRAME, this::windowStoreRectangle);
+      bus.<Boolean>setReaction(PROPERTIES_STORE_WINDOW_MAXIMIZED, b -> propertiesData.getUiProperties().setMaximized(b));
+      bus.<Boolean>setReaction(PROPERTIES_STORE_WINDOW_FULLSCREEN, b -> propertiesData.getUiProperties().setFullScreen(b));
+      bus.<Integer>setReaction(PLAYER_SET_VOLUME, value -> propertiesData.getPlayerProperties().setVolume(value));
+      bus.setResponse(GUI_VOLUME_GET, () -> (double) propertiesData.getPlayerProperties().getVolume());
+   }
 
-        String x = propertiesLoader.getProperty("player.window.x");
-        String y = propertiesLoader.getProperty("player.window.y");
-        String width = propertiesLoader.getProperty("player.window.width");
-        String height = propertiesLoader.getProperty("player.window.height");
+   private void setObjectMapper(ObjectMapper objectMapper)
+   {
+      this.objectMapper = objectMapper;
+      if (Files.exists(settingsPath))
+      {
+         loadPropertiesData();
+      }
+      else
+      {
+         startDefaultProperties();
+      }
+   }
 
-        if (NumberUtils.isParsable(x) && NumberUtils.isParsable(y)
-                && NumberUtils.isParsable(width) && NumberUtils.isParsable(height)) {
+   private void windowGetSettings()
+   {
+      UIProperties uiProperties = propertiesData.getUiProperties();
+      if (uiProperties.isFullScreen())
+      {
+         bus.send(GUI_WINDOW_SET_FULLSCREEN);
+      }
+      else if (uiProperties.isMaximized())
+      {
+         bus.send(GUI_WINDOW_SET_MAXIMIZED);
+      }
+      else
+      {
+         bus.send(GUI_WINDOW_SET_FRAME, new Rectangle(
+               uiProperties.getX(), uiProperties.getY(), uiProperties.getWidth(), uiProperties.getHeight()));
+      }
+   }
 
-            Rectangle rectangle = new Rectangle();
-            rectangle.setRect(NumberUtils.toDouble(x), NumberUtils.toDouble(y),
-                    NumberUtils.toDouble(width), NumberUtils.toDouble(height));
+   private void windowStoreRectangle(Rectangle rectangle)
+   {
+      UIProperties uiProperties = propertiesData.getUiProperties();
+      uiProperties.setX(rectangle.x);
+      uiProperties.setY(rectangle.y);
+      uiProperties.setWidth(rectangle.width);
+      uiProperties.setHeight(rectangle.height);
+      store();
+   }
 
-            bus.send(GUI_WINDOW_SET_FRAME, rectangle);
-        }
-    }
+   private synchronized void store()
+   {
+      try (OutputStream out = Files.newOutputStream(settingsPath))
+      {
+         objectMapper.writeValue(out, propertiesData);
+      }
+      catch (IOException e)
+      {
+         log.error("Cannot store settings", e);
+      }
+   }
 
-    private void windowStoreRectangle(Rectangle rectangle) {
-        propertiesLoader.setProperty("player.window.height", String.valueOf(rectangle.getHeight()));
-        propertiesLoader.setProperty("player.window.width", String.valueOf(rectangle.getWidth()));
-        propertiesLoader.setProperty("player.window.x", String.valueOf(rectangle.getX()));
-        propertiesLoader.setProperty("player.window.y", String.valueOf(rectangle.getY()));
-        store();
-    }
+   private void loadPropertiesData()
+   {
+      try (BufferedReader reader = Files.newBufferedReader(settingsPath))
+      {
+         propertiesData = objectMapper.readValue(reader, PropertiesData.class);
+      }
+      catch (IOException e)
+      {
+         log.error("Cannot read settings file", e);
+      }
+   }
 
-    private synchronized void store() {
-        try (FileWriter writer = new FileWriter(propertiesLoader.getFile())) {
-            propertiesLoader.store(writer);
-        } catch (IOException e) {
-            log.error("cannot write properties to file");
-            log.error(e);
-        }
-    }
-
-    private void set(String key, Boolean value) {
-        propertiesLoader.setProperty(key, String.valueOf(Boolean.TRUE.equals(value)));
-        store();
-    }
-
-    private void set(String key, Integer value) {
-        propertiesLoader.setProperty(key, value.toString());
-        store();
-    }
+   private void startDefaultProperties()
+   {
+      try
+      {
+         Files.createFile(settingsPath);
+         store();
+      }
+      catch (IOException e)
+      {
+         log.error("Cannot create settings file", e);
+      }
+   }
 }
