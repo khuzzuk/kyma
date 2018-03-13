@@ -39,7 +39,7 @@ public class PlayerPaneController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         playbackProgress.setMajorTickUnit(0.01D);
-        bus.setReaction(GUI_VOLUME_SET, volumeSlider::setValue);
+        bus.<Integer>setReaction(GUI_VOLUME_SET, value -> volumeSlider.setValue(value));
         bus.sendMessage(GUI_VOLUME_GET, GUI_VOLUME_SET);
         bus.send(PLAYER_SET_SLIDER, playbackProgress);
         playButton.showPlay();

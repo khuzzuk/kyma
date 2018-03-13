@@ -53,7 +53,7 @@ public class PropertiesManager implements Loadable
          propertiesData.getPlayerProperties().setVolume(value);
          store();
       });
-      bus.setResponse(GUI_VOLUME_GET, () -> (double) propertiesData.getPlayerProperties().getVolume());
+      bus.setResponse(GUI_VOLUME_GET, () -> propertiesData.getPlayerProperties().getVolume());
    }
 
    private void setObjectMapper(ObjectMapper objectMapper)

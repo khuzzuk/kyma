@@ -34,6 +34,7 @@ public class PlayerManager implements Loadable
       bus.setReaction(EventType.CLOSE, FLACPlayer::closeFLACPlayers);
       bus.setReaction(EventType.PLAYER_PLAY_FROM, this::startFrom);
       bus.setReaction(EventType.PLAYER_SET_VOLUME, this::setVolume);
+      bus.setReaction(EventType.GUI_VOLUME_SET, this::setVolume);
 
       timer = new PlaybackTimer(bus, this);
       timer.load();
