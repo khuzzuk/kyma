@@ -36,12 +36,9 @@
     }, {
       "field" : "CUSTOM3",
       "size" : 79.0
-    }, {
-      "field" : "COUNTER",
-      "size" : 41.0
     } ]
   },
   "playerProperties" : {
-    "volume" : 36
+    "volume" : 24
   }
 }

@@ -83,12 +83,9 @@ public enum SupportedField
             }
          };
 
-   @NonNull
    private final String name;
    private final FieldKey mappedKey;
-   @NonNull
    private final Function<SoundFile, String> getter;
-   @NonNull
    private final BiConsumer<SoundFile, String> setter;
    private Predicate<String> validator;
 

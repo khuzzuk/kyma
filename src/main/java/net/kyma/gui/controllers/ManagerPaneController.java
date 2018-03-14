@@ -10,6 +10,7 @@ import static net.kyma.EventType.PLAYLIST_ADD_LIST;
 import static net.kyma.EventType.PLAYLIST_ADD_SOUND;
 import static net.kyma.EventType.PLAYLIST_HIGHLIGHT;
 import static net.kyma.EventType.PLAYLIST_REMOVE_LIST;
+import static net.kyma.EventType.PLAYLIST_REMOVE_SOUND;
 
 import java.io.File;
 import java.net.URL;
@@ -64,6 +65,10 @@ public class ManagerPaneController implements Initializable {
         bus.setReaction(PLAYLIST_ADD_SOUND, playlistItems::add);
         bus.setReaction(PLAYLIST_ADD_LIST, playlistItems::addAll);
         bus.setReaction(PLAYLIST_REMOVE_LIST, playlistItems::removeAll);
+        bus.<Collection<SoundFile>>setReaction(PLAYLIST_REMOVE_SOUND, soundFiles -> {
+            playlistItems.removeAll(soundFiles);
+            removeFromTreeView(soundFiles);
+        });
         bus.setFXReaction(DATA_REFRESH, this::fillTreeView);
         bus.setReaction(PLAYLIST_HIGHLIGHT, this::highlight);
         bus.setReaction(DATA_STORE_ITEM, s -> contentView.refresh());
@@ -86,7 +91,7 @@ public class ManagerPaneController implements Initializable {
         RootElement root = new RootElement("Pliki");
         List<SoundFile> soundFiles = sounds.stream().sorted().collect(Collectors.toList());
         for (SoundFile f : soundFiles) {
-            String[] path = f.getPath().replace(f.getIndexedPath(), "").split("[\\\\/]+");
+            String[] path = f.getPathView();
             if (path.length == 0) log.error("Database inconsistency!");
             fillChild(root, path, 0, f);
         }
@@ -102,6 +107,7 @@ public class ManagerPaneController implements Initializable {
         if (pos == path.length - 1) {
             element = new SoundElement(soundFile);
             parent.addChild(element);
+            element.setParentElement(parent);
         } else {
             BaseElement catalogue = parent.getChildElement(path[pos]);
             if (catalogue == null) {
@@ -114,6 +120,23 @@ public class ManagerPaneController implements Initializable {
                 fillChild(catalogue, path, pos + 1, soundFile);
             }
         }
+    }
+
+    private void removeFromTreeView(Collection<SoundFile> soundFiles)
+    {
+        soundFiles.stream()
+              .map(SoundFile::getPathView)
+              .forEach(path -> {
+                  BaseElement element = (BaseElement) filesList.getRoot();
+                  for (String name : path) {
+                      element = element.getChildElement(name);
+                      if (element == null) {
+                          log.error("Cannot find element in tree: {} in {}", name, path);
+                          return;
+                      }
+                  }
+                  element.detachFromParent();
+              });
     }
 
     @FXML

@@ -21,7 +21,7 @@ import static net.kyma.EventType.GUI_CONTENTVIEW_SETTINGS_SET;
 import static net.kyma.EventType.GUI_CONTENTVIEW_SETTINGS_STORE;
 import static net.kyma.EventType.PLAYLIST_ADD_LIST;
 import static net.kyma.EventType.PLAYLIST_NEXT;
-import static net.kyma.EventType.PLAYLIST_REMOVE_LIST;
+import static net.kyma.EventType.PLAYLIST_REMOVE_SOUND;
 import static net.kyma.dm.SupportedField.ARTIST;
 import static net.kyma.dm.SupportedField.COMPOSER;
 import static net.kyma.dm.SupportedField.CONDUCTOR;
@@ -231,54 +231,59 @@ public class ContentView implements Initializable
    {
       contentViewContextMenu.hide();
       MouseButton mouseButton = mouseEvent.getButton();
-      if (mouseButton.equals(MouseButton.PRIMARY) && mouseEvent.getClickCount() == 2)
+
+      switch (mouseButton)
       {
-         bus.send(PLAYLIST_ADD_LIST, selected);
-      }
-      if (mouseButton.equals(MouseButton.MIDDLE))
-      {
-         editor.showEditor(getSelected());
-      }
-      if (mouseButton.equals(MouseButton.SECONDARY))
-      {
-         EventTarget target = mouseEvent.getTarget();
-         if (target instanceof TableColumnHeader)
-         {
-            contentViewContextMenu.show((TableColumnHeader) target, mouseEvent.getScreenX(), mouseEvent.getScreenY());
-         }
+         case PRIMARY:
+            if (mouseEvent.getClickCount() == 2)
+            {
+               bus.send(PLAYLIST_ADD_LIST, selected);
+            }
+            break;
+
+         case MIDDLE:
+            editor.showEditor(getSelected());
+            break;
+
+         case SECONDARY:
+            EventTarget target = mouseEvent.getTarget();
+            if (target instanceof TableColumnHeader)
+            {
+               contentViewContextMenu.show((TableColumnHeader) target, mouseEvent.getScreenX(), mouseEvent.getScreenY());
+            }
+            break;
       }
    }
 
    @FXML
    private void onKeyReleased(KeyEvent keyEvent)
    {
-      if (keyEvent.getCode().equals(KeyCode.ENTER))
+
+      KeyCode keyCode = keyEvent.getCode();
+      switch (keyCode)
       {
-         Collection<SoundFile> allSelected = selected;
-         if (keyEvent.isControlDown())
-         {
-            if (allSelected.size() == 1)
-            {
-               editor.showEditor(getSelected());
+         case ENTER:
+            if (keyEvent.isControlDown()) {
+               if (selected.size() == 1) {
+                  editor.showEditor(getSelected());
+               } else {
+                  bulkEditor.showEditor(selected);
+               }
+            } else if (keyEvent.isAltDown()) {
+               bus.send(PLAYLIST_ADD_LIST, selected);
             }
-            else
-            {
-               bulkEditor.showEditor(allSelected);
+            break;
+
+         case BACK_SPACE:
+         case DELETE:
+            if (keyEvent.isControlDown()) {
+               Collection<SoundFile> selected = new ArrayList<>(this.selected);
+               bus.send(DATA_REMOVE_ITEM, selected);
+               bus.send(PLAYLIST_REMOVE_SOUND, selected);
+               contentView.getItems().removeAll(selected);
+               contentView.refresh();
             }
-         }
-         else if (keyEvent.isAltDown())
-         {
-            bus.send(PLAYLIST_ADD_LIST, selected);
-         }
-      }
-      else if ((keyEvent.getCode().equals(KeyCode.BACK_SPACE) || keyEvent.getCode().equals(KeyCode.DELETE))
-            && keyEvent.isControlDown())
-      {
-         Collection<SoundFile> selected = new ArrayList<>(this.selected);
-         bus.send(DATA_REMOVE_ITEM, selected);
-         bus.send(PLAYLIST_REMOVE_LIST, selected);
-         contentView.getItems().removeAll(selected);
-         contentView.refresh();
+            break;
       }
    }
 

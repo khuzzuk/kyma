@@ -55,4 +55,9 @@ public class SoundFile implements Comparable<SoundFile> {
     public int getRateValue() {
         return format.isByteScale() ? rate.getValue() : rate.getValueP();
     }
+
+    public String[] getPathView()
+    {
+        return getPath().replace(getIndexedPath(), "").split("[\\\\/]+");
+    }
 }

@@ -47,4 +47,10 @@ public class BaseElement extends TreeItem<String> {
     {
         return parentElement.getPath() + "/" + name;
     }
+
+    public void detachFromParent()
+    {
+        parentElement.childElements.remove(name);
+        parentElement = null;
+    }
 }

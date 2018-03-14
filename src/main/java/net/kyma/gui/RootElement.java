@@ -12,4 +12,10 @@ public class RootElement extends BaseElement {
     {
         return rootPath + getName();
     }
+
+    @Override
+    public void detachFromParent()
+    {
+        throw new UnsupportedOperationException("Cannot detach root");
+    }
 }

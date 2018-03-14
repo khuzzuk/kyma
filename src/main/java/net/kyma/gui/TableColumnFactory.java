@@ -105,8 +105,10 @@ public class TableColumnFactory
       TableColumn<SoundFile, String> column = new TableColumn<>(field.getName());
       column.setCellValueFactory(data -> new SimpleStringProperty(field.getGetter().apply(data.getValue())));
       column.setCellFactory(cellFactory);
-      column.setOnEditCommit(value ->
-            bus.send(DATA_UPDATE_REQUEST, new TagUpdateRequest(field, value.getNewValue())));
+      column.setOnEditCommit(value -> {
+         field.getSetter().accept(value.getRowValue(), value.getNewValue());
+         bus.send(DATA_UPDATE_REQUEST, new TagUpdateRequest(field, value.getNewValue()));
+      });
       column.setPrefWidth(width);
       column.widthProperty().addListener((_1, _2, _3) -> bus.send(GUI_CONTENTVIEW_SETTINGS_CHANGED));
       return column;
