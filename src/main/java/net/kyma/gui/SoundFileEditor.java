@@ -100,6 +100,7 @@ public class SoundFileEditor
             StarsFactory.defineForRating(10));
 
       fields = new LinkedHashMap<>();
+      fields.put(FILE_NAME, createNew(false));
       fields.put(TITLE, createNew());
       fields.put(YEAR, createNew());
       fields.put(ALBUM, createNew());
@@ -135,8 +136,14 @@ public class SoundFileEditor
 
    private TextField createNew()
    {
+      return createNew(true);
+   }
+
+   private TextField createNew(boolean editable)
+   {
       TextField textField = new TextField();
       textField.setPrefWidth(200);
+      textField.setEditable(editable);
       return textField;
    }
 
@@ -147,6 +154,7 @@ public class SoundFileEditor
       this.soundFile = soundFile;
       fields.forEach((key, value) -> value.setText(key.getGetter().apply(this.soundFile)));
       rate.getSelectionModel().select(soundFile.getRate().getRate());
+      window.setTitle(soundFile.getFileName());
       window.show();
    }
 

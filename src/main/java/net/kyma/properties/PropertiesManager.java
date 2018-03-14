@@ -1,5 +1,7 @@
 package net.kyma.properties;
 
+import static net.kyma.EventType.GUI_CONTENTVIEW_SETTINGS_GET;
+import static net.kyma.EventType.GUI_CONTENTVIEW_SETTINGS_STORE;
 import static net.kyma.EventType.GUI_VOLUME_GET;
 import static net.kyma.EventType.GUI_WINDOW_SETTINGS;
 import static net.kyma.EventType.GUI_WINDOW_SET_FRAME;
@@ -12,13 +14,14 @@ import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_FULLSCREEN;
 import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_MAXIMIZED;
 import static net.kyma.EventType.RET_OBJECT_MAPPER;
 
-import java.awt.*;
+import java.awt.Rectangle;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +57,11 @@ public class PropertiesManager implements Loadable
          store();
       });
       bus.setResponse(GUI_VOLUME_GET, () -> propertiesData.getPlayerProperties().getVolume());
+      bus.<List<UIProperties.ColumnDefinition>>setReaction(GUI_CONTENTVIEW_SETTINGS_STORE, definitions -> {
+         propertiesData.getUiProperties().setColumnDefinitions(definitions);
+         store();
+      });
+      bus.setResponse(GUI_CONTENTVIEW_SETTINGS_GET, () -> propertiesData.getUiProperties().getColumnDefinitions());
    }
 
    private void setObjectMapper(ObjectMapper objectMapper)

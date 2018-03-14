@@ -4,8 +4,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.RequiredArgsConstructor;
-import net.kyma.properties.PropertiesLoader;
 import net.kyma.properties.PropertiesManager;
 import pl.khuzzuk.messaging.Bus;
 
@@ -19,7 +19,9 @@ public class ObjectContainer
    {
       loadables = new LinkedList<>();
 
-      putToContainer(EventType.RET_OBJECT_MAPPER, new ObjectMapper());
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.enable(SerializationFeature.INDENT_OUTPUT);
+      putToContainer(EventType.RET_OBJECT_MAPPER, mapper);
 
       //Properties
       putToContainer(EventType.RET_PROPERTIES_MANAGER, new PropertiesManager(bus));

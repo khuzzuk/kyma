@@ -3,6 +3,7 @@ package net.kyma.dm;
 import static org.apache.commons.lang3.StringUtils.isNoneBlank;
 
 import java.util.EnumSet;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -144,5 +145,11 @@ public enum SupportedField
    public void putTagValueToSoundFile(Tag tag, SoundFile soundFile)
    {
       getSetter().accept(soundFile, tagExtractor.apply(tag, soundFile));
+   }
+
+   public static SupportedField getByName(String name)
+   {
+      return SET.stream().filter(field -> field.name.equals(name)).findAny()
+            .orElseThrow(() -> new NoSuchElementException(name));
    }
 }
