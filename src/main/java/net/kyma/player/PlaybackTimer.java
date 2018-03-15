@@ -30,23 +30,26 @@ public class PlaybackTimer implements Loadable {
 
     @SuppressWarnings("InfiniteLoopStatement")
     private void run() {
-        try {
-            while (true) {
+        while (true) {
+            try {
                 TimerAction action = channel.take();
                 if (action == TimerAction.STOP) {
                     channel.clear();
-                } else if (action == TimerAction.START) {
+                }
+                else if (action == TimerAction.START)
+                {
                     channel.clear();
                     channel.add(TimerAction.CONTINUE);
-                } else {
+                }
+                else
+                {
                     channel.add(TimerAction.CONTINUE);
                     playerManager.updateSlider();
                     Thread.sleep(refreshLatency);
                 }
+            } catch (InterruptedException e) {
+                log.error("refreshing playback interrupted", e);
             }
-        } catch (InterruptedException e) {
-            log.error("refreshing playback interrupted");
-            log.error(e);
         }
     }
 

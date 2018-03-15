@@ -154,6 +154,22 @@
         </dependency>
 
         <!--AUDIO-->
+        <dependency>
+            <groupId>com.googlecode.soundlibs</groupId>
+            <artifactId>jlayer</artifactId>
+            <version>1.0.1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.soundlibs</groupId>
+            <artifactId>tritonus-share</artifactId>
+            <version>0.3.7.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.soundlibs</groupId>
+            <artifactId>mp3spi</artifactId>
+            <version>1.9.5.4</version>
+        </dependency>
+
         <!-- mvn install:install-file -Dfile=jaudiotagger-2.2.6-SNAPSHOT.jar -DgroupId=net.jthink -DartifactId=jaudiotagger -Dversion=2.2.6-SNAPSHOT -Dpackaging=jar -->
         <dependency>
             <groupId>net.jthink</groupId>

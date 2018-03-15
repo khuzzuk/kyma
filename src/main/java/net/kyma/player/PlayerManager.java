@@ -31,7 +31,7 @@ public class PlayerManager implements Loadable
       bus.setReaction(EventType.PLAYER_STOP, this::stopMp3);
       bus.setReaction(EventType.PLAYER_RESUME, this::resume);
       bus.setReaction(EventType.CLOSE, this::stopMp3);
-      bus.setReaction(EventType.CLOSE, FLACPlayer::closeFLACPlayers);
+      bus.setReaction(EventType.CLOSE, SPIPlayer::closePlayers);
       bus.setReaction(EventType.PLAYER_PLAY_FROM, this::startFrom);
       bus.setReaction(EventType.PLAYER_SET_VOLUME, this::setVolume);
       bus.setReaction(EventType.GUI_VOLUME_SET, this::setVolume);
@@ -64,7 +64,6 @@ public class PlayerManager implements Loadable
       log.info("start play");
       currentPlayer.start();
       currentPlayer.setVolume(volume);
-      slider.setMax(currentPlayer.getLength());
       timer.start();
    }
 
@@ -121,6 +120,7 @@ public class PlayerManager implements Loadable
 
    void updateSlider()
    {
+      slider.setMax(currentPlayer.getLength());
       slider.setValue(currentPlayer.playbackStatus());
    }
 }

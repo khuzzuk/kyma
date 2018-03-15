@@ -11,7 +11,7 @@ import pl.khuzzuk.messaging.Bus;
 @AllArgsConstructor
 @Getter
 public enum Format {
-    MP3(Mp3PlayerFX::new, true),
+    MP3(Mp3PlayerJLayer::new, true),
     M4A(M4aPlayerFX::new, true),
     FLAC(FLACPlayer::new, false),
     UNKNOWN(null, false);
