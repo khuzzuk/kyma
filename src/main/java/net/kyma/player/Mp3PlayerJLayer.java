@@ -22,21 +22,11 @@ public class Mp3PlayerJLayer extends SPIPlayer
    private SoundFile soundFile;
    @Getter
    private long length;
-   private long skipped;
-   @Getter
-   private boolean paused;
-   private long currentPlaybackStatus;
 
    Mp3PlayerJLayer(SoundFile file, Bus<EventType> bus)
    {
       super(bus);
       this.soundFile = file;
-   }
-
-   @Override
-   public long playbackStatus()
-   {
-      return currentPlaybackStatus;
    }
 
    @Override
@@ -50,15 +40,16 @@ public class Mp3PlayerJLayer extends SPIPlayer
    private class Mp3Decoder implements Decoder
    {
       private AudioInputStream player;
-      private byte[] data = new byte[4096];
+      private byte[] data = new byte[128];
       @Getter
       AudioFormat format;
       private long skipped;
+      private long linePosition;
       private int bytesTotal;
+      @Getter
+      private long currentPlaybackStatus;
 
       private void refresh(long toSkip) throws IOException, UnsupportedAudioFileException {
-         skipped = toSkip;
-
          calculateLengths();
 
          AudioInputStream rawAudio = AudioSystem.getAudioInputStream(new File(soundFile.getPath()));
@@ -79,25 +70,20 @@ public class Mp3PlayerJLayer extends SPIPlayer
       }
 
       @Override
-      public boolean writeInto(SourceDataLine line) throws IOException
+      public synchronized boolean writeInto(SourceDataLine line) throws IOException
       {
          int bytesRead = player.read(data, 0, data.length);
          if (bytesRead == -1) return false;
          line.write(data, 0, data.length);
-         currentPlaybackStatus = line.getMicrosecondPosition() / 1000 + skipped;
+         linePosition = line.getMicrosecondPosition() / 1000;
+         currentPlaybackStatus = linePosition + skipped;
          return true;
-      }
-
-      @Override
-      public long getCurrentPlaybackStatus()
-      {
-         return 0;
       }
 
       @Override
       public void skipTo(long toSkip) throws IOException
       {
-         skipped = toSkip;
+         skipped = toSkip - linePosition;
          try
          {
             refresh(toSkip);

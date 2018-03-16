@@ -1,7 +1,6 @@
 package net.kyma.player;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -96,10 +95,9 @@ public abstract class SPIPlayer implements Player {
 
     @Override
     public void setVolume(int percent) {
-        volume = -30f * (1 - ((float) percent / 100f));
-        Optional.ofNullable(emitter)
-              .map(Emitter::getControl)
-              .ifPresent(floatControl -> floatControl.setValue(volume));
+        volume = (float) (Math.log10((float) percent / 100f) * 50);
+        if (emitter != null)
+            emitter.getControl().setValue(volume);
     }
 
     private class Emitter implements Runnable {

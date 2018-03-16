@@ -21,7 +21,7 @@ public class PlaybackTimer implements Loadable {
 
     @Override
     public void load() {
-        channel = new ArrayBlockingQueue<>(8);
+        channel = new ArrayBlockingQueue<>(64);
         bus.setReaction(EventType.PLAYER_STOP_TIMER, () -> channel.offer(TimerAction.STOP));
         Thread t = new Thread(this::run);
         t.setDaemon(true);
