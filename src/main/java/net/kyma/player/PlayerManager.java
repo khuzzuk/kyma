@@ -120,7 +120,10 @@ public class PlayerManager implements Loadable
 
    void updateSlider()
    {
-      slider.setMax(currentPlayer.getLength());
-      slider.setValue(currentPlayer.playbackStatus());
+      if (currentPlayer != null)
+      {
+         slider.setMax(currentPlayer.getLength());
+         slider.setValue(currentPlayer.playbackStatus());
+      }
    }
 }

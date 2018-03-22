@@ -8,7 +8,7 @@
     "height" : 654,
     "columnDefinitions" : [ {
       "field" : "TITLE",
-      "size" : 229.0
+      "size" : 282.0
     }, {
       "field" : "RATE",
       "size" : 100.0
@@ -39,6 +39,6 @@
     } ]
   },
   "playerProperties" : {
-    "volume" : 25
+    "volume" : 34
   }
 }

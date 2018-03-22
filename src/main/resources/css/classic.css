@@ -64,7 +64,7 @@
 /*noinspection CssUnusedSymbol*/
 .currentlyPlayed .text {
     -fx-underline: true;
-    -fx-fill: -elements-background;
+    /*-fx-fill: -elements-background;*/
 }
 
 .currentlyPlayed {
