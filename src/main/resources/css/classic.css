@@ -64,12 +64,12 @@
 /*noinspection CssUnusedSymbol*/
 .currentlyPlayed .text {
     -fx-underline: true;
-    /*-fx-fill: -elements-background;*/
+    -fx-fill: -elements-background;
 }
 
 .currentlyPlayed {
     -fx-padding: 0 0 0 0.3em;
-    -fx-background-color: -containers-background2;
+    /*-fx-background-color: -containers-background2;*/
 }
 
 .slider .track {
