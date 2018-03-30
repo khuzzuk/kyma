@@ -19,7 +19,7 @@ import pl.khuzzuk.messaging.Bus;
 @Log4j2
 public class Mp3PlayerJLayer extends SPIPlayer
 {
-   private SoundFile soundFile;
+   private final SoundFile soundFile;
    @Getter
    private long length;
 
@@ -40,7 +40,7 @@ public class Mp3PlayerJLayer extends SPIPlayer
    private class Mp3Decoder implements Decoder
    {
       private AudioInputStream player;
-      private byte[] data = new byte[128];
+      private final byte[] data = new byte[128];
       @Getter
       AudioFormat format;
       private long skipped;
@@ -49,6 +49,7 @@ public class Mp3PlayerJLayer extends SPIPlayer
       @Getter
       private long currentPlaybackStatus;
 
+      @SuppressWarnings("ResultOfMethodCallIgnored")
       private void refresh(long toSkip) throws IOException, UnsupportedAudioFileException {
          calculateLengths();
 

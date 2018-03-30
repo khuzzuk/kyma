@@ -1,24 +1,17 @@
 package net.kyma.gui;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
+import lombok.RequiredArgsConstructor;
 import net.kyma.dm.SoundFile;
-import org.apache.commons.lang3.StringUtils;
-import org.controlsfx.control.textfield.TextFields;
 
+@RequiredArgsConstructor
 public class AutoCompleteTableCell extends TableCell<SoundFile, String>
 {
-   private Collection<String> suggestions;
+   private final Collection<String> suggestions;
    private TextField editableField;
-
-   private AutoCompleteTableCell(Collection<String> suggestions)
-   {
-      this.suggestions = suggestions;
-      this.getStyleClass().add("text-field-table-cell");
-   }
 
    public static AutoCompleteTableCell create(Collection<String> suggestions)
    {
@@ -53,6 +46,7 @@ public class AutoCompleteTableCell extends TableCell<SoundFile, String>
 
    private void load()
    {
+      this.getStyleClass().add("text-field-table-cell");
       editableField = new TextField();
       AutoCompletionUtils.bindAutoCompletions(editableField, suggestions);
       editableField.setOnAction(event -> {

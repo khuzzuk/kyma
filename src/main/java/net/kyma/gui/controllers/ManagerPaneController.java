@@ -30,6 +30,7 @@ import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.dm.SoundFile;
@@ -40,6 +41,7 @@ import net.kyma.gui.TableColumnFactory;
 import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
+@RequiredArgsConstructor
 public class ManagerPaneController implements Initializable {
     @FXML
     private GridPane managerPane;
@@ -49,36 +51,31 @@ public class ManagerPaneController implements Initializable {
     private TreeView<String> filesList;
     @FXML
     private TableView<SoundFile> playlist;
-    private Bus<EventType> bus;
-    private TableColumnFactory columnFactory;
-    private IntegerProperty highlighted;
 
-    public ManagerPaneController(Bus<EventType> bus, TableColumnFactory columnFactory)
-    {
-        this.bus = bus;
-        this.columnFactory = columnFactory;
-    }
+    private final Bus<EventType> bus;
+    private final TableColumnFactory columnFactory;
+    private IntegerProperty highlighted;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         Collection<SoundFile> playlistItems = playlist.getItems();
-        bus.setReaction(PLAYLIST_ADD_SOUND, playlistItems::add);
-        bus.setReaction(PLAYLIST_ADD_LIST, playlistItems::addAll);
-        bus.setReaction(PLAYLIST_REMOVE_LIST, playlistItems::removeAll);
-        bus.<Collection<SoundFile>>setReaction(PLAYLIST_REMOVE_SOUND, soundFiles -> {
+        bus.subscribingFor(PLAYLIST_ADD_SOUND).accept(playlistItems::add).subscribe();
+        bus.subscribingFor(PLAYLIST_ADD_LIST).accept(playlistItems::addAll).subscribe();
+        bus.subscribingFor(PLAYLIST_REMOVE_LIST).<Collection<SoundFile>>accept(playlistItems::removeAll).subscribe();
+        bus.subscribingFor(PLAYLIST_REMOVE_SOUND).<Collection<SoundFile>>accept(soundFiles -> {
             playlistItems.removeAll(soundFiles);
             removeFromTreeView(soundFiles);
-        });
-        bus.setFXReaction(DATA_REFRESH, this::fillTreeView);
-        bus.setReaction(PLAYLIST_HIGHLIGHT, this::highlight);
-        bus.setReaction(DATA_STORE_ITEM, s -> contentView.refresh());
-        bus.setReaction(DATA_STORE_LIST, s -> contentView.refresh());
+        }).subscribe();
+        bus.subscribingFor(DATA_REFRESH).onFXThread().accept(this::fillTreeView).subscribe();
+        bus.subscribingFor(PLAYLIST_HIGHLIGHT).accept(this::highlight).subscribe();
+        bus.subscribingFor(DATA_STORE_ITEM).accept(s -> contentView.refresh()).subscribe();
+        bus.subscribingFor(DATA_STORE_LIST).accept(s -> contentView.refresh()).subscribe();
 
         highlighted = new SimpleIntegerProperty(-1);
 
         initPlaylistView();
 
-        bus.sendMessage(DATA_INDEX_GET_ALL, DATA_CONVERT_FROM_DOC);
+        bus.message(DATA_INDEX_GET_ALL).withResponse(DATA_CONVERT_FROM_DOC).send();
     }
 
     private void initPlaylistView() {
@@ -142,7 +139,7 @@ public class ManagerPaneController implements Initializable {
     @FXML
     private void removeFromPlaylist(KeyEvent keyEvent) {
         if (keyEvent.getCode().equals(KeyCode.DELETE) || keyEvent.getCode().equals(KeyCode.BACK_SPACE)) {
-            bus.send(PLAYLIST_REMOVE_LIST, playlist.getSelectionModel().getSelectedItems());
+            bus.message(PLAYLIST_REMOVE_LIST).withContent(playlist.getSelectionModel().getSelectedItems()).send();
         }
     }
 
@@ -177,7 +174,7 @@ public class ManagerPaneController implements Initializable {
                 selected.stream()
                       .map(BaseElement::getPath)
                       .map(File::new)
-                      .forEach(path -> bus.send(DATA_INDEX_DIRECTORY, path));
+                      .forEach(path -> bus.message(DATA_INDEX_DIRECTORY).withContent(path).send());
         }
     }
 

@@ -1,20 +1,9 @@
 package net.kyma;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
 import lombok.extern.log4j.Log4j2;
-import net.kyma.data.DataIndexer;
-import net.kyma.data.DataReader;
-import net.kyma.data.DirectoryIndexer;
-import net.kyma.data.DocConverter;
-import net.kyma.data.FileCleaner;
-import net.kyma.data.MetadataIndexer;
-import net.kyma.data.PlayCounter;
-import net.kyma.data.SoundFileConverter;
 import net.kyma.gui.MainWindow;
 import net.kyma.gui.TableColumnFactory;
 import net.kyma.gui.controllers.ContentView;
@@ -22,12 +11,6 @@ import net.kyma.gui.controllers.ControllerDistributor;
 import net.kyma.gui.controllers.MainController;
 import net.kyma.gui.controllers.ManagerPaneController;
 import net.kyma.gui.controllers.PlayerPaneController;
-import net.kyma.player.PlayerManager;
-import net.kyma.player.Playlist;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.NIOFSDirectory;
 import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
@@ -35,9 +18,9 @@ public class Manager extends Application {
 
     private static MainWindow mainWindow;
 
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args)
     {
-        Bus<EventType> bus = Bus.initializeBus(EventType.class, false);
+        Bus<EventType> bus = Bus.initializeBus(EventType.class);
 
         //GUI
         TableColumnFactory columnFactory = new TableColumnFactory(bus);
@@ -60,38 +43,12 @@ public class Manager extends Application {
 
         Platform.runLater(() -> mainWindow = new MainWindow(bus, controllerDistributor, mainController));
 
-
-        //Data
-        Directory directory = new NIOFSDirectory(Paths.get("index/"));
-        IndexWriterConfig config = new IndexWriterConfig();
-        config.setRAMBufferSizeMB(64);
-        IndexWriter writer = new IndexWriter(directory, config);
-        SoundFileConverter soundFileConverter = new SoundFileConverter(bus);
-
-        DataReader dataReader = new DataReader(bus, writer);
-        dataReader.load();
-        DataIndexer dataIndexer = new DataIndexer(bus, writer, new DocConverter());
-        dataIndexer.load();
-        DirectoryIndexer directoryIndexer = new DirectoryIndexer(bus, soundFileConverter);
-        directoryIndexer.load();
-        FileCleaner fileCleaner = new FileCleaner(bus);
-        fileCleaner.load();
-        PlayCounter playCounter = new PlayCounter(bus);
-        playCounter.load();
-        MetadataIndexer metadataIndexer = new MetadataIndexer(bus);
-        metadataIndexer.load();
-
-        //Player
-        Playlist playlist = new Playlist(bus);
-        playlist.load();
-        PlayerManager playerManager = new PlayerManager(bus);
-        playerManager.load();
-
         launch(args);
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage)
+    {
         mainWindow.initMainWindow(primaryStage);
         mainWindow.show();
     }

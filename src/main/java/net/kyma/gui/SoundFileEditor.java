@@ -32,12 +32,9 @@ public class SoundFileEditor
    private SoundFile soundFile;
    private ComboBox<Node> rate;
    Map<SupportedField, TextField> fields;
-   private Map<SupportedField, Collection<String>> suggestions;
 
    public void init(Map<SupportedField, Collection<String>> suggestions)
    {
-      this.suggestions = suggestions;
-
       Platform.runLater(() -> {
          window = new Stage();
          setUpFields();
@@ -162,7 +159,7 @@ public class SoundFileEditor
    {
       fields.forEach((field, value) -> field.getSetter().accept(soundFile, value.getText()));
       soundFile.setRate(Rating.getFor(rate.getSelectionModel().getSelectedIndex()));
-      bus.send(EventType.DATA_STORE_ITEM, soundFile);
+      bus.message(EventType.DATA_STORE_ITEM).withContent(soundFile).send();
       window.hide();
       soundFile = null;
    }

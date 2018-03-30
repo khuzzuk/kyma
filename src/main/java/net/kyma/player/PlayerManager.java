@@ -1,6 +1,14 @@
 package net.kyma.player;
 
+import static net.kyma.EventType.CLOSE;
+import static net.kyma.EventType.GUI_VOLUME_SET;
+import static net.kyma.EventType.PLAYER_PAUSE;
+import static net.kyma.EventType.PLAYER_PLAY;
+import static net.kyma.EventType.PLAYER_PLAY_FROM;
+import static net.kyma.EventType.PLAYER_RESUME;
 import static net.kyma.EventType.PLAYER_SET_SLIDER;
+import static net.kyma.EventType.PLAYER_SET_VOLUME;
+import static net.kyma.EventType.PLAYER_STOP;
 
 import javafx.scene.control.Slider;
 import lombok.RequiredArgsConstructor;
@@ -25,16 +33,16 @@ public class PlayerManager implements Loadable
    @Override
    public void load()
    {
-      bus.setReaction(PLAYER_SET_SLIDER, this::setSlider);
-      bus.setReaction(EventType.PLAYER_PLAY, this::playMp3);
-      bus.setReaction(EventType.PLAYER_PAUSE, this::pauseMp3);
-      bus.setReaction(EventType.PLAYER_STOP, this::stopMp3);
-      bus.setReaction(EventType.PLAYER_RESUME, this::resume);
-      bus.setReaction(EventType.CLOSE, this::stopMp3);
-      bus.setReaction(EventType.CLOSE, SPIPlayer::closePlayers);
-      bus.setReaction(EventType.PLAYER_PLAY_FROM, this::startFrom);
-      bus.setReaction(EventType.PLAYER_SET_VOLUME, this::setVolume);
-      bus.setReaction(EventType.GUI_VOLUME_SET, this::setVolume);
+      bus.subscribingFor(PLAYER_SET_SLIDER).accept(this::setSlider).subscribe();
+      bus.subscribingFor(PLAYER_PLAY).accept(this::playMp3).subscribe();
+      bus.subscribingFor(PLAYER_PAUSE).then(this::pauseMp3).subscribe();
+      bus.subscribingFor(PLAYER_STOP).then(this::stopMp3).subscribe();
+      bus.subscribingFor(PLAYER_RESUME).then(this::resume).subscribe();
+      bus.subscribingFor(CLOSE).then(this::stopMp3).subscribe();
+      bus.subscribingFor(CLOSE).then(SPIPlayer::closePlayers).subscribe();
+      bus.subscribingFor(PLAYER_PLAY_FROM).accept(this::startFrom).subscribe();
+      bus.subscribingFor(PLAYER_SET_VOLUME).accept(this::setVolume).subscribe();
+      bus.subscribingFor(GUI_VOLUME_SET).accept(this::setVolume).subscribe();
 
       timer = new PlaybackTimer(bus, this);
       timer.load();
@@ -76,7 +84,7 @@ public class PlayerManager implements Loadable
       }
       else
       {
-         bus.send(EventType.PLAYLIST_NEXT);
+         bus.message(EventType.PLAYLIST_NEXT).send();
       }
    }
 

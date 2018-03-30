@@ -35,13 +35,8 @@ public class TableColumnFactory
 {
    private Bus<EventType> bus;
 
-   private static BiConsumer<SoundFile, TableCell<?, ?>> startFactory =
+   private static final BiConsumer<SoundFile, TableCell<?, ?>> startFactory =
          (s, cell) -> Optional.ofNullable(s).map(Rating::getStarFor).ifPresent(cell::setGraphic);
-
-   public TableColumn<SoundFile, ?> getColumnFor(SupportedField field, double width)
-   {
-      return getColumnFor(field, width, null);
-   }
 
    public TableColumn<SoundFile, ?> getColumnFor(SupportedField field, double width, Collection<String> suggestions)
    {
@@ -58,7 +53,7 @@ public class TableColumnFactory
       }
    }
 
-   public TableColumn<SoundFile, SoundFile> getRateColumn()
+   private TableColumn<SoundFile, SoundFile> getRateColumn()
    {
       TableColumn<SoundFile, SoundFile> column = new TableColumn<>(RATE.getName());
       column.setComparator(Comparator.comparingInt(soundFile -> soundFile.getRate().getValue()));
@@ -77,7 +72,7 @@ public class TableColumnFactory
                if (e.getButton().equals(MouseButton.PRIMARY))
                {
                   Rating.setRate((int) (e.getX() * 10 / getWidth() + 1), item);
-                  bus.send(DATA_STORE_ITEM, item);
+                  bus.message(DATA_STORE_ITEM).withContent(item).send();
                }
             });
          }
@@ -107,23 +102,24 @@ public class TableColumnFactory
       column.setCellFactory(cellFactory);
       column.setOnEditCommit(value -> {
          field.getSetter().accept(value.getRowValue(), value.getNewValue());
-         bus.send(DATA_UPDATE_REQUEST, new TagUpdateRequest(field, value.getNewValue()));
+         bus.message(DATA_UPDATE_REQUEST).withContent(new TagUpdateRequest(field, value.getNewValue())).send();
       });
       column.setPrefWidth(width);
-      column.widthProperty().addListener((_1, _2, _3) -> bus.send(GUI_CONTENTVIEW_SETTINGS_CHANGED));
+      column.widthProperty().addListener((_1, _2, _3) -> bus.message(GUI_CONTENTVIEW_SETTINGS_CHANGED).send());
       return column;
    }
 
-   public TableColumn<SoundFile, Integer> getCounterColumn(double width)
+   private TableColumn<SoundFile, Integer> getCounterColumn(double width)
    {
       TableColumn<SoundFile, Integer> column = new TableColumn<>(COUNTER.getName());
       column.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue().getCounter()));
-      column.widthProperty().addListener((_1, _2, _3) -> bus.send(GUI_CONTENTVIEW_SETTINGS_CHANGED));
+      column.widthProperty().addListener((_1, _2, _3) -> bus.message(GUI_CONTENTVIEW_SETTINGS_CHANGED).send());
       column.setPrefWidth(width);
       return column;
    }
 
-   public TableColumn<SoundFile, String> createTitleColumn()
+   @SuppressWarnings("unchecked")
+   private TableColumn<SoundFile, String> createTitleColumn()
    {
       TableColumn<SoundFile, String> column =
             createStringColumn(SupportedField.TITLE, TextFieldTableCell.forTableColumn(), 200);
@@ -164,8 +160,8 @@ public class TableColumnFactory
             setGraphic(label);
          }
       });
-      column.setOnEditCommit(v -> bus.send(DATA_UPDATE_REQUEST,
-            new TagUpdateRequest(TITLE, v.getNewValue())));
+      column.setOnEditCommit(v -> bus.message(DATA_UPDATE_REQUEST)
+            .withContent(new TagUpdateRequest(TITLE, v.getNewValue())).send());
       return column;
    }
 }

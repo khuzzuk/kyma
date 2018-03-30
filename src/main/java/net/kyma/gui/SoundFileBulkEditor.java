@@ -51,7 +51,7 @@ public class SoundFileBulkEditor extends SoundFileEditor {
                 soundFiles.forEach(s -> key.getSetter().accept(s, value.getText()));
             }
         });
-        bus.send(EventType.DATA_STORE_LIST, soundFiles);
+        bus.message(EventType.DATA_STORE_LIST).withContent(soundFiles).send();
         window.hide();
     }
 }

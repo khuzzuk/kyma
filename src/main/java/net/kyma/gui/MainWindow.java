@@ -21,9 +21,9 @@ import net.kyma.gui.controllers.MainController;
 import pl.khuzzuk.messaging.Bus;
 
 public class MainWindow extends Stage {
-    private Bus<EventType> bus;
-    private ControllerDistributor controllerDistributor;
-    private MainController mainController;
+    private final Bus<EventType> bus;
+    private final ControllerDistributor controllerDistributor;
+    private final MainController mainController;
 
     public MainWindow(Bus<EventType> bus, ControllerDistributor controllerDistributor, MainController mainController) {
         super(StageStyle.DECORATED);
@@ -48,17 +48,17 @@ public class MainWindow extends Stage {
 
     private void onClose(WindowEvent e) {
         if (isFullScreen()) {
-            bus.send(PROPERTIES_STORE_WINDOW_FULLSCREEN, Boolean.TRUE);
+            bus.message(PROPERTIES_STORE_WINDOW_FULLSCREEN).withContent(Boolean.TRUE).send();
         } else if (isMaximized()) {
-            bus.send(PROPERTIES_STORE_WINDOW_FULLSCREEN, Boolean.FALSE);
-            bus.send(PROPERTIES_STORE_WINDOW_MAXIMIZED, Boolean.TRUE);
+            bus.message(PROPERTIES_STORE_WINDOW_FULLSCREEN).withContent(Boolean.FALSE).send();
+            bus.message(PROPERTIES_STORE_WINDOW_MAXIMIZED).withContent(Boolean.TRUE).send();
         } else {
             Rectangle rectangle = new Rectangle();
             rectangle.setRect(getX(), getY(), getWidth(), getHeight());
-            bus.send(PROPERTIES_STORE_WINDOW_FRAME, rectangle);
-            bus.send(PROPERTIES_STORE_WINDOW_FULLSCREEN, Boolean.FALSE);
-            bus.send(PROPERTIES_STORE_WINDOW_MAXIMIZED, Boolean.FALSE);
+            bus.message(PROPERTIES_STORE_WINDOW_FRAME).withContent(rectangle).send();
+            bus.message(PROPERTIES_STORE_WINDOW_FULLSCREEN).withContent(Boolean.FALSE).send();
+            bus.message(PROPERTIES_STORE_WINDOW_MAXIMIZED).withContent(Boolean.FALSE).send();
         }
-        bus.send(CLOSE);
+        bus.message(CLOSE).send();
     }
 }

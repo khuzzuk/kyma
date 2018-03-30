@@ -65,6 +65,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.dm.SoundFile;
@@ -77,23 +78,18 @@ import net.kyma.properties.UIProperties;
 import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
+@RequiredArgsConstructor
 public class ContentView implements Initializable
 {
    @FXML
    private TableView<SoundFile> contentView;
    private ContextMenu contentViewContextMenu;
-   private Bus<EventType> bus;
-   private TableColumnFactory columnFactory;
+   private final Bus<EventType> bus;
+   private final TableColumnFactory columnFactory;
    private SoundFileEditor editor;
    private SoundFileBulkEditor bulkEditor;
    private Collection<SoundFile> selected;
    private Map<SupportedField, Collection<String>> suggestions;
-
-   public ContentView(Bus<EventType> bus, TableColumnFactory columnFactory)
-   {
-      this.bus = bus;
-      this.columnFactory = columnFactory;
-   }
 
    @Override
    public void initialize(URL location, ResourceBundle resources)
@@ -106,11 +102,11 @@ public class ContentView implements Initializable
       bulkEditor.init(suggestions);
 
       contentView.setEditable(true);
-      bus.setReaction(GUI_CONTENTVIEW_SETTINGS_CHANGED, this::sendContentViewSettings);
-      bus.setReaction(DATA_UPDATE_REQUEST, this::update);
-      bus.setReaction(PLAYLIST_NEXT, contentView::refresh);
-      bus.setFXReaction(GUI_CONTENTVIEW_SETTINGS_SET, this::setupColumns);
-      bus.sendMessage(GUI_CONTENTVIEW_SETTINGS_GET, GUI_CONTENTVIEW_SETTINGS_SET);
+      bus.subscribingFor(GUI_CONTENTVIEW_SETTINGS_CHANGED).then(this::sendContentViewSettings).subscribe();
+      bus.subscribingFor(DATA_UPDATE_REQUEST).accept(this::update).subscribe();
+      bus.subscribingFor(PLAYLIST_NEXT).then(contentView::refresh).subscribe();
+      bus.subscribingFor(GUI_CONTENTVIEW_SETTINGS_SET).onFXThread().accept(this::setupColumns).subscribe();
+      bus.message(GUI_CONTENTVIEW_SETTINGS_GET).withResponse(GUI_CONTENTVIEW_SETTINGS_SET).send();
    }
 
    @SuppressWarnings("unchecked")
@@ -121,8 +117,6 @@ public class ContentView implements Initializable
 
       contentView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
       contentView.getColumns().clear();
-      Node header = contentView.lookup(".column-header");
-      //header.setOnContextMenuRequested(event -> contentViewContextMenu.show(header, event.getScreenX(), event.getScreenY()));
       selected = contentView.getSelectionModel().getSelectedItems();
    }
 
@@ -152,15 +146,15 @@ public class ContentView implements Initializable
             CUSTOM4, DATA_SET_DISTINCT_CUSTOM4,
             CUSTOM5, DATA_SET_DISTINCT_CUSTOM5
       ).forEach((field, eventType) -> {
-               bus.setReaction(eventType, suggestions.get(field)::addAll);
-               bus.send(DATA_INDEX_GET_DISTINCT, eventType, field);
+               bus.subscribingFor(eventType).accept(suggestions.get(field)::addAll).subscribe();
+               bus.message(DATA_INDEX_GET_DISTINCT).withResponse(eventType).withContent(field).send();
             });
 
       Set<String> peopleValues = new TreeSet<>();
-      bus.setReaction(DATA_SET_DISTINCT_PEOPLE, peopleValues::addAll);
-      bus.send(DATA_INDEX_GET_DISTINCT, DATA_SET_DISTINCT_PEOPLE, ARTIST);
-      bus.send(DATA_INDEX_GET_DISTINCT, DATA_SET_DISTINCT_PEOPLE, COMPOSER);
-      bus.send(DATA_INDEX_GET_DISTINCT, DATA_SET_DISTINCT_PEOPLE, CONDUCTOR);
+      bus.subscribingFor(DATA_SET_DISTINCT_PEOPLE).accept(peopleValues::addAll).subscribe();
+      bus.message(DATA_INDEX_GET_DISTINCT).withResponse(DATA_SET_DISTINCT_PEOPLE).withContent(ARTIST).send();
+      bus.message(DATA_INDEX_GET_DISTINCT).withResponse(DATA_SET_DISTINCT_PEOPLE).withContent(COMPOSER).send();
+      bus.message(DATA_INDEX_GET_DISTINCT).withResponse(DATA_SET_DISTINCT_PEOPLE).withContent(CONDUCTOR).send();
       suggestions.put(ARTIST, peopleValues);
       suggestions.put(COMPOSER, peopleValues);
       suggestions.put(CONDUCTOR, peopleValues);
@@ -218,7 +212,7 @@ public class ContentView implements Initializable
 
    private void update(TagUpdateRequest updateRequest)
    {
-      bus.send(DATA_STORE_ITEM, updateRequest.update(getSelected()));
+      bus.message(DATA_STORE_ITEM).withContent(updateRequest.update(getSelected())).send();
    }
 
    private SoundFile getSelected()
@@ -237,7 +231,7 @@ public class ContentView implements Initializable
          case PRIMARY:
             if (mouseEvent.getClickCount() == 2)
             {
-               bus.send(PLAYLIST_ADD_LIST, selected);
+               bus.message(PLAYLIST_ADD_LIST).withContent(selected).send();
             }
             break;
 
@@ -270,7 +264,7 @@ public class ContentView implements Initializable
                   bulkEditor.showEditor(selected);
                }
             } else if (keyEvent.isAltDown()) {
-               bus.send(PLAYLIST_ADD_LIST, selected);
+               bus.message(PLAYLIST_ADD_LIST).withContent(selected).send();
             }
             break;
 
@@ -278,8 +272,8 @@ public class ContentView implements Initializable
          case DELETE:
             if (keyEvent.isControlDown()) {
                Collection<SoundFile> selected = new ArrayList<>(this.selected);
-               bus.send(DATA_REMOVE_ITEM, selected);
-               bus.send(PLAYLIST_REMOVE_SOUND, selected);
+               bus.message(DATA_REMOVE_ITEM).withContent(selected).send();
+               bus.message(PLAYLIST_REMOVE_SOUND).withContent(selected).send();
                contentView.getItems().removeAll(selected);
                contentView.refresh();
             }
@@ -294,6 +288,6 @@ public class ContentView implements Initializable
                   SupportedField.getByName(column.getText()),
                   column.getWidth()))
             .collect(Collectors.toCollection(ArrayList::new));
-      bus.send(GUI_CONTENTVIEW_SETTINGS_STORE, definitions);
+      bus.message(GUI_CONTENTVIEW_SETTINGS_STORE).withContent(definitions).send();
    }
 }

@@ -3,7 +3,6 @@ package net.kyma.gui;
 
 import javafx.scene.Group;
 import javafx.scene.control.Button;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 public class StopButton extends Button {

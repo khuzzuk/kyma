@@ -182,7 +182,7 @@
         <dependency>
             <groupId>pl.khuzzuk</groupId>
             <artifactId>message-bus</artifactId>
-            <version>1.7.0</version>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>pl.khuzzuk</groupId>

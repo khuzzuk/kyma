@@ -10,6 +10,8 @@ import static net.kyma.EventType.DATA_INDEX_LIST;
 import static net.kyma.EventType.DATA_REMOVE_ITEM;
 import static net.kyma.EventType.DATA_STORE_ITEM;
 import static net.kyma.EventType.DATA_STORE_LIST;
+import static net.kyma.EventType.RET_DOC_CONVERTER;
+import static net.kyma.EventType.RET_INDEX_WRITER;
 import static net.kyma.data.QueryUtils.termForPath;
 
 import java.io.IOException;
@@ -33,6 +35,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.Bits;
+import pl.khuzzuk.functions.ForceGate;
 import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
@@ -40,21 +43,43 @@ import pl.khuzzuk.messaging.Bus;
 public class DataIndexer implements Loadable
 {
    private final Bus<EventType> bus;
-   private final IndexWriter writer;
-   private final DocConverter docConverter;
+   private IndexWriter writer;
+   private DocConverter docConverter;
    private Set<String> indexedPaths;
+   private ForceGate initializer;
 
    @Override
    public void load()
    {
-      bus.setReaction(CLOSE, this::close);
-      bus.setReaction(DATA_INDEX_LIST, this::index);
-      bus.setReaction(DATA_STORE_LIST, this::index);
-      bus.setReaction(DATA_INDEX_ITEM, this::indexSingleEntity);
-      bus.setReaction(DATA_STORE_ITEM, this::indexSingleEntity);
-      bus.setResponse(DATA_INDEX_GET_ALL, this::getAll);
-      bus.<Collection<SoundFile>>setReaction(DATA_REMOVE_ITEM, this::remove);
-      bus.<Set<String>>setReaction(DATA_INDEX_GET_DIRECTORIES, paths -> indexedPaths = paths);
+      initializer = ForceGate.of(2, this::afterPropertiesSet);
+      bus.subscribingFor(RET_DOC_CONVERTER).accept(this::setDocConverter).subscribe();
+      bus.subscribingFor(RET_INDEX_WRITER).accept(this::setWriter).subscribe();
+   }
+
+   private void setWriter(IndexWriter writer)
+   {
+      this.writer = writer;
+      initializer.on();
+   }
+
+   private void setDocConverter(DocConverter docConverter)
+   {
+      this.docConverter = docConverter;
+      initializer.on();
+   }
+
+   private void afterPropertiesSet()
+   {
+      bus.subscribingFor(CLOSE).then(this::close).subscribe();
+      bus.subscribingFor(DATA_INDEX_LIST).accept(this::index).subscribe();
+      bus.subscribingFor(DATA_STORE_LIST).accept(this::index).subscribe();
+      bus.subscribingFor(DATA_INDEX_ITEM).accept(this::indexSingleEntity).subscribe();
+      bus.subscribingFor(DATA_STORE_ITEM).accept(this::indexSingleEntity).subscribe();
+      bus.subscribingFor(DATA_INDEX_GET_ALL).withResponse(this::getAll).subscribe();
+      bus.subscribingFor(DATA_REMOVE_ITEM)
+            .<Collection<SoundFile>>accept(this::remove).subscribe();
+      bus.subscribingFor(DATA_INDEX_GET_DIRECTORIES)
+            .<Set<String>>accept(paths -> indexedPaths = paths).subscribe();
       refreshIndexedPaths();
    }
 
@@ -71,7 +96,7 @@ public class DataIndexer implements Loadable
 
       files.forEach(this::indexSingleEntity);
       commit();
-      bus.sendMessage(DATA_INDEX_GET_ALL, DATA_CONVERT_FROM_DOC);
+      bus.message(DATA_INDEX_GET_ALL).withResponse(DATA_CONVERT_FROM_DOC).send();
       refreshIndexedPaths();
    }
 
@@ -179,7 +204,10 @@ public class DataIndexer implements Loadable
 
    private void refreshIndexedPaths()
    {
-      bus.send(DATA_INDEX_GET_DISTINCT, DATA_INDEX_GET_DIRECTORIES, SupportedField.INDEXED_PATH);
+      bus.message(DATA_INDEX_GET_DISTINCT)
+            .withResponse(DATA_INDEX_GET_DIRECTORIES)
+            .withContent(SupportedField.INDEXED_PATH)
+            .send();
    }
 
    private void commit()

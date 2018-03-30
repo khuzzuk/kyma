@@ -31,9 +31,11 @@ import pl.khuzzuk.messaging.Bus;
 @Log4j2
 public class SoundFileConverter {
     public SoundFileConverter(Bus<EventType> bus) {
-        bus.setResponse(PLAYLIST_ADD_FILE, (File f) -> from(f, f.getParent()));
-        bus.setReaction(DATA_CONVERT_FROM_DOC, (Collection<Document> docs) ->
-              bus.send(DATA_REFRESH, docs.stream().map(this::from).collect(Collectors.toList())));
+        bus.subscribingFor(PLAYLIST_ADD_FILE).<File>accept(f -> from(f, f.getParent())).subscribe();
+        bus.subscribingFor(DATA_CONVERT_FROM_DOC).<Collection<Document>>accept(docs -> bus
+              .message(DATA_REFRESH)
+              .withContent(docs.stream().map(this::from).collect(Collectors.toList()))
+              .send()).subscribe();
     }
 
     SoundFile from(File file, String indexedPath) {

@@ -34,7 +34,7 @@ class Mp3PlayerFX implements Player {
         if (player == null) {
             Media sound = new Media(Paths.get(path).toUri().toString());
             player = new MediaPlayer(sound);
-            player.setOnEndOfMedia(() -> bus.send(EventType.PLAYLIST_NEXT));
+            player.setOnEndOfMedia(() -> bus.message(EventType.PLAYLIST_NEXT).send());
             length = calculateLength(player);
         }
         mediaView.setMediaPlayer(player);

@@ -31,16 +31,16 @@ public class Playlist implements Loadable {
     @Override
     public void load() {
         playlist = new LinkedList<>();
-        bus.setReaction(PLAYLIST_ADD_LIST, this::addAll);
-        bus.setReaction(PLAYLIST_REMOVE_LIST, this::removeAll);
-        bus.setReaction(PLAYLIST_NEXT, this::playNextItem);
-        bus.setReaction(PLAYLIST_PREVIOUS, this::playPreviousItem);
-        bus.setReaction(PLAYLIST_REMOVE_SOUND, this::maybeRemove);
+        bus.subscribingFor(PLAYLIST_ADD_LIST).accept(this::addAll).subscribe();
+        bus.subscribingFor(PLAYLIST_REMOVE_LIST).accept(this::removeAll).subscribe();
+        bus.subscribingFor(PLAYLIST_NEXT).then(this::playNextItem).subscribe();
+        bus.subscribingFor(PLAYLIST_PREVIOUS).then(this::playPreviousItem).subscribe();
+        bus.subscribingFor(PLAYLIST_REMOVE_SOUND).accept(this::maybeRemove).subscribe();
     }
 
     private synchronized void removeAll(Collection<SoundFile> soundFiles) {
         playlist.removeAll(soundFiles);
-        bus.send(PLAYLIST_HIGHLIGHT, -1);
+        bus.message(PLAYLIST_HIGHLIGHT).withContent(-1).send();
         iterator = null;
     }
 
@@ -62,8 +62,8 @@ public class Playlist implements Loadable {
         } while (this.index == index);
         this.index = index;
 
-        bus.send(PLAYLIST_HIGHLIGHT, index);
-        bus.send(PLAYER_PLAY, next);
+        bus.message(PLAYLIST_HIGHLIGHT).withContent(index).send();
+        bus.message(PLAYER_PLAY).withContent(next).send();
     }
 
     private synchronized void playPreviousItem() {
@@ -78,8 +78,8 @@ public class Playlist implements Loadable {
         } while (this.index == index);
         this.index = index;
 
-        bus.send(PLAYLIST_HIGHLIGHT, index);
-        bus.send(PLAYER_PLAY, previous);
+        bus.message(PLAYLIST_HIGHLIGHT).withContent(index).send();
+        bus.message(PLAYER_PLAY).withContent(previous).send();
     }
 
     private void initIterator() {
@@ -90,11 +90,11 @@ public class Playlist implements Loadable {
 
     private void maybeRemove(Collection<SoundFile> soundFiles) {
         if (index > 0 && index < playlist.size() && soundFiles.contains(playlist.get(index))) {
-            bus.send(PLAYER_STOP);
-            bus.send(PLAYLIST_NEXT);
+            bus.message(PLAYER_STOP).send();
+            bus.message(PLAYLIST_NEXT).send();
         }
         removeAll(soundFiles);
         iterator = null;
-        bus.send(FILES_REMOVE, soundFiles);
+        bus.message(FILES_REMOVE).withContent(soundFiles).send();
     }
 }

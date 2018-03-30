@@ -1,7 +1,7 @@
 package net.kyma.gui;
 
 public class RootElement extends BaseElement {
-    private String rootPath;
+    private final String rootPath;
     public RootElement(String indexedPath) {
         rootPath = indexedPath;
         setName(indexedPath.substring(indexedPath.lastIndexOf("/") + 1));

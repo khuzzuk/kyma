@@ -21,7 +21,7 @@ public class FileCleaner implements Loadable {
 
     @Override
     public void load() {
-        bus.<Collection<SoundFile>>setReaction(FILES_REMOVE, c -> c.forEach(this::removeFile));
+        bus.subscribingFor(FILES_REMOVE).<Collection<SoundFile>>accept(c -> c.forEach(this::removeFile)).subscribe();
     }
 
     private void removeFile(SoundFile soundFile) {

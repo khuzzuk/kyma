@@ -34,6 +34,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
@@ -41,6 +42,7 @@ import pl.khuzzuk.messaging.Bus;
 
 @SuppressWarnings("WeakerAccess")
 @Log4j2
+@RequiredArgsConstructor
 public class MainController implements Initializable {
     @FXML
     private SplitPane mainPane;
@@ -48,34 +50,33 @@ public class MainController implements Initializable {
     private GridPane managerPane;
     @FXML
     private GridPane playerPane;
-    private Bus<EventType> bus;
-    private ManagerPaneController managerPaneController;
+
+    private final Bus<EventType> bus;
+    private final ManagerPaneController managerPaneController;
     private ProgressIndicator indicator;
     private double maxProgress;
     @Setter
     private Stage stage;
 
-    public MainController(Bus<EventType> bus, ManagerPaneController managerPaneController)
-    {
-        this.bus = bus;
-        this.managerPaneController = managerPaneController;
-    }
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        bus.setFXReaction(DATA_REFRESH, o -> mainPane.getItems().remove(indicator));
-        bus.setFXReaction(DATA_INDEXING_AMOUNT, this::showIndicator);
-        bus.<Number>setFXReaction(DATA_INDEXING_PROGRESS, n -> indicator.setProgress(n.doubleValue() / maxProgress));
-        bus.setFXReaction(DATA_INDEXING_FINISH, () -> mainPane.getItems().remove(indicator));
-        bus.setFXReaction(GUI_WINDOW_SET_FULLSCREEN, () -> {
-            stage.setFullScreen(true); setBackground();
-        });
-        bus.setFXReaction(GUI_WINDOW_SET_MAXIMIZED, () -> {
-            stage.setMaximized(true); setBackground();
-        });
-        bus.setFXReaction(GUI_WINDOW_SET_FRAME, this::resize);
+        bus.subscribingFor(DATA_REFRESH).onFXThread().accept(o -> mainPane.getItems().remove(indicator)).subscribe();
+        bus.subscribingFor(DATA_INDEXING_AMOUNT).onFXThread().accept(this::showIndicator).subscribe();
+        bus.subscribingFor(DATA_INDEXING_PROGRESS).onFXThread()
+              .<Number>accept(n -> indicator.setProgress(n.doubleValue() / maxProgress)).subscribe();
+        bus.subscribingFor(DATA_INDEXING_FINISH).onFXThread()
+              .then(() -> mainPane.getItems().remove(indicator)).subscribe();
+        bus.subscribingFor(GUI_WINDOW_SET_FULLSCREEN).onFXThread().then(() -> {
+            stage.setFullScreen(true);
+            setBackground();
+        }).subscribe();
+        bus.subscribingFor(GUI_WINDOW_SET_MAXIMIZED).onFXThread().then(() -> {
+            stage.setMaximized(true);
+            setBackground();
+            }).subscribe();
+        bus.subscribingFor(GUI_WINDOW_SET_FRAME).accept(this::resize).subscribe();
 
-        bus.send(GUI_WINDOW_SETTINGS);
+        bus.message(GUI_WINDOW_SETTINGS).send();
         managerPaneController.resizeFor(mainPane);
     }
 
@@ -98,14 +99,12 @@ public class MainController implements Initializable {
     @FXML
     private void openFile() {
         Optional.ofNullable(getFile(new FileChooser.ExtensionFilter("Pliki dźwiękowe", "*.mp3")))
-                .ifPresent(f -> bus.send(PLAYLIST_ADD_FILE, PLAYLIST_ADD_SOUND, f));
+                .ifPresent(f -> bus.message(PLAYLIST_ADD_FILE).withResponse(PLAYLIST_ADD_SOUND).withContent(f).send());
     }
 
     @FXML
     private void indexCatalogue() {
-        Optional.ofNullable(getFile()).ifPresent(f -> {
-            bus.send(DATA_INDEX_DIRECTORY, f);
-        });
+        Optional.ofNullable(getFile()).ifPresent(f -> bus.message(DATA_INDEX_DIRECTORY).withContent(f).send());
     }
 
     private File getFile(FileChooser.ExtensionFilter filter) {

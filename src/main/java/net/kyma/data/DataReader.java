@@ -1,11 +1,13 @@
 package net.kyma.data;
 
+import static net.kyma.EventType.RET_INDEX_WRITER;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.Loadable;
@@ -20,15 +22,21 @@ import org.apache.lucene.search.WildcardQuery;
 import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class DataReader implements Loadable
 {
-    private Bus<EventType> bus;
+    private final Bus<EventType> bus;
     private IndexWriter writer;
 
     @Override
     public void load() {
-        bus.setResponse(EventType.DATA_INDEX_GET_DISTINCT, this::getDistinctValues);
+        bus.subscribingFor(RET_INDEX_WRITER).accept(this::setWriter).subscribe();
+    }
+
+    private void setWriter(IndexWriter writer)
+    {
+        this.writer = writer;
+        bus.subscribingFor(EventType.DATA_INDEX_GET_DISTINCT).mapResponse(this::getDistinctValues).subscribe();
     }
 
     private Set<String> getDistinctValues(SupportedField field) {

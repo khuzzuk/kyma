@@ -39,9 +39,9 @@ public class PlayerPaneController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         playbackProgress.setMajorTickUnit(0.01D);
-        bus.<Integer>setReaction(GUI_VOLUME_SET, value -> volumeSlider.setValue(value));
-        bus.sendMessage(GUI_VOLUME_GET, GUI_VOLUME_SET);
-        bus.send(PLAYER_SET_SLIDER, playbackProgress);
+        bus.subscribingFor(GUI_VOLUME_SET).<Integer>accept(value -> volumeSlider.setValue(value)).subscribe();
+        bus.message(GUI_VOLUME_GET).withResponse(GUI_VOLUME_SET).send();
+        bus.message(PLAYER_SET_SLIDER).withContent(playbackProgress).send();
         playButton.showPlay();
     }
 
@@ -49,39 +49,41 @@ public class PlayerPaneController implements Initializable {
     private void startOrPause() {
         if (playButton.isPaused()) {
             playButton.showPlay();
-            bus.send(PLAYER_PAUSE);
+            bus.message(PLAYER_PAUSE).send();
         } else {
             playButton.showPause();
-            bus.send(PLAYER_RESUME);
+            bus.message(PLAYER_RESUME).send();
         }
     }
 
     @FXML
     private void stop() {
-        bus.send(PLAYER_STOP);
+        bus.message(PLAYER_STOP).send();
         playButton.showPlay();
     }
 
     public void playFrom(MouseEvent mouseEvent) {
-        bus.send(PLAYER_PLAY_FROM, round(playbackProgress.getMax() * (mouseEvent.getX() / playbackProgress.getWidth())));
+        bus.message(PLAYER_PLAY_FROM)
+              .withContent(round(playbackProgress.getMax() * (mouseEvent.getX() / playbackProgress.getWidth())))
+              .send();
     }
 
     public void setVolume(MouseEvent mouseEvent)
     {
-        bus.send(PLAYER_SET_VOLUME, (int) volumeSlider.getValue());
+        bus.message(PLAYER_SET_VOLUME).withContent((int) volumeSlider.getValue()).send();
     }
 
     @FXML
     private void stopTimer() {
-        bus.send(PLAYER_STOP_TIMER);
+        bus.message(PLAYER_STOP_TIMER).send();
     }
 
     @FXML
     private void playNext() {
-        bus.send(PLAYLIST_NEXT);
+        bus.message(PLAYLIST_NEXT).send();
     }
 
     public void playPrevious() {
-        bus.send(PLAYLIST_PREVIOUS);
+        bus.message(PLAYLIST_PREVIOUS).send();
     }
 }

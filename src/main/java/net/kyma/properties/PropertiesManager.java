@@ -8,7 +8,6 @@ import static net.kyma.EventType.GUI_WINDOW_SET_FRAME;
 import static net.kyma.EventType.GUI_WINDOW_SET_FULLSCREEN;
 import static net.kyma.EventType.GUI_WINDOW_SET_MAXIMIZED;
 import static net.kyma.EventType.PLAYER_SET_VOLUME;
-import static net.kyma.EventType.PROPERTIES_SET_OBJECT_MAPPER;
 import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_FRAME;
 import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_FULLSCREEN;
 import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_MAXIMIZED;
@@ -43,25 +42,31 @@ public class PropertiesManager implements Loadable
    @Override
    public void load()
    {
-      bus.setReaction(PROPERTIES_SET_OBJECT_MAPPER, this::setObjectMapper);
-      bus.sendMessage(RET_OBJECT_MAPPER, PROPERTIES_SET_OBJECT_MAPPER);
+      bus.subscribingFor(RET_OBJECT_MAPPER).accept(this::setObjectMapper).subscribe();
 
       propertiesData = PropertiesData.defaultProperties();
 
-      bus.setReaction(GUI_WINDOW_SETTINGS, this::windowGetSettings);
-      bus.setReaction(PROPERTIES_STORE_WINDOW_FRAME, this::windowStoreRectangle);
-      bus.<Boolean>setReaction(PROPERTIES_STORE_WINDOW_MAXIMIZED, b -> propertiesData.getUiProperties().setMaximized(b));
-      bus.<Boolean>setReaction(PROPERTIES_STORE_WINDOW_FULLSCREEN, b -> propertiesData.getUiProperties().setFullScreen(b));
-      bus.<Integer>setReaction(PLAYER_SET_VOLUME, value -> {
-         propertiesData.getPlayerProperties().setVolume(value);
-         store();
-      });
-      bus.setResponse(GUI_VOLUME_GET, () -> propertiesData.getPlayerProperties().getVolume());
-      bus.<List<UIProperties.ColumnDefinition>>setReaction(GUI_CONTENTVIEW_SETTINGS_STORE, definitions -> {
+      bus.subscribingFor(GUI_WINDOW_SETTINGS).then(this::windowGetSettings).subscribe();
+      bus.subscribingFor(PROPERTIES_STORE_WINDOW_FRAME).accept(this::windowStoreRectangle).subscribe();
+      bus.subscribingFor(PROPERTIES_STORE_WINDOW_MAXIMIZED)
+            .<Boolean>accept(b -> propertiesData.getUiProperties().setMaximized(b)).subscribe();
+      bus.subscribingFor(PROPERTIES_STORE_WINDOW_FULLSCREEN)
+            .<Boolean>accept(b -> propertiesData.getUiProperties().setFullScreen(b)).subscribe();
+      bus.subscribingFor(PLAYER_SET_VOLUME)
+            .<Integer>accept(value -> {
+               propertiesData.getPlayerProperties().setVolume(value);
+               store();
+            }).subscribe();
+      bus.subscribingFor(GUI_VOLUME_GET)
+            .withResponse(() -> propertiesData.getPlayerProperties().getVolume())
+            .subscribe();
+      bus.subscribingFor(GUI_CONTENTVIEW_SETTINGS_STORE).<List<UIProperties.ColumnDefinition>>accept(definitions -> {
          propertiesData.getUiProperties().setColumnDefinitions(definitions);
          store();
-      });
-      bus.setResponse(GUI_CONTENTVIEW_SETTINGS_GET, () -> propertiesData.getUiProperties().getColumnDefinitions());
+      }).subscribe();
+      bus.subscribingFor(GUI_CONTENTVIEW_SETTINGS_GET)
+            .withResponse(() -> propertiesData.getUiProperties().getColumnDefinitions())
+            .subscribe();
    }
 
    private void setObjectMapper(ObjectMapper objectMapper)
@@ -82,16 +87,21 @@ public class PropertiesManager implements Loadable
       UIProperties uiProperties = propertiesData.getUiProperties();
       if (uiProperties.isFullScreen())
       {
-         bus.send(GUI_WINDOW_SET_FULLSCREEN);
+         bus.message(GUI_WINDOW_SET_FULLSCREEN).send();
       }
       else if (uiProperties.isMaximized())
       {
-         bus.send(GUI_WINDOW_SET_MAXIMIZED);
+         bus.message(GUI_WINDOW_SET_MAXIMIZED).send();
       }
       else
       {
-         bus.send(GUI_WINDOW_SET_FRAME, new Rectangle(
-               uiProperties.getX(), uiProperties.getY(), uiProperties.getWidth(), uiProperties.getHeight()));
+         bus.message(GUI_WINDOW_SET_FRAME)
+               .withContent(new Rectangle(
+                     uiProperties.getX(),
+                     uiProperties.getY(),
+                     uiProperties.getWidth(),
+                     uiProperties.getHeight()))
+               .send();
       }
    }
 

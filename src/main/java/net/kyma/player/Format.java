@@ -12,7 +12,7 @@ import pl.khuzzuk.messaging.Bus;
 @Getter
 public enum Format {
     MP3(Mp3PlayerJLayer::new, true),
-    M4A(M4aPlayerFX::new, true),
+    M4A(M4aPlayerFX::new, false),
     FLAC(FLACPlayer::new, false),
     UNKNOWN(null, false);
 

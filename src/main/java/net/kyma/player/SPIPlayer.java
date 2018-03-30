@@ -20,10 +20,11 @@ import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
 public abstract class SPIPlayer implements Player {
-    private static ExecutorService thread = Executors.newFixedThreadPool(1);
-    private static BlockingQueue<Object> meetingPoint = new SynchronousQueue<>();
+    private static final ExecutorService thread = Executors.newFixedThreadPool(1);
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+    private static final BlockingQueue<Object> meetingPoint = new SynchronousQueue<>();
     private static SPIPlayer currentPlayer;
-    private Bus<EventType> bus;
+    private final Bus<EventType> bus;
     private boolean closed;
     private static boolean paused;
     private SourceDataLine line;
@@ -129,7 +130,7 @@ public abstract class SPIPlayer implements Player {
                 line.stop();
                 line.close();
                 if (!(closed)) {
-                    bus.send(EventType.PLAYLIST_NEXT);
+                    bus.message(EventType.PLAYLIST_NEXT).send();
                 }
             } catch (LineUnavailableException e) {
                 log.error("problem with opening file", e);

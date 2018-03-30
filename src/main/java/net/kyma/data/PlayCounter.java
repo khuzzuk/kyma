@@ -14,12 +14,13 @@ public class PlayCounter implements Loadable {
     private Bus<EventType> bus;
 
     @Override
-    public void load() {
-        bus.setReaction(PLAYER_PLAY, this::addToSoundFile);
+    public void load()
+    {
+        bus.subscribingFor(PLAYER_PLAY).accept(this::addToSoundFile).subscribe();
     }
 
     private void addToSoundFile(SoundFile soundFile) {
         soundFile.setCounter(soundFile.getCounter() + 1);
-        bus.send(DATA_STORE_ITEM, soundFile);
+        bus.message(DATA_STORE_ITEM).withContent(soundFile).send();
     }
 }

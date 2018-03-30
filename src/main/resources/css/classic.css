@@ -1,3 +1,4 @@
+/*noinspection CssUnusedSymbol*/
 .root {
     -fx-background-color: #e5dbcd;
     -elements-opacity: 90%;
@@ -20,7 +21,7 @@
     -fx-background-position: center center;
 }
 
-
+/*noinspection CssUnusedSymbol*/
 .split-pane {
     -fx-background-color: transparent;
 }
@@ -69,7 +70,6 @@
 
 .currentlyPlayed {
     -fx-padding: 0 0 0 0.3em;
-    /*-fx-background-color: -containers-background2;*/
 }
 
 .slider .track {

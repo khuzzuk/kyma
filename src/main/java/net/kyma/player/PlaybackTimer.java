@@ -22,7 +22,7 @@ public class PlaybackTimer implements Loadable {
     @Override
     public void load() {
         channel = new ArrayBlockingQueue<>(64);
-        bus.setReaction(EventType.PLAYER_STOP_TIMER, () -> channel.offer(TimerAction.STOP));
+        bus.subscribingFor(EventType.PLAYER_STOP_TIMER).then(() -> channel.offer(TimerAction.STOP)).subscribe();
         Thread t = new Thread(this::run);
         t.setDaemon(true);
         t.start();
@@ -33,19 +33,20 @@ public class PlaybackTimer implements Loadable {
         while (true) {
             try {
                 TimerAction action = channel.take();
-                if (action == TimerAction.STOP) {
-                    channel.clear();
-                }
-                else if (action == TimerAction.START)
+                switch (action)
                 {
-                    channel.clear();
-                    channel.add(TimerAction.CONTINUE);
-                }
-                else
-                {
-                    channel.add(TimerAction.CONTINUE);
-                    playerManager.updateSlider();
-                    Thread.sleep(refreshLatency);
+                    case STOP:
+                        channel.clear();
+                        break;
+                    case START:
+                        channel.clear();
+                        channel.add(TimerAction.CONTINUE);
+                        break;
+                    default:
+                        channel.add(TimerAction.CONTINUE);
+                        playerManager.updateSlider();
+                        Thread.sleep(refreshLatency);
+                        break;
                 }
             } catch (InterruptedException e) {
                 log.error("refreshing playback interrupted", e);

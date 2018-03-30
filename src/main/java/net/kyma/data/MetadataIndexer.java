@@ -25,8 +25,8 @@ public class MetadataIndexer implements Loadable {
 
     @Override
     public void load() {
-        bus.<SoundFile>setReaction(EventType.DATA_STORE_ITEM, this::index);
-        bus.<Collection<SoundFile>>setReaction(EventType.DATA_STORE_LIST, this::index);
+        bus.subscribingFor(EventType.DATA_STORE_ITEM).<SoundFile>accept(this::index).subscribe();
+        bus.subscribingFor(EventType.DATA_STORE_LIST).<Collection<SoundFile>>accept(this::index).subscribe();
     }
 
     private void index(Collection<SoundFile> soundFiles) {

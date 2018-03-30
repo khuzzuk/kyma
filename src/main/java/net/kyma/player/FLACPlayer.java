@@ -19,7 +19,7 @@ import pl.khuzzuk.messaging.Bus;
 @Log4j2
 public class FLACPlayer extends SPIPlayer
 {
-   private SoundFile file;
+   private final SoundFile file;
    @Getter
    private long length;
 
