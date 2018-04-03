@@ -4,6 +4,9 @@ import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
 import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
 import static net.kyma.EventType.DATA_INDEX_GET_ALL;
 import static net.kyma.EventType.DATA_REFRESH;
+import static net.kyma.EventType.DATA_SET_DISTINCT_GENRE;
+import static net.kyma.EventType.DATA_SET_DISTINCT_MOOD;
+import static net.kyma.EventType.DATA_SET_DISTINCT_OCCASION;
 import static net.kyma.EventType.DATA_STORE_ITEM;
 import static net.kyma.EventType.DATA_STORE_LIST;
 import static net.kyma.EventType.PLAYLIST_ADD_LIST;
@@ -23,8 +26,10 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
@@ -51,6 +56,12 @@ public class ManagerPaneController implements Initializable {
     private TreeView<String> filesList;
     @FXML
     private TableView<SoundFile> playlist;
+    @FXML
+    private ListView<String> moodFilter;
+    @FXML
+    private ListView<String> genreFilter;
+    @FXML
+    private ListView<String> occasionFilter;
 
     private final Bus<EventType> bus;
     private final TableColumnFactory columnFactory;
@@ -70,6 +81,15 @@ public class ManagerPaneController implements Initializable {
         bus.subscribingFor(PLAYLIST_HIGHLIGHT).accept(this::highlight).subscribe();
         bus.subscribingFor(DATA_STORE_ITEM).accept(s -> contentView.refresh()).subscribe();
         bus.subscribingFor(DATA_STORE_LIST).accept(s -> contentView.refresh()).subscribe();
+        bus.subscribingFor(DATA_SET_DISTINCT_MOOD)
+              .accept((Collection<String> values) -> setupFilter(moodFilter.getItems(), values))
+              .subscribe();
+        bus.subscribingFor(DATA_SET_DISTINCT_GENRE)
+              .accept((Collection<String> values) -> setupFilter(genreFilter.getItems(), values))
+              .subscribe();
+        bus.subscribingFor(DATA_SET_DISTINCT_OCCASION)
+              .accept((Collection<String> values) -> setupFilter(occasionFilter.getItems(), values))
+              .subscribe();
 
         highlighted = new SimpleIntegerProperty(-1);
 
@@ -80,7 +100,9 @@ public class ManagerPaneController implements Initializable {
 
     private void initPlaylistView() {
         playlist.getColumns().clear();
-        playlist.getColumns().add(columnFactory.getTitleColumnForPlaylist(highlighted));
+        TableColumn<SoundFile, String> columnForPlaylist = columnFactory.getTitleColumnForPlaylist(highlighted);
+        columnForPlaylist.setSortable(false);
+        playlist.getColumns().add(columnForPlaylist);
         playlist.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     }
 
@@ -146,6 +168,14 @@ public class ManagerPaneController implements Initializable {
     private void highlight(int pos) {
         highlighted.setValue(pos);
         playlist.refresh();
+    }
+
+    private void setupFilter(Collection<String> filter, Collection<String> values)
+    {
+        filter.clear();
+        filter.add("...");
+        filter.addAll(values);
+        filter.remove("");
     }
 
     @FXML

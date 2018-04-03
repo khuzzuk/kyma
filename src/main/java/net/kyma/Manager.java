@@ -1,5 +1,7 @@
 package net.kyma;
 
+import java.io.FileNotFoundException;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
@@ -20,7 +22,7 @@ public class Manager extends Application {
 
     public static void main(String[] args)
     {
-        Bus<EventType> bus = Bus.initializeBus(EventType.class);
+        Bus<EventType> bus = createBus();
 
         //GUI
         TableColumnFactory columnFactory = new TableColumnFactory(bus);
@@ -51,5 +53,15 @@ public class Manager extends Application {
     {
         mainWindow.initMainWindow(primaryStage);
         mainWindow.show();
+    }
+
+    private static Bus<EventType> createBus()
+    {
+        try {
+            return Bus.initializeBus(EventType.class, new BusLogger(), true);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return Bus.initializeBus(EventType.class, System.out, true);
+        }
     }
 }

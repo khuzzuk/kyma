@@ -128,16 +128,21 @@
     -fx-padding: 3px;
 }
 
-.table-view, .tree-view {
+.table-view, .tree-view, .list-view {
     -fx-background-color: -containers-background;
 }
 
-.table-view .table-cell .text, .tree-view .tree-cell .text, .table-view .column-header .text {
+.table-view .table-cell .text,
+.table-view .column-header .text,
+.tree-view .tree-cell .text,
+.list-view .list-cell .text {
     -fx-effect: -orange-drop-shadow;
     -fx-fill: -fore-text-color;
 }
 
-.table-view .table-cell, .tree-view .tree-cell {
+.table-view .table-cell,
+.tree-view .tree-cell,
+.list-view .list-cell {
     -fx-background-color: transparent;
 }
 
@@ -193,9 +198,34 @@
     -fx-effect: -element-drop-shadow;
 }
 
+.list-cell:selected {
+    -fx-border-color: -gold-color;
+    -fx-effect: -element-drop-shadow;
+    -fx-padding: -1 0 0 0;
+}
+
 .split-pane-divider {
     -fx-padding: 0 0 0 0;
     -fx-background-color: transparent;
+}
+
+/* Filter titled-pane with list-view*/
+.titled-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-table-cell-border-color: transparent;
+}
+.titled-pane .title {
+    -fx-background-color: -containers-background2;
+    -fx-background-radius: 0;
+    -fx-font-weight: bold;
+}
+.titled-pane .title .text {
+    -fx-fill: -fore-text-color;
+}
+.titled-pane .label {
+    -fx-padding: 5px;
+    -fx-background-size: auto;
 }
 
 /*noinspection CssUnusedSymbol*/
@@ -213,7 +243,7 @@
     -fx-background-color: -containers-background2;
 }
 
-.menu-bar .text, .menu .text, .menu-item .text, .flowing .text {
+.menu-bar .text, .menu .text, .menu-item .text {
     -fx-effect: -element-drop-shadow;
     -fx-fill: -fore-text-color;
 }

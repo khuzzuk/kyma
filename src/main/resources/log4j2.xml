@@ -20,9 +20,10 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Root level="error" additivity="false">
+        <Root level="debug" additivity="false">
             <AppenderRef ref="logToFile"/>
             <AppenderRef ref="STDOUT"/>
+            <AppenderRef ref="logMessage"/>
         </Root>
         <Logger level="trace" name="MessageLogger" additivity="false">
             <ThresholdFilter level="info"/>

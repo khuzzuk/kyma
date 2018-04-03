@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TreeView?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.RowConstraints?>
-
-<?import javafx.scene.control.Label?>
+<?import javafx.geometry.Insets?><?import javafx.scene.control.SplitPane?><?import javafx.scene.control.TableColumn?><?import javafx.scene.control.TableView?><?import javafx.scene.control.TreeView?><?import javafx.scene.layout.ColumnConstraints?><?import javafx.scene.layout.GridPane?><?import javafx.scene.layout.RowConstraints?><?import javafx.scene.control.ListView?><?import javafx.scene.layout.VBox?><?import javafx.scene.control.Label?><?import javafx.scene.control.TitledPane?>
 <GridPane hgap="10" vgap="10" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1"
           fx:controller="net.kyma.gui.controllers.ManagerPaneController"
           fx:id="managerPane">
@@ -23,11 +15,30 @@
         <RowConstraints/>
     </rowConstraints>
     <TreeView fx:id="filesList" maxHeight="Infinity" onMouseClicked="#fillContentView" onKeyReleased="#onKeyReleased"/>
-    <SplitPane dividerPositions="0" maxHeight="Infinity" maxWidth="Infinity" orientation="VERTICAL"
+    <SplitPane dividerPositions="0.2" maxHeight="Infinity" maxWidth="Infinity" orientation="VERTICAL"
                GridPane.columnIndex="1">
-        <HBox>
-            <Label text="label" styleClass="flowing"/>
-        </HBox>
+        <GridPane hgap="5">
+            <columnConstraints>
+                <ColumnConstraints hgrow="ALWAYS" />
+                <ColumnConstraints hgrow="ALWAYS" />
+                <ColumnConstraints hgrow="ALWAYS" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints vgrow="ALWAYS"/>
+            </rowConstraints>
+            <padding>
+                <Insets bottom="5"/>
+            </padding>
+            <TitledPane text="Mood" collapsible="false">
+                <ListView fx:id="moodFilter" />
+            </TitledPane>
+            <TitledPane text="Genre" collapsible="false" GridPane.columnIndex="1">
+                <ListView fx:id="genreFilter" />
+            </TitledPane>
+            <TitledPane text="Occasion" collapsible="false" GridPane.columnIndex="2">
+                <ListView fx:id="occasionFilter" />
+            </TitledPane>
+        </GridPane>
         <fx:include fx:id="contentView" source="contentView.fxml"/>
     </SplitPane>
     <TableView fx:id="playlist" onKeyPressed="#removeFromPlaylist" GridPane.columnIndex="2"/>
