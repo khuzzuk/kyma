@@ -4,28 +4,30 @@ import static net.kyma.EventType.FILES_REMOVE;
 import static net.kyma.EventType.PLAYER_PLAY;
 import static net.kyma.EventType.PLAYER_STOP;
 import static net.kyma.EventType.PLAYLIST_ADD_LIST;
-import static net.kyma.EventType.PLAYLIST_HIGHLIGHT;
 import static net.kyma.EventType.PLAYLIST_NEXT;
 import static net.kyma.EventType.PLAYLIST_PREVIOUS;
+import static net.kyma.EventType.PLAYLIST_REFRESH;
 import static net.kyma.EventType.PLAYLIST_REMOVE_LIST;
 import static net.kyma.EventType.PLAYLIST_REMOVE_SOUND;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.Loadable;
 import net.kyma.dm.SoundFile;
-import org.apache.commons.collections4.iterators.LoopingListIterator;
 import pl.khuzzuk.messaging.Bus;
 
 @RequiredArgsConstructor
+@Log4j2
 public class Playlist implements Loadable {
     private final Bus<EventType> bus;
     private List<SoundFile> playlist;
-    private LoopingListIterator<SoundFile> iterator;
+    private SoundFile currentlyPlayed;
     private int index = -1;
 
     @Override
@@ -35,66 +37,71 @@ public class Playlist implements Loadable {
         bus.subscribingFor(PLAYLIST_REMOVE_LIST).accept(this::removeAll).subscribe();
         bus.subscribingFor(PLAYLIST_NEXT).then(this::playNextItem).subscribe();
         bus.subscribingFor(PLAYLIST_PREVIOUS).then(this::playPreviousItem).subscribe();
-        bus.subscribingFor(PLAYLIST_REMOVE_SOUND).accept(this::maybeRemove).subscribe();
+        bus.subscribingFor(PLAYLIST_REMOVE_SOUND).accept(this::fileRemoved).subscribe();
     }
 
-    private synchronized void removeAll(Collection<SoundFile> soundFiles) {
-        playlist.removeAll(soundFiles);
-        bus.message(PLAYLIST_HIGHLIGHT).withContent(-1).send();
-        iterator = null;
+    private synchronized void removeAll(List<PlaylistEvent> toRemove) {
+        for (int i = toRemove.size() - 1; i >= 0; i--) {
+            PlaylistEvent removeEvent = toRemove.get(i);
+            if (i <= index) {
+                index--;
+            }
+            SoundFile removed = playlist.remove(removeEvent.getPosition());
+            if (!removed.equals(removeEvent.getFile())) {
+                log.error("removed file does not match");
+            }
+        }
+        boolean isCurrentlyPlayedRemoved = toRemove.stream()
+              .anyMatch(removed -> removed.getFile().equals(currentlyPlayed));
+        sendRefreshEvent(isCurrentlyPlayedRemoved ? -1 : index);
     }
 
     private synchronized void addAll(Collection<SoundFile> soundFiles) {
         playlist.addAll(soundFiles);
-        iterator = null;
+        sendRefreshEvent(index);
     }
 
     private synchronized void playNextItem() {
         if (playlist.size() == 0) return;
-        initIterator();
+        if (++index == playlist.size()) index = 0;
 
-        int index;
-        SoundFile next;
-        do {
-            index = iterator.nextIndex();
-            next = iterator.next();
-            if (this.index == 0 && index == 0) break; //TODO refactor this
-        } while (this.index == index);
-        this.index = index;
-
-        bus.message(PLAYLIST_HIGHLIGHT).withContent(index).send();
-        bus.message(PLAYER_PLAY).withContent(next).send();
+        currentlyPlayed = playlist.get(index);
+        bus.message(PLAYER_PLAY).withContent(currentlyPlayed).send();
+        sendRefreshEvent(index);
     }
 
     private synchronized void playPreviousItem() {
         if (playlist.size() == 0) return;
-        initIterator();
+        if (--index < 0) index = playlist.size() - 1;
 
-        int index;
-        SoundFile previous;
-        do {
-            index = iterator.previousIndex();
-            previous = iterator.previous();
-        } while (this.index == index);
-        this.index = index;
-
-        bus.message(PLAYLIST_HIGHLIGHT).withContent(index).send();
-        bus.message(PLAYER_PLAY).withContent(previous).send();
+        bus.message(PLAYER_PLAY).withContent(playlist.get(index)).send();
+        sendRefreshEvent(index);
     }
 
-    private void initIterator() {
-        if (iterator == null) {
-            iterator = new LoopingListIterator<>(playlist);
+    private void fileRemoved(List<SoundFile> toRemove) {
+        for (int i = toRemove.size() - 1; i >= 0; i--) {
+            SoundFile fileToRemove = toRemove.get(i);
+            if (playlist.contains(fileToRemove)) {
+                if (index == playlist.indexOf(fileToRemove)) index--;
+                playlist.remove(fileToRemove);
+
+                if (playlist.contains(fileToRemove)) i++;
+            }
         }
+
+        if (toRemove.contains(currentlyPlayed)) {
+            bus.message(PLAYER_STOP).withResponse(PLAYLIST_NEXT).send();
+        }
+
+        sendRefreshEvent(index);
+        bus.message(FILES_REMOVE).withContent(toRemove).send();
     }
 
-    private void maybeRemove(Collection<SoundFile> soundFiles) {
-        if (index > 0 && index < playlist.size() && soundFiles.contains(playlist.get(index))) {
-            bus.message(PLAYER_STOP).send();
-            bus.message(PLAYLIST_NEXT).send();
-        }
-        removeAll(soundFiles);
-        iterator = null;
-        bus.message(FILES_REMOVE).withContent(soundFiles).send();
+    private void sendRefreshEvent(int index) {
+        bus.message(PLAYLIST_REFRESH)
+              .withContent(PlaylistRefreshEvent.builder()
+              .playlist(Collections.unmodifiableList(playlist))
+              .position(index)
+              .build()).send();
     }
 }
