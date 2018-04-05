@@ -1,6 +1,7 @@
 package net.kyma.gui.controllers;
 
 import static net.kyma.EventType.DATA_INDEX_GET_DISTINCT;
+import static net.kyma.EventType.DATA_QUERY_RESULT_FOR_CONTENT_VIEW;
 import static net.kyma.EventType.DATA_REMOVE_ITEM;
 import static net.kyma.EventType.DATA_SET_DISTINCT_CUSTOM1;
 import static net.kyma.EventType.DATA_SET_DISTINCT_CUSTOM2;
@@ -54,7 +55,6 @@ import javafx.event.EventHandler;
 import javafx.event.EventTarget;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.SelectionMode;
@@ -92,32 +92,31 @@ public class ContentView implements Initializable
    private Map<SupportedField, Collection<String>> suggestions;
 
    @Override
-   public void initialize(URL location, ResourceBundle resources)
-   {
+   public void initialize(URL location, ResourceBundle resources) {
       initContentView();
 
       editor = new SoundFileEditor(bus);
       editor.init(suggestions);
       bulkEditor = new SoundFileBulkEditor(bus);
       bulkEditor.init(suggestions);
+   }
+
+   @SuppressWarnings("unchecked")
+   private void initContentView() {
+      createContextMenu(Collections.emptyList());
 
       contentView.setEditable(true);
+      contentView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+      contentView.getColumns().clear();
+      selected = contentView.getSelectionModel().getSelectedItems();
+
       bus.subscribingFor(GUI_CONTENTVIEW_SETTINGS_CHANGED).then(this::sendContentViewSettings).subscribe();
       bus.subscribingFor(DATA_UPDATE_REQUEST).accept(this::update).subscribe();
       bus.subscribingFor(PLAYLIST_NEXT).then(contentView::refresh).subscribe();
       bus.subscribingFor(GUI_CONTENTVIEW_SETTINGS_SET).onFXThread().accept(this::setupColumns).subscribe();
       bus.message(GUI_CONTENTVIEW_SETTINGS_GET).withResponse(GUI_CONTENTVIEW_SETTINGS_SET).send();
-   }
 
-   @SuppressWarnings("unchecked")
-   private void initContentView()
-   {
       initSuggestions();
-      createContextMenu(Collections.emptyList());
-
-      contentView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-      contentView.getColumns().clear();
-      selected = contentView.getSelectionModel().getSelectedItems();
    }
 
    private void initSuggestions()

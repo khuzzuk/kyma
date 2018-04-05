@@ -1,13 +1,17 @@
-package net.kyma.gui;
+package net.kyma.gui.contenttree;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import net.kyma.dm.SoundFile;
 
 @Getter
 @Setter
@@ -24,8 +28,9 @@ public class BaseElement extends TreeItem<String> {
 
     public void addChild(BaseElement child) {
         childElements.put(child.getName(), child);
-        if (!(child instanceof SoundElement)) {
+        if (!(child instanceof SoundElement) && !getChildren().contains(child)) {
             getChildren().add(child);
+            getChildren().sort(Comparator.comparing(TreeItem::getValue));
         }
     }
 
@@ -36,6 +41,10 @@ public class BaseElement extends TreeItem<String> {
 
     public BaseElement getChildElement(String name) {
         return childElements.get(name);
+    }
+
+    public boolean hasChild(String name) {
+        return childElements.containsKey(name);
     }
 
     public boolean isBranch()
@@ -52,5 +61,14 @@ public class BaseElement extends TreeItem<String> {
     {
         parentElement.childElements.remove(name);
         parentElement = null;
+    }
+
+    public void fill(ObservableList<SoundFile> toFill) {
+        toFill.clear();
+        toFill.addAll(getChildElements().values()
+             .stream().filter(e -> e instanceof SoundElement)
+             .map(e -> (SoundElement) e)
+             .map(SoundElement::getSoundFile)
+             .collect(Collectors.toList()));
     }
 }

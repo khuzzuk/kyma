@@ -1,7 +1,6 @@
 package net.kyma.data;
 
 import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
-import static net.kyma.EventType.DATA_REFRESH;
 import static net.kyma.EventType.PLAYLIST_ADD_FILE;
 import static net.kyma.dm.SupportedField.SET;
 
@@ -32,10 +31,11 @@ import pl.khuzzuk.messaging.Bus;
 public class SoundFileConverter {
     public SoundFileConverter(Bus<EventType> bus) {
         bus.subscribingFor(PLAYLIST_ADD_FILE).<File>accept(f -> from(f, f.getParent())).subscribe();
-        bus.subscribingFor(DATA_CONVERT_FROM_DOC).<Collection<Document>>accept(docs -> bus
-              .message(DATA_REFRESH)
-              .withContent(docs.stream().map(this::from).collect(Collectors.toList()))
-              .send()).subscribe();
+        bus.subscribingFor(DATA_CONVERT_FROM_DOC)
+              .<Collection<Document>, Collection<SoundFile>>mapResponse(docs -> docs.stream()
+                    .map(this::from)
+                    .collect(Collectors.toList()))
+              .subscribe();
     }
 
     SoundFile from(File file, String indexedPath) {

@@ -1,4 +1,4 @@
-package net.kyma.gui;
+package net.kyma.gui.contenttree;
 
 public class RootElement extends BaseElement {
     private final String rootPath;

@@ -7,6 +7,7 @@ import static net.kyma.EventType.DATA_INDEX_GET_DIRECTORIES;
 import static net.kyma.EventType.DATA_INDEX_GET_DISTINCT;
 import static net.kyma.EventType.DATA_INDEX_ITEM;
 import static net.kyma.EventType.DATA_INDEX_LIST;
+import static net.kyma.EventType.DATA_REFRESH;
 import static net.kyma.EventType.DATA_REMOVE_ITEM;
 import static net.kyma.EventType.DATA_STORE_ITEM;
 import static net.kyma.EventType.DATA_STORE_LIST;
@@ -75,7 +76,7 @@ public class DataIndexer implements Loadable
       bus.subscribingFor(DATA_STORE_LIST).accept(this::index).subscribe();
       bus.subscribingFor(DATA_INDEX_ITEM).accept(this::indexSingleEntity).subscribe();
       bus.subscribingFor(DATA_STORE_ITEM).accept(this::indexSingleEntity).subscribe();
-      bus.subscribingFor(DATA_INDEX_GET_ALL).withResponse(this::getAll).subscribe();
+      bus.subscribingFor(DATA_INDEX_GET_ALL).then(this::getAll).subscribe();
       bus.subscribingFor(DATA_REMOVE_ITEM)
             .<Collection<SoundFile>>accept(this::remove).subscribe();
       bus.subscribingFor(DATA_INDEX_GET_DIRECTORIES)
@@ -96,7 +97,7 @@ public class DataIndexer implements Loadable
 
       files.forEach(this::indexSingleEntity);
       commit();
-      bus.message(DATA_INDEX_GET_ALL).withResponse(DATA_CONVERT_FROM_DOC).send();
+      bus.message(DATA_INDEX_GET_ALL).send();
       refreshIndexedPaths();
    }
 
@@ -142,12 +143,9 @@ public class DataIndexer implements Loadable
       soundFile.setIndexedPath(previousPath);
    }
 
-   private synchronized Collection<Document> getAll()
-   {
+   private synchronized void getAll() {
       Collection<Document> documents = new ArrayList<>();
-      try
-      {
-         DirectoryReader reader = DirectoryReader.open(writer);
+      try (DirectoryReader reader = DirectoryReader.open(writer)) {
          int maxDoc = reader.maxDoc();
          Bits liveDocs = MultiFields.getLiveDocs(reader);
          for (int i = 0; i < maxDoc; i++)
@@ -157,15 +155,12 @@ public class DataIndexer implements Loadable
                documents.add(reader.document(i));
             }
          }
-         reader.close();
       }
-      catch (IOException e)
-      {
-         log.error("Cannot read data");
-         log.error(e);
+      catch (IOException e) {
+         log.error("Cannot read data", e);
       }
 
-      return documents;
+      bus.message(DATA_CONVERT_FROM_DOC).withResponse(DATA_REFRESH).withContent(documents).send();
    }
 
    private boolean isNew(SoundFile soundFile, IndexSearcher searcher)

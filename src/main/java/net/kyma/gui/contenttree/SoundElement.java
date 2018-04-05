@@ -1,4 +1,4 @@
-package net.kyma.gui;
+package net.kyma.gui.contenttree;
 
 import lombok.*;
 import net.kyma.dm.SoundFile;

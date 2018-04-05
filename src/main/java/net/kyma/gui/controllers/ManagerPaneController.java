@@ -1,12 +1,13 @@
 package net.kyma.gui.controllers;
 
-import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
 import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
 import static net.kyma.EventType.DATA_INDEX_GET_ALL;
+import static net.kyma.EventType.DATA_QUERY_RESULT_FOR_CONTENT_VIEW;
 import static net.kyma.EventType.DATA_REFRESH;
 import static net.kyma.EventType.DATA_SET_DISTINCT_GENRE;
 import static net.kyma.EventType.DATA_SET_DISTINCT_MOOD;
 import static net.kyma.EventType.DATA_SET_DISTINCT_OCCASION;
+import static net.kyma.EventType.DATA_SET_DISTINCT_PEOPLE;
 import static net.kyma.EventType.DATA_STORE_ITEM;
 import static net.kyma.EventType.DATA_STORE_LIST;
 import static net.kyma.EventType.PLAYLIST_REFRESH;
@@ -38,10 +39,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.dm.SoundFile;
-import net.kyma.gui.BaseElement;
-import net.kyma.gui.RootElement;
-import net.kyma.gui.SoundElement;
+import net.kyma.dm.SupportedField;
 import net.kyma.gui.TableColumnFactory;
+import net.kyma.gui.contenttree.BaseElement;
+import net.kyma.gui.contenttree.ContentElement;
+import net.kyma.gui.contenttree.RootElement;
+import net.kyma.gui.contenttree.SoundElement;
 import net.kyma.player.PlaylistEvent;
 import net.kyma.player.PlaylistRefreshEvent;
 import pl.khuzzuk.messaging.Bus;
@@ -70,11 +73,6 @@ public class ManagerPaneController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        bus.subscribingFor(PLAYLIST_REMOVE_SOUND).accept(this::removeFromTreeView).subscribe();
-        bus.subscribingFor(DATA_REFRESH).onFXThread().accept(this::fillTreeView).subscribe();
-        bus.subscribingFor(PLAYLIST_REFRESH).accept(this::refresh).subscribe();
-        bus.subscribingFor(DATA_STORE_ITEM).accept(s -> contentView.refresh()).subscribe();
-        bus.subscribingFor(DATA_STORE_LIST).accept(s -> contentView.refresh()).subscribe();
         bus.subscribingFor(DATA_SET_DISTINCT_MOOD)
               .accept((Collection<String> values) -> setupFilter(moodFilter.getItems(), values))
               .subscribe();
@@ -84,12 +82,25 @@ public class ManagerPaneController implements Initializable {
         bus.subscribingFor(DATA_SET_DISTINCT_OCCASION)
               .accept((Collection<String> values) -> setupFilter(occasionFilter.getItems(), values))
               .subscribe();
+        bus.subscribingFor(DATA_SET_DISTINCT_PEOPLE).onFXThread()
+              .accept((Collection<String> values) -> addFilterToTreeView(SupportedField.ARTIST, values))
+              .subscribe();
+
+        bus.subscribingFor(PLAYLIST_REMOVE_SOUND).accept(this::removeFromTreeView).subscribe();
+        bus.subscribingFor(DATA_REFRESH).onFXThread().accept(this::fillTreeView).subscribe();
+        bus.subscribingFor(PLAYLIST_REFRESH).accept(this::refresh).subscribe();
+        bus.subscribingFor(DATA_STORE_ITEM).accept(s -> contentView.refresh()).subscribe();
+        bus.subscribingFor(DATA_STORE_LIST).accept(s -> contentView.refresh()).subscribe();
+        bus.subscribingFor(DATA_QUERY_RESULT_FOR_CONTENT_VIEW).onFXThread()
+              .<Collection<SoundFile>>accept(this::fillContentView)
+              .subscribe();
 
         highlighted = new SimpleIntegerProperty(-1);
+        filesList.setRoot(new RootElement("Content"));
 
         initPlaylistView();
 
-        bus.message(DATA_INDEX_GET_ALL).withResponse(DATA_CONVERT_FROM_DOC).send();
+        bus.message(DATA_INDEX_GET_ALL).send();
     }
 
     private void initPlaylistView() {
@@ -100,15 +111,15 @@ public class ManagerPaneController implements Initializable {
         playlist.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     }
 
-    private void fillTreeView(Collection<SoundFile> sounds) {
-        RootElement root = new RootElement("Pliki");
+    private synchronized void fillTreeView(Collection<SoundFile> sounds) {
+        RootElement root = (RootElement) filesList.getRoot();
         List<SoundFile> soundFiles = sounds.stream().sorted().collect(Collectors.toList());
         for (SoundFile f : soundFiles) {
             String[] path = f.getPathView();
             if (path.length == 0) log.error("Database inconsistency!");
             fillChild(root, path, 0, f);
         }
-        filesList.setRoot(root);
+        filesList.refresh();
     }
 
     private void fillChild(BaseElement parent, String[] path, int pos, SoundFile soundFile) {
@@ -132,6 +143,21 @@ public class ManagerPaneController implements Initializable {
             } else {
                 fillChild(catalogue, path, pos + 1, soundFile);
             }
+        }
+    }
+
+    private synchronized void addFilterToTreeView(SupportedField filterField, Collection<String> values) {
+        RootElement root = (RootElement) filesList.getRoot();
+        BaseElement filterElement = root.hasChild(filterField.getName())
+              ? root.getChildElement(filterField.getName())
+              : new BaseElement();
+        filterElement.setName(filterField.getName());
+        root.addChild(filterElement);
+
+        for (String value : values) {
+            ContentElement element = new ContentElement(bus, filterField);
+            element.setName(value);
+            filterElement.addChild(element);
         }
     }
 
@@ -172,8 +198,7 @@ public class ManagerPaneController implements Initializable {
         playlist.refresh();
     }
 
-    private void setupFilter(Collection<String> filter, Collection<String> values)
-    {
+    private void setupFilter(Collection<String> filter, Collection<String> values) {
         filter.clear();
         filter.add("...");
         filter.addAll(values);
@@ -184,19 +209,19 @@ public class ManagerPaneController implements Initializable {
     private void fillContentView() {
         BaseElement selectedItem = (BaseElement) filesList.getSelectionModel().getSelectedItem();
         if (selectedItem != null) {
-            contentView.getItems().clear();
+            selectedItem.fill(contentView.getItems());
             contentView.refresh();
-            contentView.getItems().addAll(selectedItem.getChildElements().values()
-                    .stream().filter(e -> e instanceof SoundElement)
-                    .map(e -> (SoundElement) e)
-                    .map(SoundElement::getSoundFile)
-                    .collect(Collectors.toList()));
         }
+    }
+
+    private void fillContentView(Collection<SoundFile> soundFiles) {
+        contentView.getItems().clear();
+        contentView.getItems().addAll(soundFiles);
+        contentView.refresh();
     }
     
     @FXML
-    private void onKeyReleased(KeyEvent keyEvent)
-    {
+    private void onKeyReleased(KeyEvent keyEvent) {
         List<BaseElement> selected = filesList.getSelectionModel().getSelectedItems()
               .stream().map(BaseElement.class::cast)
               .collect(Collectors.toList());
