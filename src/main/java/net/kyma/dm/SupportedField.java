@@ -1,6 +1,14 @@
 package net.kyma.dm;
 
-import static org.apache.commons.lang3.StringUtils.isNoneBlank;
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
+import net.kyma.player.Format;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.jaudiotagger.tag.FieldDataInvalidException;
+import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.Tag;
+import pl.khuzzuk.functions.Validators;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -11,15 +19,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
-import net.kyma.player.Format;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.jaudiotagger.tag.FieldDataInvalidException;
-import org.jaudiotagger.tag.FieldKey;
-import org.jaudiotagger.tag.Tag;
-import pl.khuzzuk.functions.Validators;
+import static org.apache.commons.lang3.StringUtils.isNoneBlank;
 
 @Getter
 @Log4j2
