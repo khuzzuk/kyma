@@ -46,7 +46,7 @@ public class DirectoryIndexer implements Loadable {
         if (file.isFile()) {
             String name = file.getName();
             if (name.contains(".") &&
-                    Format.supportedFormats.contains(name.substring(name.lastIndexOf('.')).toLowerCase())) {
+                    Format.isSupportingFormat(name.substring(name.lastIndexOf('.')).toLowerCase())) {
                 return Collections.singletonList(file);
             } else {
                 return Collections.emptyList();

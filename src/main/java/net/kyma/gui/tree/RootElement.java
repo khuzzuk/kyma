@@ -1,4 +1,4 @@
-package net.kyma.gui.contenttree;
+package net.kyma.gui.tree;
 
 import lombok.EqualsAndHashCode;
 

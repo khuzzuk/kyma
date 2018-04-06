@@ -1,5 +1,6 @@
 package net.kyma.data;
 
+import static java.lang.Integer.MAX_VALUE;
 import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
 import static net.kyma.EventType.DATA_QUERY;
 import static net.kyma.EventType.RET_INDEX_WRITER;
@@ -46,11 +47,26 @@ public class DataReader implements Loadable
         bus.subscribingFor(DATA_QUERY).accept(this::search).subscribe();
     }
 
+    private Set<String> getFilePaths() {
+        Set<String> values = new TreeSet<>();
+        try (DirectoryReader reader = DirectoryReader.open(writer)) {
+            IndexSearcher searcher = new IndexSearcher(reader);
+            TopDocs search = searcher.search(new WildcardQuery(new Term(SupportedField.PATH.getName(), "*")), MAX_VALUE);
+            Set<String> queryField = Collections.singleton(SupportedField.PATH.getName());
+            for (ScoreDoc doc : search.scoreDocs) {
+                values.add(searcher.doc(doc.doc, queryField).get(SupportedField.PATH.getName()));
+            }
+        } catch (IOException e) {
+            log.error("cannot query index", e);
+        }
+        return values;
+    }
+
     private Set<String> getDistinctValues(SupportedField field) {
         Set<String> values = new TreeSet<>();
         try (DirectoryReader reader = DirectoryReader.open(writer)) {
             IndexSearcher searcher = new IndexSearcher(reader);
-            TopDocs search = searcher.search(new WildcardQuery(new Term(field.getName(), "*")), Integer.MAX_VALUE);
+            TopDocs search = searcher.search(new WildcardQuery(new Term(field.getName(), "*")), MAX_VALUE);
             Set<String> queryField = Collections.singleton(field.getName());
             for (ScoreDoc doc : search.scoreDocs) {
                 values.add(searcher.doc(doc.doc, queryField).get(field.getName()));
@@ -65,7 +81,7 @@ public class DataReader implements Loadable
         List<Document> documents = new ArrayList<>();
         try (DirectoryReader reader = DirectoryReader.open(writer)) {
             IndexSearcher indexSearcher = new IndexSearcher(reader);
-            ScoreDoc[] docs = indexSearcher.search(queryFrom(parameters), Integer.MAX_VALUE).scoreDocs;
+            ScoreDoc[] docs = indexSearcher.search(queryFrom(parameters), MAX_VALUE).scoreDocs;
             for (ScoreDoc doc : docs) {
                 documents.add(reader.document(doc.doc));
             }

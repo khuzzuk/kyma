@@ -1,4 +1,4 @@
-package net.kyma.gui.contenttree;
+package net.kyma.gui.tree;
 
 import static net.kyma.EventType.DATA_QUERY;
 import static net.kyma.EventType.DATA_QUERY_RESULT_FOR_CONTENT_VIEW;

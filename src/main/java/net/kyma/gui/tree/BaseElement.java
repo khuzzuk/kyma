@@ -1,4 +1,4 @@
-package net.kyma.gui.contenttree;
+package net.kyma.gui.tree;
 
 import java.util.Comparator;
 import java.util.HashMap;

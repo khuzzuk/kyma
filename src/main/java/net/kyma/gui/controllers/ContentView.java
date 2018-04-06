@@ -118,8 +118,7 @@ public class ContentView implements Initializable
       initSuggestions();
    }
 
-   private void initSuggestions()
-   {
+   private void initSuggestions() {
       suggestions = new EnumMap<>(SupportedField.class);
       suggestions.put(MOOD, new TreeSet<>());
       suggestions.put(TEMPO, new TreeSet<>());

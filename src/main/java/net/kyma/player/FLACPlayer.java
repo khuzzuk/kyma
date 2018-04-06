@@ -30,11 +30,15 @@ public class FLACPlayer extends SPIPlayer
    }
 
    @Override
-   Decoder getDecoder() throws Exception
+   Decoder getDecoder() throws SPIException
    {
-      FLACInternalDecoder decoder = new FLACInternalDecoder();
-      decoder.refresh();
-      return decoder;
+      try {
+         FLACInternalDecoder decoder = new FLACInternalDecoder();
+         decoder.refresh();
+         return decoder;
+      } catch (IOException e) {
+         throw new SPIException(e);
+      }
    }
 
    private class FLACInternalDecoder implements Decoder

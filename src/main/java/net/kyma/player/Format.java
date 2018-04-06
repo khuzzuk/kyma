@@ -18,7 +18,7 @@ public enum Format {
 
     final PlayerSupplier playerSupplier;
     private static final Set<Format> SET = EnumSet.allOf(Format.class);
-    public static final Set<String> supportedFormats = Set.of(".mp3", ".flac", ".m4a");
+    private static final Set<String> supportedFormats = Set.of(".mp3", ".flac", ".m4a");
     private boolean byteScale;
 
     public static Format forPath(String path) {
@@ -32,5 +32,9 @@ public enum Format {
 
     interface PlayerSupplier {
         Player getPlayer(SoundFile file, Bus bus);
+    }
+
+    public static boolean isSupportingFormat(String extension) {
+        return supportedFormats.contains(extension);
     }
 }

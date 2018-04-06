@@ -30,11 +30,15 @@ public class Mp3PlayerJLayer extends SPIPlayer
    }
 
    @Override
-   Decoder getDecoder() throws Exception
+   Decoder getDecoder() throws SPIException
    {
-      Mp3Decoder decoder = new Mp3Decoder();
-      decoder.refresh(0);
-      return decoder;
+      try {
+         Mp3Decoder decoder = new Mp3Decoder();
+         decoder.refresh(0);
+         return decoder;
+      } catch (Exception e) {
+         throw new SPIException(e);
+      }
    }
 
    private class Mp3Decoder implements Decoder
