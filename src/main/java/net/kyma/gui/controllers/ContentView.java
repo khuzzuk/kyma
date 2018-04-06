@@ -1,7 +1,6 @@
 package net.kyma.gui.controllers;
 
 import static net.kyma.EventType.DATA_INDEX_GET_DISTINCT;
-import static net.kyma.EventType.DATA_QUERY_RESULT_FOR_CONTENT_VIEW;
 import static net.kyma.EventType.DATA_REMOVE_ITEM;
 import static net.kyma.EventType.DATA_SET_DISTINCT_CUSTOM1;
 import static net.kyma.EventType.DATA_SET_DISTINCT_CUSTOM2;
@@ -41,7 +40,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -82,7 +81,7 @@ import pl.khuzzuk.messaging.Bus;
 public class ContentView implements Initializable
 {
    @FXML
-   private TableView<SoundFile> contentView;
+   private TableView<SoundFile> mainContentView;
    private ContextMenu contentViewContextMenu;
    private final Bus<EventType> bus;
    private final TableColumnFactory columnFactory;
@@ -105,14 +104,14 @@ public class ContentView implements Initializable
    private void initContentView() {
       createContextMenu(Collections.emptyList());
 
-      contentView.setEditable(true);
-      contentView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-      contentView.getColumns().clear();
-      selected = contentView.getSelectionModel().getSelectedItems();
+      mainContentView.setEditable(true);
+      mainContentView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+      mainContentView.getColumns().clear();
+      selected = mainContentView.getSelectionModel().getSelectedItems();
 
       bus.subscribingFor(GUI_CONTENTVIEW_SETTINGS_CHANGED).then(this::sendContentViewSettings).subscribe();
       bus.subscribingFor(DATA_UPDATE_REQUEST).accept(this::update).subscribe();
-      bus.subscribingFor(PLAYLIST_NEXT).then(contentView::refresh).subscribe();
+      bus.subscribingFor(PLAYLIST_NEXT).then(mainContentView::refresh).subscribe();
       bus.subscribingFor(GUI_CONTENTVIEW_SETTINGS_SET).onFXThread().accept(this::setupColumns).subscribe();
       bus.message(GUI_CONTENTVIEW_SETTINGS_GET).withResponse(GUI_CONTENTVIEW_SETTINGS_SET).send();
 
@@ -121,7 +120,7 @@ public class ContentView implements Initializable
 
    private void initSuggestions()
    {
-      suggestions = new HashMap<>();
+      suggestions = new EnumMap<>(SupportedField.class);
       suggestions.put(MOOD, new TreeSet<>());
       suggestions.put(TEMPO, new TreeSet<>());
       suggestions.put(OCCASION, new TreeSet<>());
@@ -165,7 +164,7 @@ public class ContentView implements Initializable
             .map(UIProperties.ColumnDefinition::getField)
             .collect(Collectors.toList()));
 
-      ObservableList<TableColumn<SoundFile, ?>> columns = contentView.getColumns();
+      ObservableList<TableColumn<SoundFile, ?>> columns = mainContentView.getColumns();
       columnDefinitions.stream()
             .map(columnDefinition -> columnFactory.getColumnFor(
                   columnDefinition.getField(),
@@ -195,7 +194,7 @@ public class ContentView implements Initializable
          }
          else
          {
-            contentView.getColumns().add(columnFactory.getColumnFor(field, 100, suggestions.get(field)));
+            mainContentView.getColumns().add(columnFactory.getColumnFor(field, 100, suggestions.get(field)));
             sendContentViewSettings();
          }
       };
@@ -203,8 +202,8 @@ public class ContentView implements Initializable
 
    private void removeColumnWithField(SupportedField field)
    {
-      contentView.getColumns().remove(
-            contentView.getColumns().stream()
+      mainContentView.getColumns().remove(
+            mainContentView.getColumns().stream()
                   .filter(column -> column.getText().equals(field.getName()))
                   .findAny().orElse(null));
    }
@@ -216,7 +215,7 @@ public class ContentView implements Initializable
 
    private SoundFile getSelected()
    {
-      return contentView.getSelectionModel().getSelectedItem();
+      return mainContentView.getSelectionModel().getSelectedItem();
    }
 
    @FXML
@@ -245,6 +244,8 @@ public class ContentView implements Initializable
                contentViewContextMenu.show((TableColumnHeader) target, mouseEvent.getScreenX(), mouseEvent.getScreenY());
             }
             break;
+         default:
+            break;
       }
    }
 
@@ -270,19 +271,21 @@ public class ContentView implements Initializable
          case BACK_SPACE:
          case DELETE:
             if (keyEvent.isControlDown()) {
-               Collection<SoundFile> selected = new ArrayList<>(this.selected);
-               bus.message(DATA_REMOVE_ITEM).withContent(selected).send();
-               bus.message(PLAYLIST_REMOVE_SOUND).withContent(selected).send();
-               contentView.getItems().removeAll(selected);
-               contentView.refresh();
+               Collection<SoundFile> selectedCopy = new ArrayList<>(this.selected);
+               bus.message(DATA_REMOVE_ITEM).withContent(selectedCopy).send();
+               bus.message(PLAYLIST_REMOVE_SOUND).withContent(selectedCopy).send();
+               mainContentView.getItems().removeAll(selectedCopy);
+               mainContentView.refresh();
             }
+            break;
+         default:
             break;
       }
    }
 
    private void sendContentViewSettings()
    {
-      List<UIProperties.ColumnDefinition> definitions = contentView.getColumns().stream()
+      List<UIProperties.ColumnDefinition> definitions = mainContentView.getColumns().stream()
             .map(column -> new UIProperties.ColumnDefinition(
                   SupportedField.getByName(column.getText()),
                   column.getWidth()))

@@ -48,6 +48,7 @@ public class DataIndexer implements Loadable
    private DocConverter docConverter;
    private Set<String> indexedPaths;
    private ForceGate initializer;
+   private static final String READ_DATA_ERROR_MESSAGE = "Cannot read data";
 
    @Override
    public void load()
@@ -118,8 +119,7 @@ public class DataIndexer implements Loadable
       }
       catch (IOException e)
       {
-         log.error("Indexing occurred error");
-         log.error(e);
+         log.error("Indexing occurred error", e);
       }
    }
 
@@ -137,8 +137,7 @@ public class DataIndexer implements Loadable
       }
       catch (IOException e)
       {
-         log.error("Cannot read data");
-         log.error(e);
+         log.error(READ_DATA_ERROR_MESSAGE, e);
       }
       soundFile.setIndexedPath(previousPath);
    }
@@ -157,7 +156,7 @@ public class DataIndexer implements Loadable
          }
       }
       catch (IOException e) {
-         log.error("Cannot read data", e);
+         log.error(READ_DATA_ERROR_MESSAGE, e);
       }
 
       bus.message(DATA_CONVERT_FROM_DOC).withResponse(DATA_REFRESH).withContent(documents).send();
@@ -172,8 +171,7 @@ public class DataIndexer implements Loadable
       }
       catch (IOException e)
       {
-         log.error("Cannot read data");
-         log.error(e);
+         log.error(READ_DATA_ERROR_MESSAGE, e);
       }
       return false;
    }
@@ -225,8 +223,7 @@ public class DataIndexer implements Loadable
       }
       catch (IOException e)
       {
-         log.error("error on closing database");
-         log.error(e);
+         log.error("error on closing database", e);
       }
       if (writer.isOpen())
       {
@@ -236,7 +233,9 @@ public class DataIndexer implements Loadable
          }
          catch (InterruptedException e)
          {
-            log.error("Error during close operation, retry");
+            log.error("Error during close operation, retry", e);
+            Thread.currentThread().interrupt();
+            close();
          }
          close();
       }

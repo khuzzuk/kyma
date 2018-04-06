@@ -32,6 +32,7 @@ class M4aPlayerFX extends Mp3PlayerFX {
                 if (retry <= currentlyRetried) break;
             } catch (InterruptedException e) {
                 log.error(e);
+                Thread.currentThread().interrupt();
             }
         }
         long duration = Math.round(player.getTotalDuration().toMillis());
@@ -42,7 +43,7 @@ class M4aPlayerFX extends Mp3PlayerFX {
         try {
             return AudioFileIO.read(new File(getPath())).getAudioHeader().getAudioDataLength();
         } catch (CannotReadException | IOException | ReadOnlyFileException | TagException | InvalidAudioFrameException e) {
-            e.printStackTrace();
+            log.error("Cannot read m4a file", e);
         }
         return 0;
     }

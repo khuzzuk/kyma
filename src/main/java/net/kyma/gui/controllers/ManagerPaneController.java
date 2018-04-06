@@ -225,13 +225,11 @@ public class ManagerPaneController implements Initializable {
         List<BaseElement> selected = filesList.getSelectionModel().getSelectedItems()
               .stream().map(BaseElement.class::cast)
               .collect(Collectors.toList());
-        switch (keyEvent.getCode())
-        {
-            case INSERT:
-                selected.stream()
-                      .map(BaseElement::getPath)
-                      .map(File::new)
-                      .forEach(path -> bus.message(DATA_INDEX_DIRECTORY).withContent(path).send());
+        if (keyEvent.getCode() == KeyCode.INSERT) {
+            selected.stream()
+                  .map(BaseElement::getPath)
+                  .map(File::new)
+                  .forEach(path -> bus.message(DATA_INDEX_DIRECTORY).withContent(path).send());
         }
     }
 

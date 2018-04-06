@@ -14,7 +14,7 @@ import pl.khuzzuk.messaging.Bus;
 @RequiredArgsConstructor
 public class PlaybackTimer implements Loadable {
     @SuppressWarnings("FieldCanBeLocal")
-    private static final int refreshLatency = 32;
+    private static final int REFRESH_LATENCY = 32;
     private final Bus<EventType> bus;
     private final PlayerManager playerManager;
     private BlockingQueue<TimerAction> channel;
@@ -23,6 +23,7 @@ public class PlaybackTimer implements Loadable {
     public void load() {
         channel = new ArrayBlockingQueue<>(64);
         bus.subscribingFor(EventType.PLAYER_STOP_TIMER).then(() -> channel.offer(TimerAction.STOP)).subscribe();
+        bus.subscribingFor(EventType.CLOSE).then(() -> channel.offer(TimerAction.CLOSE)).subscribe();
         Thread t = new Thread(this::run);
         t.setDaemon(true);
         t.start();
@@ -42,14 +43,17 @@ public class PlaybackTimer implements Loadable {
                         channel.clear();
                         channel.add(TimerAction.CONTINUE);
                         break;
+                    case CLOSE:
+                        return;
                     default:
                         channel.add(TimerAction.CONTINUE);
                         playerManager.updateSlider();
-                        Thread.sleep(refreshLatency);
+                        Thread.sleep(REFRESH_LATENCY);
                         break;
                 }
             } catch (InterruptedException e) {
                 log.error("refreshing playback interrupted", e);
+                Thread.currentThread().interrupt();
             }
         }
     }
@@ -63,6 +67,6 @@ public class PlaybackTimer implements Loadable {
     }
 
     private enum TimerAction {
-        START, CONTINUE, STOP
+        START, CONTINUE, STOP, CLOSE
     }
 }

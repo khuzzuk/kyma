@@ -2,6 +2,7 @@ package net.kyma.dm;
 
 import static org.apache.commons.lang3.StringUtils.isNoneBlank;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -64,7 +65,7 @@ public enum SupportedField
 
    // Not in Supported Tags, but implements tag setter
    RATE("rate", FieldKey.RATING, s -> s.getRate() != null ? s.getRate().name() : Rating.UNDEFINED.name(),
-         (s, v) -> s.setRate(isNoneBlank(v) ? Rating.valueOf(v) : Rating.UNDEFINED), __ -> true, new RateConverter())
+         (s, v) -> s.setRate(isNoneBlank(v) ? Rating.valueOf(v) : Rating.UNDEFINED), any -> true, new RateConverter())
          {
             @Override
             public void setField(Tag tag, SoundFile soundFile)
@@ -90,11 +91,11 @@ public enum SupportedField
 
    private BiFunction<Tag, SoundFile, String> tagExtractor = (tag, soundfile) -> tag.getFirst(getMappedKey());
 
-   public static final Set<SupportedField> SET = EnumSet.allOf(SupportedField.class);
-   public static final Set<SupportedField> SUPPORTED_TAG = EnumSet.of(
+   public static final Set<SupportedField> SET = Collections.unmodifiableSet(EnumSet.allOf(SupportedField.class));
+   public static final Set<SupportedField> SUPPORTED_TAG = Collections.unmodifiableSet(EnumSet.of(
          TITLE, YEAR, ALBUM, ALBUM_ARTIST, ALBUM_ARTISTS, ARTIST, ARTISTS, COMPOSER, CONDUCTOR, COUNTRY,
          CUSTOM1, CUSTOM2, CUSTOM3, CUSTOM4, CUSTOM5, DISC_NO, GENRE, GROUP, INSTRUMENT, MOOD, MOVEMENT,
-         OCCASION, OPUS, ORCHESTRA, QUALITY, RANKING, TEMPO, TONALITY, TRACK, WORK, WORK_TYPE, RATE);
+         OCCASION, OPUS, ORCHESTRA, QUALITY, RANKING, TEMPO, TONALITY, TRACK, WORK, WORK_TYPE, RATE));
 
    SupportedField(String name, FieldKey mappedKey,
          Function<SoundFile, String> getter, BiConsumer<SoundFile, String> setter)

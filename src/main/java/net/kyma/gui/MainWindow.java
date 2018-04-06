@@ -5,7 +5,7 @@ import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_FRAME;
 import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_FULLSCREEN;
 import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_MAXIMIZED;
 
-import java.awt.*;
+import java.awt.Rectangle;
 import java.io.IOException;
 
 import javafx.fxml.FXMLLoader;
@@ -14,12 +14,13 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-import javafx.stage.WindowEvent;
+import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.gui.controllers.ControllerDistributor;
 import net.kyma.gui.controllers.MainController;
 import pl.khuzzuk.messaging.Bus;
 
+@Log4j2
 public class MainWindow extends Stage {
     private final Bus<EventType> bus;
     private final ControllerDistributor controllerDistributor;
@@ -41,12 +42,12 @@ public class MainWindow extends Stage {
         try {
             setScene(new Scene(loader.load()));
         } catch (IOException e) {
-            e.printStackTrace();
+            log.fatal("Error during gui initialization", e);
         }
-        setOnCloseRequest(this::onClose);
+        setOnCloseRequest(event -> onClose());
     }
 
-    private void onClose(WindowEvent e) {
+    private void onClose() {
         if (isFullScreen()) {
             bus.message(PROPERTIES_STORE_WINDOW_FULLSCREEN).withContent(Boolean.TRUE).send();
         } else if (isMaximized()) {

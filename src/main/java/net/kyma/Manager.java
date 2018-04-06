@@ -60,8 +60,8 @@ public class Manager extends Application {
         try {
             return Bus.initializeBus(EventType.class, new BusLogger(), true);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return Bus.initializeBus(EventType.class, System.out, true);
+            log.error("Cannot start bus, try starting with System out logger", e);
+            return Bus.initializeBus(EventType.class, System.out, true); //NOSONAR
         }
     }
 }

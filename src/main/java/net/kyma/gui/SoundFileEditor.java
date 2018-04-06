@@ -3,7 +3,7 @@ package net.kyma.gui;
 import static net.kyma.dm.SupportedField.*;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 import javafx.application.Platform;
@@ -96,7 +96,7 @@ public class SoundFileEditor
             StarsFactory.defineForRating(9),
             StarsFactory.defineForRating(10));
 
-      fields = new LinkedHashMap<>();
+      fields = new EnumMap<>(SupportedField.class);
       fields.put(FILE_NAME, createNew(false));
       fields.put(TITLE, createNew());
       fields.put(YEAR, createNew());

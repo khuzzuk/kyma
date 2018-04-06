@@ -49,6 +49,7 @@ public class ObjectContainer
       toSend.add(new Pair<>(retrieveEvent, object));
    }
 
+   @SuppressWarnings("unused")
    private void putToContainer(EventType retrieveEvent, Loadable loadable)
    {
       toSend.add(new Pair<>(retrieveEvent, loadable));
@@ -78,9 +79,8 @@ public class ObjectContainer
 
    private void initDataAccess()
    {
-      try
-      {
-         Directory directory = new NIOFSDirectory(Paths.get("index/"));
+      try {
+         Directory directory = new NIOFSDirectory(Paths.get("index/")); //NOSONAR
          IndexWriterConfig config = new IndexWriterConfig();
          config.setRAMBufferSizeMB(64);
          IndexWriter writer = new IndexWriter(directory, config);

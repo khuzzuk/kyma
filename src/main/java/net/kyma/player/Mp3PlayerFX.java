@@ -89,6 +89,7 @@ class Mp3PlayerFX implements Player {
                 if (currentRetry >= retries) break;
             } catch (InterruptedException e) {
                 log.error(e);
+                Thread.currentThread().interrupt();
             }
         }
         return Math.round(player.getTotalDuration().toMillis());
@@ -100,6 +101,7 @@ class Mp3PlayerFX implements Player {
                 Thread.sleep(1);
             } catch (InterruptedException e) {
                 log.error(e);
+                Thread.currentThread().interrupt();
             }
         }
     }

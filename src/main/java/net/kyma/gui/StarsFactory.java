@@ -10,8 +10,10 @@ import javafx.scene.shape.ClosePath;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
+import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.tuple.Pair;
 
+@UtilityClass
 public class StarsFactory
 {
    private static final int R = -8;
@@ -21,8 +23,8 @@ public class StarsFactory
    {
       for (int i = start; i <= endInclusive; i++)
       {
-         double t = toRadians(36 * i);
-         double r = R / ((i % 2) + 1);
+         double t = toRadians((double) 36 * i);
+         double r = (double) R / ((i % 2) + 1);
          double x = sin(t) * r;
          double y = cos(t) * r;
          star.getElements().add(new LineTo(x, y));
@@ -75,7 +77,7 @@ public class StarsFactory
             AnchorPane.setLeftAnchor(halfStar.getLeft(), (double) (i * START_SPACING) + i);
             pane.getChildren().add(halfStar.getRight());
             AnchorPane.setTopAnchor(halfStar.getRight(), 0d);
-            AnchorPane.setLeftAnchor(halfStar.getRight(), (double) (i * START_SPACING) + START_SPACING / 2 + i);
+            AnchorPane.setLeftAnchor(halfStar.getRight(), (double) (i * START_SPACING) + (double) START_SPACING / 2 + i);
          }
          else
          {

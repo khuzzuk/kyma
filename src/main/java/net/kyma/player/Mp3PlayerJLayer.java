@@ -59,15 +59,18 @@ public class Mp3PlayerJLayer extends SPIPlayer
                audioFormat.getChannels(), audioFormat.getChannels() * 2, audioFormat.getSampleRate(), false);
 
          player = AudioSystem.getAudioInputStream(format, rawAudio);
-         player.skip((long) (bytesTotal * ((double) (toSkip) / length)));
+         long bytesToSkip = (long) (bytesTotal * ((double) (toSkip) / length));
+         if (player.skip(bytesToSkip) != bytesToSkip) {
+            log.warn("Wrong number of bytes were skipped when determining new sound position");
+         }
       }
 
       private void calculateLengths()
             throws IOException, UnsupportedAudioFileException
       {
-         TAudioFileFormat format = (TAudioFileFormat) AudioSystem.getAudioFileFormat(new File(soundFile.getPath()));
-         length = (long) format.properties().get("duration") / 1000; //microseconds to milliseconds
-         bytesTotal = (int) format.properties().get("mp3.length.bytes");
+         TAudioFileFormat rawFormat = (TAudioFileFormat) AudioSystem.getAudioFileFormat(new File(soundFile.getPath()));
+         length = (long) rawFormat.properties().get("duration") / 1000; //microseconds to milliseconds
+         bytesTotal = (int) rawFormat.properties().get("mp3.length.bytes");
       }
 
       @Override

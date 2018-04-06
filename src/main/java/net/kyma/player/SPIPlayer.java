@@ -36,22 +36,37 @@ public abstract class SPIPlayer implements Player {
         this.bus = bus;
     }
 
+    private static void globalPause() {
+        paused = true;
+    }
+
+    private static void globalUnPause()
+    {
+        paused = false;
+    }
+
+    private static void setGlobalPlayer(SPIPlayer newPlayer)
+    {
+        currentPlayer = newPlayer;
+    }
+
     public void start() {
         try {
             if (paused && line != null) {
                 meetingPoint.take();
-                paused = false;
+                globalUnPause();
                 return;
             } else if (currentPlayer != null) {
                 currentPlayer.closed = true;
             }
             emitter = new Emitter();
             thread.submit(emitter);
-            currentPlayer = this;
+            setGlobalPlayer(this);
         }
         catch (InterruptedException e)
         {
             log.error("Error during starting FLAC Player", e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -65,7 +80,7 @@ public abstract class SPIPlayer implements Player {
 
     @Override
     public void pause() {
-        paused = true;
+        globalPause();
     }
 
     @Override
@@ -80,14 +95,15 @@ public abstract class SPIPlayer implements Player {
 
     @Override
     public void startFrom(long frame) {
-        paused = true;
+        globalPause();
         try {
             meetingPoint.take();
             emitter.decoder.skipTo(frame);
-            paused = false;
+            globalUnPause();
             line.start();
         } catch (InterruptedException e) {
             log.error("interrupted pausing operation");
+            Thread.currentThread().interrupt();
         }
         catch (IOException e)
         {
@@ -108,7 +124,6 @@ public abstract class SPIPlayer implements Player {
         @Getter
         private FloatControl control;
         private Decoder decoder;
-        private AudioFormat format;
 
         @Override
         public void run() {
@@ -120,7 +135,7 @@ public abstract class SPIPlayer implements Player {
                     }
                     if ((paused)) {
                         line.stop();
-                        meetingPoint.offer(this);
+                        if (!meetingPoint.offer(this)) log.warn("Problem during pause in play");
                         hold();
                         line.start();
                     }
@@ -132,27 +147,29 @@ public abstract class SPIPlayer implements Player {
                 if (!(closed)) {
                     bus.message(EventType.PLAYLIST_NEXT).send();
                 }
-            } catch (LineUnavailableException e) {
-                log.error("problem with opening file", e);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 log.error("Accessing file error during playback", e);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 log.error("Error during processing a file", e);
             }
         }
 
-        private void initDecoding() throws Exception
+        private void initDecoding() throws SPIException
         {
-            decoder = getDecoder();
-            format = decoder.getFormat();
-            line = AudioSystem.getSourceDataLine(format);
-            line.open(format);
-            line.start();
-            control = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
-            control.setValue(volume);
+            try {
+                decoder = getDecoder();
+                AudioFormat format = decoder.getFormat();
+                line = AudioSystem.getSourceDataLine(format);
+                line.open(format);
+                line.start();
+                control = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
+                control.setValue(volume);
+            }
+            catch (LineUnavailableException e)
+            {
+                log.error("problem with opening file", e);
+                throw new SPIException(e);
+            }
         }
 
         private void hold() {
@@ -161,13 +178,14 @@ public abstract class SPIPlayer implements Player {
                     Thread.sleep(50);
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("interrupted during pause removing", e);
+                Thread.currentThread().interrupt();
             }
         }
 
     }
 
-    abstract Decoder getDecoder() throws Exception;
+    abstract Decoder getDecoder() throws SPIException;
 
     interface Decoder
     {

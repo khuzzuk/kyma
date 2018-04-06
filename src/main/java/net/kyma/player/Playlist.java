@@ -26,13 +26,13 @@ import pl.khuzzuk.messaging.Bus;
 @Log4j2
 public class Playlist implements Loadable {
     private final Bus<EventType> bus;
-    private List<SoundFile> playlist;
+    private List<SoundFile> fileList;
     private SoundFile currentlyPlayed;
     private int index = -1;
 
     @Override
     public void load() {
-        playlist = new LinkedList<>();
+        fileList = new LinkedList<>();
         bus.subscribingFor(PLAYLIST_ADD_LIST).accept(this::addAll).subscribe();
         bus.subscribingFor(PLAYLIST_REMOVE_LIST).accept(this::removeAll).subscribe();
         bus.subscribingFor(PLAYLIST_NEXT).then(this::playNextItem).subscribe();
@@ -46,7 +46,7 @@ public class Playlist implements Loadable {
             if (i <= index) {
                 index--;
             }
-            SoundFile removed = playlist.remove(removeEvent.getPosition());
+            SoundFile removed = fileList.remove(removeEvent.getPosition());
             if (!removed.equals(removeEvent.getFile())) {
                 log.error("removed file does not match");
             }
@@ -57,35 +57,35 @@ public class Playlist implements Loadable {
     }
 
     private synchronized void addAll(Collection<SoundFile> soundFiles) {
-        playlist.addAll(soundFiles);
+        fileList.addAll(soundFiles);
         sendRefreshEvent(index);
     }
 
     private synchronized void playNextItem() {
-        if (playlist.size() == 0) return;
-        if (++index == playlist.size()) index = 0;
+        if (fileList.isEmpty()) return;
+        if (++index == fileList.size()) index = 0;
 
-        currentlyPlayed = playlist.get(index);
+        currentlyPlayed = fileList.get(index);
         bus.message(PLAYER_PLAY).withContent(currentlyPlayed).send();
         sendRefreshEvent(index);
     }
 
     private synchronized void playPreviousItem() {
-        if (playlist.size() == 0) return;
-        if (--index < 0) index = playlist.size() - 1;
+        if (fileList.isEmpty()) return;
+        if (--index < 0) index = fileList.size() - 1;
 
-        bus.message(PLAYER_PLAY).withContent(playlist.get(index)).send();
+        bus.message(PLAYER_PLAY).withContent(fileList.get(index)).send();
         sendRefreshEvent(index);
     }
 
     private void fileRemoved(List<SoundFile> toRemove) {
         for (int i = toRemove.size() - 1; i >= 0; i--) {
             SoundFile fileToRemove = toRemove.get(i);
-            if (playlist.contains(fileToRemove)) {
-                if (index == playlist.indexOf(fileToRemove)) index--;
-                playlist.remove(fileToRemove);
+            if (fileList.contains(fileToRemove)) {
+                if (index == fileList.indexOf(fileToRemove)) index--;
+                fileList.remove(fileToRemove);
 
-                if (playlist.contains(fileToRemove)) i++;
+                if (fileList.contains(fileToRemove)) i++; //NOSONAR removing file requires to stop playing it at all cost
             }
         }
 
@@ -100,7 +100,7 @@ public class Playlist implements Loadable {
     private void sendRefreshEvent(int index) {
         bus.message(PLAYLIST_REFRESH)
               .withContent(PlaylistRefreshEvent.builder()
-              .playlist(Collections.unmodifiableList(playlist))
+              .playlist(Collections.unmodifiableList(fileList))
               .position(index)
               .build()).send();
     }

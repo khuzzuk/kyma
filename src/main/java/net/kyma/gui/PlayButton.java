@@ -8,6 +8,7 @@ public class PlayButton extends Button {
     private Group play;
     private Group pause;
     private boolean paused;
+    private static final String PLAY_BUTTON_STYLE = "play-text";
 
     public void showPlay() {
         if (play == null) {
@@ -18,7 +19,7 @@ public class PlayButton extends Button {
                     new LineTo(2, 10),
                     new ClosePath()
             );
-            triangle.getStyleClass().add("play-text");
+            triangle.getStyleClass().add(PLAY_BUTTON_STYLE);
             play = new Group(triangle);
         }
         paused = false;
@@ -28,9 +29,9 @@ public class PlayButton extends Button {
     public void showPause() {
         if (pause == null) {
             Rectangle first = new Rectangle(0, 0, 4, 10);
-            first.getStyleClass().add("play-text");
+            first.getStyleClass().add(PLAY_BUTTON_STYLE);
             Rectangle second = new Rectangle(6, 0, 4, 10);
-            second.getStyleClass().add("play-text");
+            second.getStyleClass().add(PLAY_BUTTON_STYLE);
             pause = new Group(first, second);
         }
         paused = true;

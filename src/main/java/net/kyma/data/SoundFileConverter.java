@@ -29,6 +29,9 @@ import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
 public class SoundFileConverter {
+
+    private static final String ID3_COMMENT_TAG_PREFIX = "Text=";
+
     public SoundFileConverter(Bus<EventType> bus) {
         bus.subscribingFor(PLAYLIST_ADD_FILE).<File>accept(f -> from(f, f.getParent())).subscribe();
         bus.subscribingFor(DATA_CONVERT_FROM_DOC)
@@ -65,7 +68,7 @@ public class SoundFileConverter {
 
         String comment = getComment(metadata);
         if (comment.contains(":")) {
-            String counter = comment.substring(0, comment.indexOf(":"));
+            String counter = comment.substring(0, comment.indexOf(':'));
             if (NumberUtils.isDigits(counter)) {
                 sound.setCounter(NumberUtils.toInt(counter));
             }
@@ -82,7 +85,7 @@ public class SoundFileConverter {
                   .filter(frame -> frame instanceof ID3v23Frame)
                   .map(ID3v23Frame.class::cast)
                   .map(ID3v23Frame::getBody)
-                  .filter(body -> body.getBriefDescription().contains("Text="))
+                  .filter(body -> body.getBriefDescription().contains(ID3_COMMENT_TAG_PREFIX))
                   .findFirst()
                   .map(AbstractTagFrameBody::getUserFriendlyValue)
                   .orElse("");
@@ -95,9 +98,9 @@ public class SoundFileConverter {
 
         return commFields.stream()
               .map(TagField::toString)
-              .filter(text -> text.contains("Text="))
+              .filter(text -> text.contains(ID3_COMMENT_TAG_PREFIX))
               .findFirst()
-              .map(value -> value.substring(value.indexOf("Text=") + 6, value.lastIndexOf('"')))
+              .map(value -> value.substring(value.indexOf(ID3_COMMENT_TAG_PREFIX) + 6, value.lastIndexOf('"')))
               .orElse("");
     }
 }

@@ -4,9 +4,11 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 import javafx.scene.control.TextField;
+import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.textfield.TextFields;
 
+@UtilityClass
 public class AutoCompletionUtils
 {
    static void bindAutoCompletions(TextField textField, Collection<String> suggestions)

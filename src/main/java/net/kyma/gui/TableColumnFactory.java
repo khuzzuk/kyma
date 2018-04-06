@@ -90,7 +90,7 @@ public class TableColumnFactory
    private TableColumn<SoundFile, String> createStringColumnWithSuggestion(
          SupportedField field, Collection<String> values, double width)
    {
-      return createStringColumn(field, __ -> AutoCompleteTableCell.create(values), width);
+      return createStringColumn(field, any -> AutoCompleteTableCell.create(values), width);
    }
 
    private TableColumn<SoundFile, String> createStringColumn(SupportedField field,
@@ -105,7 +105,7 @@ public class TableColumnFactory
          bus.message(DATA_UPDATE_REQUEST).withContent(new TagUpdateRequest(field, value.getNewValue())).send();
       });
       column.setPrefWidth(width);
-      column.widthProperty().addListener((_1, _2, _3) -> bus.message(GUI_CONTENTVIEW_SETTINGS_CHANGED).send());
+      column.widthProperty().addListener((observable, newV, oldV) -> bus.message(GUI_CONTENTVIEW_SETTINGS_CHANGED).send());
       return column;
    }
 
@@ -113,7 +113,7 @@ public class TableColumnFactory
    {
       TableColumn<SoundFile, Integer> column = new TableColumn<>(COUNTER.getName());
       column.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue().getCounter()));
-      column.widthProperty().addListener((_1, _2, _3) -> bus.message(GUI_CONTENTVIEW_SETTINGS_CHANGED).send());
+      column.widthProperty().addListener((observable, newV, oldV) -> bus.message(GUI_CONTENTVIEW_SETTINGS_CHANGED).send());
       column.setPrefWidth(width);
       return column;
    }
@@ -131,7 +131,7 @@ public class TableColumnFactory
          else
          {
             String name = param.getValue().getFileName();
-            return new SimpleObjectProperty(name.substring(0, name.lastIndexOf(".")));
+            return new SimpleObjectProperty(name.substring(0, name.lastIndexOf('.')));
          }
       });
       return column;

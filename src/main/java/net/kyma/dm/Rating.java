@@ -44,10 +44,7 @@ public enum Rating {
     }
 
     public static void setRate(int rate, SoundFile file) {
-        SET.stream().filter(r -> r.rate == rate).findAny().ifPresent(r -> {
-            if (file.getFormat().isByteScale()) file.setRate(r);
-            else file.setRate(r);
-        });
+        SET.stream().filter(r -> r.rate == rate).findAny().ifPresent(file::setRate);
     }
 
     public static Rating getRatingBy(int tagRate, Format format) {

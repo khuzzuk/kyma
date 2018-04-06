@@ -5,6 +5,7 @@ import static org.jaudiotagger.tag.FieldKey.COMMENT;
 import java.io.File;
 import java.io.IOException;
 
+import lombok.experimental.UtilityClass;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
@@ -18,6 +19,7 @@ import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagException;
 
 @Log4j2
+@UtilityClass
 class MetadataConverter {
     static Tag getMetadataFrom(File file) {
         try {
@@ -40,8 +42,8 @@ class MetadataConverter {
         SupportedField.RATE.setField(metadata, updateSource);
 
         String comment = metadata.getFirst(COMMENT);
-        if (comment.contains(":") && NumberUtils.isDigits(comment.substring(0, comment.indexOf(":")))) {
-            metadata.setField(COMMENT, updateSource.getCounter() + comment.substring(comment.indexOf(":")));
+        if (comment.contains(":") && NumberUtils.isDigits(comment.substring(0, comment.indexOf(':')))) {
+            metadata.setField(COMMENT, updateSource.getCounter() + comment.substring(comment.indexOf(':')));
         } else {
             metadata.setField(COMMENT, updateSource.getCounter() + ":" + comment);
         }
