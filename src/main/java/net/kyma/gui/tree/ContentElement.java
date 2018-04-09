@@ -32,4 +32,13 @@ public class ContentElement extends BaseElement {
             .value(getName())
             .returnTopic(DATA_QUERY_RESULT_FOR_CONTENT_VIEW).build()).send();
    }
+
+   @Override
+   public QueryParameters toQuery()
+   {
+      return QueryParameters.builder()
+            .returnTopic(DATA_QUERY_RESULT_FOR_CONTENT_VIEW)
+            .field(field)
+            .value(getName()).build();
+   }
 }

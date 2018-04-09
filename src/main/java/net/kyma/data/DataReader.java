@@ -4,13 +4,16 @@ import static java.lang.Integer.MAX_VALUE;
 import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
 import static net.kyma.EventType.DATA_QUERY;
 import static net.kyma.EventType.RET_INDEX_WRITER;
-import static net.kyma.data.QueryUtils.queryFrom;
+import static net.kyma.dm.SupportedField.INDEXED_PATH;
+import static net.kyma.dm.SupportedField.PATH;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import lombok.RequiredArgsConstructor;
@@ -43,23 +46,30 @@ public class DataReader implements Loadable
     private void setWriter(IndexWriter writer)
     {
         this.writer = writer;
+        bus.subscribingFor(EventType.DATA_GET_PATHS).withResponse(this::getFilePaths).subscribe();
         bus.subscribingFor(EventType.DATA_INDEX_GET_DISTINCT).mapResponse(this::getDistinctValues).subscribe();
         bus.subscribingFor(DATA_QUERY).accept(this::search).subscribe();
     }
 
-    private Set<String> getFilePaths() {
-        Set<String> values = new TreeSet<>();
+    private Map<String, Set<String>> getFilePaths() {
+        Map<String, Set<String>> paths = new TreeMap<>();
         try (DirectoryReader reader = DirectoryReader.open(writer)) {
             IndexSearcher searcher = new IndexSearcher(reader);
-            TopDocs search = searcher.search(new WildcardQuery(new Term(SupportedField.PATH.getName(), "*")), MAX_VALUE);
-            Set<String> queryField = Collections.singleton(SupportedField.PATH.getName());
+            TopDocs search = searcher.search(new WildcardQuery(new Term(PATH.getName(), "*")), MAX_VALUE);
+            Set<String> queryField = Set.of(PATH.getName(), INDEXED_PATH.getName());
+
             for (ScoreDoc doc : search.scoreDocs) {
-                values.add(searcher.doc(doc.doc, queryField).get(SupportedField.PATH.getName()));
+                Document document = searcher.doc(doc.doc, queryField);
+                String path = document.get(PATH.getName());
+                String indexedPath = document.get(INDEXED_PATH.getName());
+
+                paths.computeIfAbsent(indexedPath, s -> new TreeSet<>())
+                      .add(path.replaceFirst(indexedPath, ""));
             }
         } catch (IOException e) {
-            log.error("cannot query index", e);
+            log.error("Error during paths refreshing from index", e);
         }
-        return values;
+        return paths;
     }
 
     private Set<String> getDistinctValues(SupportedField field) {
@@ -81,7 +91,7 @@ public class DataReader implements Loadable
         List<Document> documents = new ArrayList<>();
         try (DirectoryReader reader = DirectoryReader.open(writer)) {
             IndexSearcher indexSearcher = new IndexSearcher(reader);
-            ScoreDoc[] docs = indexSearcher.search(queryFrom(parameters), MAX_VALUE).scoreDocs;
+            ScoreDoc[] docs = parameters.performQuery(indexSearcher);
             for (ScoreDoc doc : docs) {
                 documents.add(reader.document(doc.doc));
             }

@@ -1,6 +1,7 @@
 package net.kyma.gui.tree;
 
 import lombok.EqualsAndHashCode;
+import net.kyma.data.QueryParameters;
 
 @EqualsAndHashCode(callSuper = true)
 public class RootElement extends BaseElement {
@@ -13,6 +14,12 @@ public class RootElement extends BaseElement {
     @Override
     public String getPath()
     {
+        return getName();
+    }
+
+    @Override
+    public String getFullPath()
+    {
         return rootPath + getName();
     }
 
@@ -20,5 +27,11 @@ public class RootElement extends BaseElement {
     public void detachFromParent()
     {
         throw new UnsupportedOperationException("Cannot detach root");
+    }
+
+    @Override
+    public QueryParameters toQuery()
+    {
+        return QueryParameters.builder().build();
     }
 }

@@ -18,4 +18,10 @@ public class BusLogger extends PrintStream
    {
       log.debug(x);
    }
+
+   @Override
+   public void println(Object x)
+   {
+      log.debug(x);
+   }
 }

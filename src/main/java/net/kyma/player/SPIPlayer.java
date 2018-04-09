@@ -2,10 +2,10 @@ package net.kyma.player;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
@@ -21,12 +21,11 @@ import pl.khuzzuk.messaging.Bus;
 @Log4j2
 public abstract class SPIPlayer implements Player {
     private static final ExecutorService thread = Executors.newFixedThreadPool(1);
-    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    private static final BlockingQueue<Object> meetingPoint = new SynchronousQueue<>();
     private static SPIPlayer currentPlayer;
+    private static AtomicBoolean paused = new AtomicBoolean(false);
+    private static AtomicLong skipTo = new AtomicLong(0);
     private final Bus<EventType> bus;
     private boolean closed;
-    private static boolean paused;
     private SourceDataLine line;
     private float volume = 100;
     private Emitter emitter;
@@ -37,12 +36,12 @@ public abstract class SPIPlayer implements Player {
     }
 
     private static void globalPause() {
-        paused = true;
+        paused.set(true);
     }
 
     private static void globalUnPause()
     {
-        paused = false;
+        paused.set(false);
     }
 
     private static void setGlobalPlayer(SPIPlayer newPlayer)
@@ -51,23 +50,15 @@ public abstract class SPIPlayer implements Player {
     }
 
     public void start() {
-        try {
-            if (paused && line != null) {
-                meetingPoint.take();
-                globalUnPause();
-                return;
-            } else if (currentPlayer != null) {
-                currentPlayer.closed = true;
-            }
-            emitter = new Emitter();
-            thread.submit(emitter);
-            setGlobalPlayer(this);
+        if (paused.get() && line != null) {
+            globalUnPause();
+            return;
+        } else if (currentPlayer != null) {
+            currentPlayer.closed = true;
         }
-        catch (InterruptedException e)
-        {
-            log.error("Error during starting FLAC Player", e);
-            Thread.currentThread().interrupt();
-        }
+        emitter = new Emitter();
+        thread.submit(emitter);
+        setGlobalPlayer(this);
     }
 
     @Override
@@ -85,7 +76,7 @@ public abstract class SPIPlayer implements Player {
 
     @Override
     public boolean isPaused() {
-        return paused;
+        return paused.get();
     }
 
     @Override
@@ -95,20 +86,7 @@ public abstract class SPIPlayer implements Player {
 
     @Override
     public void startFrom(long frame) {
-        globalPause();
-        try {
-            meetingPoint.take();
-            emitter.decoder.skipTo(frame);
-            globalUnPause();
-            line.start();
-        } catch (InterruptedException e) {
-            log.error("interrupted pausing operation");
-            Thread.currentThread().interrupt();
-        }
-        catch (IOException e)
-        {
-            log.error("Error during reading a file", e);
-        }
+        skipTo.set(frame);
     }
 
     @Override
@@ -130,15 +108,21 @@ public abstract class SPIPlayer implements Player {
             try {
                 initDecoding();
                 while (decoder.writeInto(line)) {
-                    if (closed) {
-                        break;
-                    }
-                    if ((paused)) {
+                    if (closed) break;
+
+                    if ((paused.get())) {
                         line.stop();
-                        if (!meetingPoint.offer(this)) log.warn("Problem during pause in play");
                         hold();
                         line.start();
                     }
+
+                    long framesToSkip = skipTo.getAndSet(0);
+                    if (framesToSkip > 0) {
+                        line.stop();
+                        emitter.decoder.skipTo(framesToSkip);
+                        line.start();
+                    }
+
                     currentPlaybackStatus = decoder.getCurrentPlaybackStatus();
                 }
                 line.drain();
@@ -174,7 +158,7 @@ public abstract class SPIPlayer implements Player {
 
         private void hold() {
             try {
-                while (paused) {
+                while (paused.get()) {
                     Thread.sleep(50);
                 }
             } catch (InterruptedException e) {
