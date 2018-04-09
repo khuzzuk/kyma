@@ -227,7 +227,7 @@ public class ManagerPaneController implements Initializable {
     private void onKeyReleased(KeyEvent keyEvent) {
         BaseElement selected = (BaseElement) filesList.getSelectionModel().getSelectedItem();
         if (keyEvent.getCode() == KeyCode.INSERT && selected != null) {
-            bus.message(DATA_INDEX_DIRECTORY).withContent(new File(selected.getFullPath()).getPath()).send();
+            bus.message(DATA_INDEX_DIRECTORY).withContent(new File(selected.getFullPath())).send();
         }
     }
 

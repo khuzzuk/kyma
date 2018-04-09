@@ -10,7 +10,7 @@ import org.apache.lucene.search.ScoreDoc;
 
 public class PathQueryParameters extends QueryParameters {
    public PathQueryParameters(String value) {
-      super(PATH, "*" + value + "*", DATA_QUERY_RESULT_FOR_CONTENT_VIEW);
+      super(PATH, "*" + value + "/*", DATA_QUERY_RESULT_FOR_CONTENT_VIEW);
    }
 
    @Override
