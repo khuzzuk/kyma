@@ -1,9 +1,10 @@
 package net.kyma.gui.controllers;
 
+import static net.kyma.EventType.DATA_GET_PATHS;
 import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
-import static net.kyma.EventType.DATA_INDEX_GET_ALL;
+import static net.kyma.EventType.DATA_QUERY;
 import static net.kyma.EventType.DATA_QUERY_RESULT_FOR_CONTENT_VIEW;
-import static net.kyma.EventType.DATA_REFRESH;
+import static net.kyma.EventType.DATA_REFRESH_PATHS;
 import static net.kyma.EventType.DATA_SET_DISTINCT_GENRE;
 import static net.kyma.EventType.DATA_SET_DISTINCT_MOOD;
 import static net.kyma.EventType.DATA_SET_DISTINCT_OCCASION;
@@ -19,6 +20,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -44,7 +46,6 @@ import net.kyma.gui.TableColumnFactory;
 import net.kyma.gui.tree.BaseElement;
 import net.kyma.gui.tree.ContentElement;
 import net.kyma.gui.tree.RootElement;
-import net.kyma.gui.tree.SoundElement;
 import net.kyma.player.PlaylistEvent;
 import net.kyma.player.PlaylistRefreshEvent;
 import pl.khuzzuk.messaging.Bus;
@@ -87,7 +88,7 @@ public class ManagerPaneController implements Initializable {
               .subscribe();
 
         bus.subscribingFor(PLAYLIST_REMOVE_SOUND).accept(this::removeFromTreeView).subscribe();
-        bus.subscribingFor(DATA_REFRESH).onFXThread().accept(this::fillTreeView).subscribe();
+        bus.subscribingFor(DATA_REFRESH_PATHS).onFXThread().accept(this::fillPaths).subscribe();
         bus.subscribingFor(PLAYLIST_REFRESH).accept(this::refresh).subscribe();
         bus.subscribingFor(DATA_STORE_ITEM).accept(s -> contentView.refresh()).subscribe();
         bus.subscribingFor(DATA_STORE_LIST).accept(s -> contentView.refresh()).subscribe();
@@ -100,7 +101,7 @@ public class ManagerPaneController implements Initializable {
 
         initPlaylistView();
 
-        bus.message(DATA_INDEX_GET_ALL).send();
+        bus.message(DATA_GET_PATHS).withResponse(DATA_REFRESH_PATHS).send();
     }
 
     private void initPlaylistView() {
@@ -117,32 +118,35 @@ public class ManagerPaneController implements Initializable {
         for (SoundFile f : soundFiles) {
             String[] path = f.getPathView();
             if (path.length == 0) log.error("Database inconsistency!");
-            fillChild(root, path, 0, f);
+            fillChild(root, path, 0, f.getIndexedPath());
         }
         filesList.refresh();
     }
 
-    private void fillChild(BaseElement parent, String[] path, int pos, SoundFile soundFile) {
-        if (pos == path.length) {
+    private synchronized void fillPaths(Map<String, Collection<String>> paths) {
+        RootElement root = (RootElement) filesList.getRoot();
+        for (Map.Entry<String, Collection<String>> entry : paths.entrySet()) {
+            for (String path : entry.getValue()) {
+                String[] fractured = path.split("[\\\\/]+");
+                fillChild(root, fractured, 0, entry.getKey());
+            }
+        }
+    }
+
+    private void fillChild(BaseElement parent, String[] path, int pos, String indexedPath) {
+        if (pos == path.length - 1) {
             return;
         }
 
-        BaseElement element;
-        if (pos == path.length - 1) {
-            element = new SoundElement(soundFile);
+        BaseElement catalogue = parent.getChildElement(path[pos]);
+        if (catalogue == null) {
+            BaseElement element = pos == 0 ? new RootElement(indexedPath) : new BaseElement();
+            element.setName(path[pos]);
+            fillChild(element, path, pos + 1, indexedPath);
             parent.addChild(element);
             element.setParentElement(parent);
         } else {
-            BaseElement catalogue = parent.getChildElement(path[pos]);
-            if (catalogue == null) {
-                element = pos == 0 ? new RootElement(soundFile.getIndexedPath()) : new BaseElement();
-                element.setName(path[pos]);
-                fillChild(element, path, pos + 1, soundFile);
-                parent.addChild(element);
-                element.setParentElement(parent);
-            } else {
-                fillChild(catalogue, path, pos + 1, soundFile);
-            }
+            fillChild(catalogue, path, pos + 1, indexedPath);
         }
     }
 
@@ -209,8 +213,7 @@ public class ManagerPaneController implements Initializable {
     private void fillContentView() {
         BaseElement selectedItem = (BaseElement) filesList.getSelectionModel().getSelectedItem();
         if (selectedItem != null) {
-            selectedItem.fill(contentView.getItems());
-            contentView.refresh();
+            bus.message(DATA_QUERY).withContent(selectedItem.toQuery()).send();
         }
     }
 
@@ -222,14 +225,9 @@ public class ManagerPaneController implements Initializable {
     
     @FXML
     private void onKeyReleased(KeyEvent keyEvent) {
-        List<BaseElement> selected = filesList.getSelectionModel().getSelectedItems()
-              .stream().map(BaseElement.class::cast)
-              .collect(Collectors.toList());
-        if (keyEvent.getCode() == KeyCode.INSERT) {
-            selected.stream()
-                  .map(BaseElement::getPath)
-                  .map(File::new)
-                  .forEach(path -> bus.message(DATA_INDEX_DIRECTORY).withContent(path).send());
+        BaseElement selected = (BaseElement) filesList.getSelectionModel().getSelectedItem();
+        if (keyEvent.getCode() == KeyCode.INSERT && selected != null) {
+            bus.message(DATA_INDEX_DIRECTORY).withContent(new File(selected.getFullPath()).getPath()).send();
         }
     }
 

@@ -11,6 +11,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import net.kyma.data.PathQueryParameters;
+import net.kyma.data.QueryParameters;
 import net.kyma.dm.SoundFile;
 
 @Getter
@@ -52,9 +54,12 @@ public class BaseElement extends TreeItem<String> {
         return true;
     }
 
-    public String getPath()
-    {
+    public String getPath() {
         return parentElement.getPath() + "/" + name;
+    }
+
+    public String getFullPath() {
+        return parentElement.getFullPath() + "/" + name;
     }
 
     public void detachFromParent()
@@ -70,5 +75,9 @@ public class BaseElement extends TreeItem<String> {
              .map(e -> (SoundElement) e)
              .map(SoundElement::getSoundFile)
              .collect(Collectors.toList()));
+    }
+
+    public QueryParameters toQuery() {
+        return new PathQueryParameters(getPath());
     }
 }
