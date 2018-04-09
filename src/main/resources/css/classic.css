@@ -14,16 +14,13 @@
     -round-button-fill: radial-gradient(center 10px 10px, radius 100%, repeat, -gold-color, rgb(50, 50, 50));
 }
 
-#BackgroundContainer {
-    -fx-background-image: url("classic-background.png");
-    -fx-background-repeat: stretch;
-    -fx-background-size: 100%;
-    -fx-background-position: center center;
-}
-
 /*noinspection CssUnusedSymbol*/
 .split-pane {
     -fx-background-color: transparent;
+}
+
+.BackgroundContainer, #BackgroundContainer {
+    -fx-background-color: #e5dbcd;
 }
 
 .star {
