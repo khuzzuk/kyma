@@ -178,14 +178,12 @@
             <artifactId>jflac</artifactId>
             <version>1.3</version>
         </dependency>
-        <!-- mvn install:install-file -Dfile=jaad-0.8.6.jar -DgroupId=net.sourceforge.jaad -DartifactId=jaad -Dversion=0.8.6 -Dpackaging=jar -->
-<!--
+        <!-- mvn install:install-file -Dfile=jaad-0.8.6f.jar -DgroupId=net.sourceforge.jaad -DartifactId=jaad -Dversion=0.8.6f -Dpackaging=jar -->
         <dependency>
             <groupId>net.sourceforge.jaad</groupId>
             <artifactId>jaad</artifactId>
-            <version>0.8.6</version>
+            <version>0.8.6f</version>
         </dependency>
--->
 
         <!--GUI-->
         <dependency>
