@@ -24,6 +24,12 @@ public class RootElement extends BaseElement {
     }
 
     @Override
+    public String getIndexingPath()
+    {
+        return rootPath;
+    }
+
+    @Override
     public void detachFromParent()
     {
         throw new UnsupportedOperationException("Cannot detach root");

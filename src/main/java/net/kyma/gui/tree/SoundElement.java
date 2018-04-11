@@ -13,10 +13,4 @@ public class SoundElement extends BaseElement {
         this.soundFile = soundFile;
         setName(soundFile.getFileName());
     }
-
-    @Override
-    public boolean isBranch()
-    {
-        return false;
-    }
 }

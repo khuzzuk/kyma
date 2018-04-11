@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -112,20 +111,11 @@ public class ManagerPaneController implements Initializable {
         playlist.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     }
 
-    private synchronized void fillTreeView(Collection<SoundFile> sounds) {
-        RootElement root = (RootElement) filesList.getRoot();
-        List<SoundFile> soundFiles = sounds.stream().sorted().collect(Collectors.toList());
-        for (SoundFile f : soundFiles) {
-            String[] path = f.getPathView();
-            if (path.length == 0) log.error("Database inconsistency!");
-            fillChild(root, path, 0, f.getIndexedPath());
-        }
-        filesList.refresh();
-    }
-
     private synchronized void fillPaths(Map<String, Collection<String>> paths) {
         RootElement root = (RootElement) filesList.getRoot();
         for (Map.Entry<String, Collection<String>> entry : paths.entrySet()) {
+            String rootPathName = entry.getValue().iterator().next();
+            root.removeChildElementBy(rootPathName.substring(0, rootPathName.indexOf('/')));
             for (String path : entry.getValue()) {
                 String[] fractured = path.split("[\\\\/]+");
                 fillChild(root, fractured, 0, entry.getKey());
@@ -187,8 +177,7 @@ public class ManagerPaneController implements Initializable {
             List<SoundFile> selectedItems = playlist.getSelectionModel().getSelectedItems();
             List<SoundFile> playlistItems = playlist.getItems();
             List<PlaylistEvent> playlistEvents = new ArrayList<>(selectedItems.size());
-            for (int i = 0; i < selectedItems.size(); i++) {
-                SoundFile soundFile = selectedItems.get(i);
+            for (SoundFile soundFile : selectedItems) {
                 playlistEvents.add(new PlaylistEvent(soundFile, playlistItems.indexOf(soundFile)));
             }
             bus.message(PLAYLIST_REMOVE_LIST).withContent(playlistEvents).send();
