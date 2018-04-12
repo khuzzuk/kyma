@@ -26,8 +26,8 @@ public class BaseElement extends TreeItem<String> {
     }
 
     public void addChild(BaseElement child) {
-        childElements.put(child.getName(), child);
-        if (!(child instanceof SoundElement) && !getChildren().contains(child)) {
+        childElements.putIfAbsent(child.getName(), child);
+        if (!getChildren().contains(child)) {
             getChildren().add(child);
             getChildren().sort(Comparator.comparing(TreeItem::getValue));
         }
@@ -49,6 +49,20 @@ public class BaseElement extends TreeItem<String> {
 
     public boolean hasChild(String name) {
         return childElements.containsKey(name);
+    }
+
+    public void update(BaseElement updates) {
+        for (Map.Entry<String, BaseElement> childNode : childElements.entrySet()) {
+            if (updates.childElements.containsKey(childNode.getKey())) {
+                childNode.getValue().update(updates.getChildElement(childNode.getKey()));
+                updates.removeChildElementBy(childNode.getKey());
+            } else {
+                removeChildElementBy(childNode.getKey());
+            }
+        }
+        for (BaseElement elementToInsert : updates.childElements.values()) {
+            addChild(elementToInsert);
+        }
     }
 
     public String getPath() {

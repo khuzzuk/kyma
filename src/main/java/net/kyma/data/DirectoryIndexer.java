@@ -1,7 +1,6 @@
 package net.kyma.data;
 
 import static net.kyma.EventType.DATA_INDEXING_AMOUNT;
-import static net.kyma.EventType.DATA_INDEXING_FINISH;
 import static net.kyma.EventType.DATA_INDEXING_PROGRESS;
 import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
 import static net.kyma.EventType.DATA_INDEX_GET_DIRECTORIES;
@@ -82,9 +81,6 @@ public class DirectoryIndexer implements Loadable {
         bus.message(DATA_QUERY).withContent(queryParameters).send();
         bus.message(DATA_REMOVE_PATH)
               .withContent(queryParameters)
-              .onResponse(() -> {
-                  bus.message(DATA_INDEX_LIST).withContent(soundFiles).send();
-                  bus.message(DATA_INDEXING_FINISH).send();
-              }).send();
+              .onResponse(() -> bus.message(DATA_INDEX_LIST).withContent(soundFiles).send()).send();
     }
 }

@@ -1,6 +1,7 @@
 package net.kyma.gui.controllers;
 
 import static net.kyma.EventType.DATA_GET_PATHS;
+import static net.kyma.EventType.DATA_INDEXING_FINISH;
 import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
 import static net.kyma.EventType.DATA_QUERY;
 import static net.kyma.EventType.DATA_QUERY_RESULT_FOR_CONTENT_VIEW;
@@ -44,6 +45,7 @@ import net.kyma.dm.SupportedField;
 import net.kyma.gui.TableColumnFactory;
 import net.kyma.gui.tree.BaseElement;
 import net.kyma.gui.tree.ContentElement;
+import net.kyma.gui.tree.PathElementFactory;
 import net.kyma.gui.tree.RootElement;
 import net.kyma.player.PlaylistEvent;
 import net.kyma.player.PlaylistRefreshEvent;
@@ -115,28 +117,22 @@ public class ManagerPaneController implements Initializable {
         RootElement root = (RootElement) filesList.getRoot();
         for (Map.Entry<String, Collection<String>> entry : paths.entrySet()) {
             String rootPathName = entry.getValue().iterator().next();
-            root.removeChildElementBy(rootPathName.substring(0, rootPathName.indexOf('/')));
+            String indexingRootName = rootPathName.substring(0, rootPathName.indexOf('/'));
+
+            RootElement newIndexingRoot = new RootElement(entry.getKey());
+            newIndexingRoot.setName(indexingRootName);
             for (String path : entry.getValue()) {
                 String[] fractured = path.split("[\\\\/]+");
-                fillChild(root, fractured, 0, entry.getKey());
+                PathElementFactory.fillChild(newIndexingRoot, fractured, 1);
             }
-        }
-    }
 
-    private void fillChild(BaseElement parent, String[] path, int pos, String indexedPath) {
-        if (pos == path.length - 1) {
-            return;
-        }
-
-        BaseElement catalogue = parent.getChildElement(path[pos]);
-        if (catalogue == null) {
-            BaseElement element = pos == 0 ? new RootElement(indexedPath) : new BaseElement();
-            element.setName(path[pos]);
-            fillChild(element, path, pos + 1, indexedPath);
-            parent.addChild(element);
-            element.setParentElement(parent);
-        } else {
-            fillChild(catalogue, path, pos + 1, indexedPath);
+            RootElement currentIndexingRoot = (RootElement) root.getChildElement(indexingRootName);
+            if (currentIndexingRoot != null) {
+                currentIndexingRoot.update(newIndexingRoot);
+            } else {
+                root.addChild(newIndexingRoot);
+            }
+            bus.message(DATA_INDEXING_FINISH).send();
         }
     }
 
