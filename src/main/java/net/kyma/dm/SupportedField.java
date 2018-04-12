@@ -65,7 +65,7 @@ public enum SupportedField
 
    // Not in Supported Tags, but implements tag setter
    RATE("rate", FieldKey.RATING, s -> s.getRate() != null ? s.getRate().name() : Rating.UNDEFINED.name(),
-         (s, v) -> s.setRate(isNoneBlank(v) ? Rating.valueOf(v) : Rating.UNDEFINED), any -> true, new RateConverter())
+         (s, v) -> s.setRate(isNoneBlank(v) ? Rating.valueOf(v) : Rating.UNDEFINED), Validators.alwaysTrue(), new RateConverter())
          {
             @Override
             public void setField(Tag tag, SoundFile soundFile)

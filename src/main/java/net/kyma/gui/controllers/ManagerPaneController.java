@@ -1,39 +1,10 @@
 package net.kyma.gui.controllers;
 
-import static net.kyma.EventType.DATA_GET_PATHS;
-import static net.kyma.EventType.DATA_INDEXING_FINISH;
-import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
-import static net.kyma.EventType.DATA_QUERY;
-import static net.kyma.EventType.DATA_QUERY_RESULT_FOR_CONTENT_VIEW;
-import static net.kyma.EventType.DATA_REFRESH_PATHS;
-import static net.kyma.EventType.DATA_SET_DISTINCT_GENRE;
-import static net.kyma.EventType.DATA_SET_DISTINCT_MOOD;
-import static net.kyma.EventType.DATA_SET_DISTINCT_OCCASION;
-import static net.kyma.EventType.DATA_SET_DISTINCT_PEOPLE;
-import static net.kyma.EventType.DATA_STORE_ITEM;
-import static net.kyma.EventType.DATA_STORE_LIST;
-import static net.kyma.EventType.PLAYLIST_REFRESH;
-import static net.kyma.EventType.PLAYLIST_REMOVE_LIST;
-import static net.kyma.EventType.PLAYLIST_REMOVE_SOUND;
-
-import java.io.File;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
-
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
@@ -50,6 +21,12 @@ import net.kyma.gui.tree.RootElement;
 import net.kyma.player.PlaylistEvent;
 import net.kyma.player.PlaylistRefreshEvent;
 import pl.khuzzuk.messaging.Bus;
+
+import java.io.File;
+import java.net.URL;
+import java.util.*;
+
+import static net.kyma.EventType.*;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -76,17 +53,17 @@ public class ManagerPaneController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         bus.subscribingFor(DATA_SET_DISTINCT_MOOD)
-              .accept((Collection<String> values) -> setupFilter(moodFilter.getItems(), values))
-              .subscribe();
+                .accept((Collection<String> values) -> setupFilter(moodFilter.getItems(), values))
+                .subscribe();
         bus.subscribingFor(DATA_SET_DISTINCT_GENRE)
-              .accept((Collection<String> values) -> setupFilter(genreFilter.getItems(), values))
-              .subscribe();
+                .accept((Collection<String> values) -> setupFilter(genreFilter.getItems(), values))
+                .subscribe();
         bus.subscribingFor(DATA_SET_DISTINCT_OCCASION)
-              .accept((Collection<String> values) -> setupFilter(occasionFilter.getItems(), values))
-              .subscribe();
+                .accept((Collection<String> values) -> setupFilter(occasionFilter.getItems(), values))
+                .subscribe();
         bus.subscribingFor(DATA_SET_DISTINCT_PEOPLE).onFXThread()
-              .accept((Collection<String> values) -> addFilterToTreeView(SupportedField.ARTIST, values))
-              .subscribe();
+                .accept((Collection<String> values) -> addFilterToTreeView(SupportedField.ARTIST, values))
+                .subscribe();
 
         bus.subscribingFor(PLAYLIST_REMOVE_SOUND).accept(this::removeFromTreeView).subscribe();
         bus.subscribingFor(DATA_REFRESH_PATHS).onFXThread().accept(this::fillPaths).subscribe();
@@ -94,8 +71,8 @@ public class ManagerPaneController implements Initializable {
         bus.subscribingFor(DATA_STORE_ITEM).accept(s -> contentView.refresh()).subscribe();
         bus.subscribingFor(DATA_STORE_LIST).accept(s -> contentView.refresh()).subscribe();
         bus.subscribingFor(DATA_QUERY_RESULT_FOR_CONTENT_VIEW).onFXThread()
-              .<Collection<SoundFile>>accept(this::fillContentView)
-              .subscribe();
+                .<Collection<SoundFile>>accept(this::fillContentView)
+                .subscribe();
 
         highlighted = new SimpleIntegerProperty(-1);
         filesList.setRoot(new RootElement("Content"));
@@ -122,7 +99,7 @@ public class ManagerPaneController implements Initializable {
             RootElement newIndexingRoot = new RootElement(entry.getKey());
             newIndexingRoot.setName(indexingRootName);
             for (String path : entry.getValue()) {
-                String[] fractured = path.split("[\\\\/]+");
+                String[] fractured = path.split("/");
                 PathElementFactory.fillChild(newIndexingRoot, fractured, 1);
             }
 
@@ -139,8 +116,8 @@ public class ManagerPaneController implements Initializable {
     private synchronized void addFilterToTreeView(SupportedField filterField, Collection<String> values) {
         RootElement root = (RootElement) filesList.getRoot();
         BaseElement filterElement = root.hasChild(filterField.getName())
-              ? root.getChildElement(filterField.getName())
-              : new BaseElement();
+                ? root.getChildElement(filterField.getName())
+                : new BaseElement();
         filterElement.setName(filterField.getName());
         root.addChild(filterElement);
 
@@ -153,18 +130,18 @@ public class ManagerPaneController implements Initializable {
 
     private void removeFromTreeView(Collection<SoundFile> soundFiles) {
         soundFiles.stream()
-              .map(SoundFile::getPathView)
-              .forEach(path -> {
-                  BaseElement element = (BaseElement) filesList.getRoot();
-                  for (String name : path) {
-                      element = element.getChildElement(name);
-                      if (element == null) {
-                          log.error("Cannot find element in tree: {} in {}", name, path);
-                          return;
-                      }
-                  }
-                  element.detachFromParent();
-              });
+                .map(SoundFile::getPathView)
+                .forEach(path -> {
+                    BaseElement element = (BaseElement) filesList.getRoot();
+                    for (String name : path) {
+                        element = element.getChildElement(name);
+                        if (element == null) {
+                            log.error("Cannot find element in tree: {} in {}", name, path);
+                            return;
+                        }
+                    }
+                    element.detachFromParent();
+                });
     }
 
     @FXML
@@ -207,7 +184,7 @@ public class ManagerPaneController implements Initializable {
         contentView.getItems().addAll(soundFiles);
         contentView.refresh();
     }
-    
+
     @FXML
     private void onKeyReleased(KeyEvent keyEvent) {
         BaseElement selected = (BaseElement) filesList.getSelectionModel().getSelectedItem();

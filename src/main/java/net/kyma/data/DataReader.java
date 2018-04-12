@@ -1,21 +1,5 @@
 package net.kyma.data;
 
-import static java.lang.Integer.MAX_VALUE;
-import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
-import static net.kyma.EventType.DATA_QUERY;
-import static net.kyma.EventType.RET_INDEX_WRITER;
-import static net.kyma.dm.SupportedField.INDEXED_PATH;
-import static net.kyma.dm.SupportedField.PATH;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
@@ -31,10 +15,17 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.WildcardQuery;
 import pl.khuzzuk.messaging.Bus;
 
+import java.io.IOException;
+import java.util.*;
+
+import static java.lang.Integer.MAX_VALUE;
+import static net.kyma.EventType.*;
+import static net.kyma.dm.SupportedField.INDEXED_PATH;
+import static net.kyma.dm.SupportedField.PATH;
+
 @Log4j2
 @RequiredArgsConstructor
-public class DataReader implements Loadable
-{
+public class DataReader implements Loadable {
     private final Bus<EventType> bus;
     private IndexWriter writer;
 
@@ -43,8 +34,7 @@ public class DataReader implements Loadable
         bus.subscribingFor(RET_INDEX_WRITER).accept(this::setWriter).subscribe();
     }
 
-    private void setWriter(IndexWriter writer)
-    {
+    private void setWriter(IndexWriter writer) {
         this.writer = writer;
         bus.subscribingFor(EventType.DATA_GET_PATHS).withResponse(this::getFilePaths).subscribe();
         bus.subscribingFor(EventType.DATA_INDEX_GET_DISTINCT).mapResponse(this::getDistinctValues).subscribe();
@@ -64,7 +54,7 @@ public class DataReader implements Loadable
                 String indexedPath = document.get(INDEXED_PATH.getName());
 
                 paths.computeIfAbsent(indexedPath, s -> new TreeSet<>())
-                      .add(path.replaceFirst(indexedPath, ""));
+                        .add(path.replaceFirst(indexedPath.replace("\\", "\\\\"), ""));
             }
         } catch (IOException e) {
             log.error("Error during paths refreshing from index", e);
@@ -96,9 +86,7 @@ public class DataReader implements Loadable
                 documents.add(reader.document(doc.doc));
             }
             bus.message(DATA_CONVERT_FROM_DOC).withResponse(parameters.getReturnTopic()).withContent(documents).send();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             log.error("cannot query index", e);
         }
     }

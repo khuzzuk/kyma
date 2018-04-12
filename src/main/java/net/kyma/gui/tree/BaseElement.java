@@ -1,9 +1,5 @@
 package net.kyma.gui.tree;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-
 import javafx.scene.control.TreeItem;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -11,6 +7,10 @@ import lombok.Setter;
 import lombok.ToString;
 import net.kyma.data.PathQueryParameters;
 import net.kyma.data.QueryParameters;
+
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 @Setter

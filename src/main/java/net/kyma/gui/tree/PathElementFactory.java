@@ -17,6 +17,5 @@ public class PathElementFactory {
          child.setParentElement(parent);
       }
       fillChild(child, path, pos + 1);
-
    }
 }
