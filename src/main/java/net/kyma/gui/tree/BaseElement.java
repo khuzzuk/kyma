@@ -3,9 +3,7 @@ package net.kyma.gui.tree;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -13,7 +11,6 @@ import lombok.Setter;
 import lombok.ToString;
 import net.kyma.data.PathQueryParameters;
 import net.kyma.data.QueryParameters;
-import net.kyma.dm.SoundFile;
 
 @Getter
 @Setter
@@ -29,8 +26,8 @@ public class BaseElement extends TreeItem<String> {
     }
 
     public void addChild(BaseElement child) {
-        childElements.put(child.getName(), child);
-        if (!(child instanceof SoundElement) && !getChildren().contains(child)) {
+        childElements.putIfAbsent(child.getName(), child);
+        if (!getChildren().contains(child)) {
             getChildren().add(child);
             getChildren().sort(Comparator.comparing(TreeItem::getValue));
         }
@@ -41,6 +38,11 @@ public class BaseElement extends TreeItem<String> {
         this.setValue(name);
     }
 
+    public void removeChildElementBy(String name) {
+        getChildren().remove(childElements.get(name));
+        childElements.remove(name);
+    }
+
     public BaseElement getChildElement(String name) {
         return childElements.get(name);
     }
@@ -49,9 +51,18 @@ public class BaseElement extends TreeItem<String> {
         return childElements.containsKey(name);
     }
 
-    public boolean isBranch()
-    {
-        return true;
+    public void update(BaseElement updates) {
+        for (Map.Entry<String, BaseElement> childNode : childElements.entrySet()) {
+            if (updates.childElements.containsKey(childNode.getKey())) {
+                childNode.getValue().update(updates.getChildElement(childNode.getKey()));
+                updates.removeChildElementBy(childNode.getKey());
+            } else {
+                removeChildElementBy(childNode.getKey());
+            }
+        }
+        for (BaseElement elementToInsert : updates.childElements.values()) {
+            addChild(elementToInsert);
+        }
     }
 
     public String getPath() {
@@ -62,22 +73,17 @@ public class BaseElement extends TreeItem<String> {
         return parentElement.getFullPath() + "/" + name;
     }
 
+    public String getIndexingPath() {
+        return parentElement.getIndexingPath();
+    }
+
     public void detachFromParent()
     {
         parentElement.childElements.remove(name);
         parentElement = null;
     }
 
-    public void fill(ObservableList<SoundFile> toFill) {
-        toFill.clear();
-        toFill.addAll(getChildElements().values()
-             .stream().filter(e -> e instanceof SoundElement)
-             .map(e -> (SoundElement) e)
-             .map(SoundElement::getSoundFile)
-             .collect(Collectors.toList()));
-    }
-
     public QueryParameters toQuery() {
-        return new PathQueryParameters(getPath());
+        return new PathQueryParameters(getPath(), getIndexingPath());
     }
 }

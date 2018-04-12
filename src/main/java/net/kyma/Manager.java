@@ -58,7 +58,10 @@ public class Manager extends Application {
     private static Bus<EventType> createBus()
     {
         try {
-            return Bus.initializeBus(EventType.class, new BusLogger(), true);
+            BusLogger busLogger = new BusLogger();
+            Bus<EventType> bus = Bus.initializeBus(EventType.class, busLogger, true);
+            busLogger.setBus(bus);
+            return bus;
         } catch (FileNotFoundException e) {
             log.error("Cannot start bus, try starting with System out logger", e);
             return Bus.initializeBus(EventType.class, System.out, true); //NOSONAR

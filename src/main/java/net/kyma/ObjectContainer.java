@@ -18,6 +18,7 @@ import net.kyma.data.FileCleaner;
 import net.kyma.data.MetadataIndexer;
 import net.kyma.data.PlayCounter;
 import net.kyma.data.SoundFileConverter;
+import net.kyma.gui.communicate.Alert;
 import net.kyma.player.PlayerManager;
 import net.kyma.player.Playlist;
 import net.kyma.properties.PropertiesManager;
@@ -63,6 +64,7 @@ public class ObjectContainer
       initDataAccess();
       initDataIndex();
       initPlayer();
+      initGuiDependency();
    }
 
    private void initJsonParser()
@@ -77,8 +79,7 @@ public class ObjectContainer
       loadables.add(new PropertiesManager(bus));
    }
 
-   private void initDataAccess()
-   {
+   private void initDataAccess() {
       try {
          Directory directory = new NIOFSDirectory(Paths.get("index/")); //NOSONAR
          IndexWriterConfig config = new IndexWriterConfig();
@@ -88,9 +89,7 @@ public class ObjectContainer
 
          SoundFileConverter soundFileConverter = new SoundFileConverter(bus);
          putToContainer(EventType.RET_SOUND_FILE_CONVERTER, soundFileConverter);
-      }
-      catch (IOException e)
-      {
+      } catch (IOException e) {
          log.fatal("cannot start index", e);
       }
    }
@@ -105,10 +104,13 @@ public class ObjectContainer
       loadables.add(new MetadataIndexer(bus));
    }
 
-   private void initPlayer()
-   {
+   private void initPlayer() {
       loadables.add(new PlayCounter(bus));
       loadables.add(new Playlist(bus));
       loadables.add(new PlayerManager(bus));
+   }
+
+   private void initGuiDependency() {
+      loadables.add(new Alert(bus));
    }
 }

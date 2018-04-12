@@ -2,17 +2,21 @@ package net.kyma.data;
 
 import static net.kyma.EventType.CLOSE;
 import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
+import static net.kyma.EventType.DATA_GET_PATHS;
 import static net.kyma.EventType.DATA_INDEX_GET_ALL;
 import static net.kyma.EventType.DATA_INDEX_GET_DIRECTORIES;
 import static net.kyma.EventType.DATA_INDEX_GET_DISTINCT;
 import static net.kyma.EventType.DATA_INDEX_ITEM;
 import static net.kyma.EventType.DATA_INDEX_LIST;
 import static net.kyma.EventType.DATA_REFRESH;
+import static net.kyma.EventType.DATA_REFRESH_PATHS;
 import static net.kyma.EventType.DATA_REMOVE_ITEM;
+import static net.kyma.EventType.DATA_REMOVE_PATH;
 import static net.kyma.EventType.DATA_STORE_ITEM;
 import static net.kyma.EventType.DATA_STORE_LIST;
 import static net.kyma.EventType.RET_DOC_CONVERTER;
 import static net.kyma.EventType.RET_INDEX_WRITER;
+import static net.kyma.EventType.SHOW_ALERT;
 import static net.kyma.data.QueryUtils.termForPath;
 
 import java.io.IOException;
@@ -24,6 +28,7 @@ import java.util.Set;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import net.kyma.BusRequestException;
 import net.kyma.EventType;
 import net.kyma.Loadable;
 import net.kyma.dm.SoundFile;
@@ -78,17 +83,15 @@ public class DataIndexer implements Loadable
       bus.subscribingFor(DATA_INDEX_ITEM).accept(this::indexSingleEntity).subscribe();
       bus.subscribingFor(DATA_STORE_ITEM).accept(this::indexSingleEntity).subscribe();
       bus.subscribingFor(DATA_INDEX_GET_ALL).then(this::getAll).subscribe();
-      bus.subscribingFor(DATA_REMOVE_ITEM)
-            .<Collection<SoundFile>>accept(this::remove).subscribe();
-      bus.subscribingFor(DATA_INDEX_GET_DIRECTORIES)
-            .<Set<String>>accept(paths -> indexedPaths = paths).subscribe();
+      bus.subscribingFor(DATA_REMOVE_ITEM).<Collection<SoundFile>>accept(this::remove).subscribe();
+      bus.subscribingFor(DATA_REMOVE_PATH).accept(this::removePath).subscribe();
+      bus.subscribingFor(DATA_INDEX_GET_DIRECTORIES).<Set<String>>accept(paths -> indexedPaths = paths).subscribe();
       refreshIndexedPaths();
    }
 
    private synchronized void index(@NonNull Collection<SoundFile> files)
    {
-      if (files.isEmpty())
-      {
+      if (files.isEmpty()) {
          return;
       }
 
@@ -98,7 +101,6 @@ public class DataIndexer implements Loadable
 
       files.forEach(this::indexSingleEntity);
       commit();
-      bus.message(DATA_INDEX_GET_ALL).send();
       refreshIndexedPaths();
    }
 
@@ -126,8 +128,7 @@ public class DataIndexer implements Loadable
    private void normalizeIndexingPath(SoundFile soundFile, IndexSearcher searcher)
    {
       String previousPath = soundFile.getIndexedPath();
-      try
-      {
+      try {
          ScoreDoc[] scoreDocs = searcher.search(new TermQuery(termForPath(soundFile.getPath())), 1).scoreDocs;
          if (scoreDocs.length == 1)
          {
@@ -182,8 +183,7 @@ public class DataIndexer implements Loadable
       commit();
    }
 
-   private void remove(SoundFile soundFile)
-   {
+   private void remove(SoundFile soundFile) {
       try
       {
          writer.deleteDocuments(termForPath(soundFile.getPath()));
@@ -195,23 +195,33 @@ public class DataIndexer implements Loadable
       }
    }
 
-   private void refreshIndexedPaths()
-   {
+   private void removePath(PathQueryParameters parameters) {
+      try {
+         long deleteDocuments = writer.deleteDocuments(parameters.createQuery());
+         commit();
+         log.debug("Deleted documents: ");
+         log.debug(deleteDocuments);
+      } catch (IOException e) {
+         log.error("Cannot remove index entries for path", e);
+         bus.message(SHOW_ALERT).withContent("Indexing error").send();
+         throw new BusRequestException(e);
+      }
+   }
+
+   private void refreshIndexedPaths() {
       bus.message(DATA_INDEX_GET_DISTINCT)
             .withResponse(DATA_INDEX_GET_DIRECTORIES)
             .withContent(SupportedField.INDEXED_PATH)
             .send();
+      bus.message(DATA_GET_PATHS).withResponse(DATA_REFRESH_PATHS).send();
    }
 
-   private void commit()
-   {
-      try
-      {
+   private void commit() {
+      try {
          writer.commit();
-      }
-      catch (IOException e)
-      {
+      } catch (IOException e) {
          log.error("Error during indexing database");
+         bus.message(SHOW_ALERT).withContent("Indexing access problem").send();
       }
    }
 

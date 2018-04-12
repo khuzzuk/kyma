@@ -43,7 +43,7 @@ public class Playlist implements Loadable {
     private synchronized void removeAll(List<PlaylistEvent> toRemove) {
         for (int i = toRemove.size() - 1; i >= 0; i--) {
             PlaylistEvent removeEvent = toRemove.get(i);
-            if (i <= index) {
+            if (removeEvent.getPosition() <= index) {
                 index--;
             }
             SoundFile removed = fileList.remove(removeEvent.getPosition());

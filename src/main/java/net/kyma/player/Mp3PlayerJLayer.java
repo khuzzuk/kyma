@@ -1,5 +1,7 @@
 package net.kyma.player;
 
+import static net.kyma.EventType.SHOW_ALERT;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -92,13 +94,12 @@ public class Mp3PlayerJLayer extends SPIPlayer
       public void skipTo(long toSkip) throws IOException
       {
          skipped = toSkip - linePosition;
-         try
-         {
+         try {
             refresh(toSkip);
          }
-         catch (UnsupportedAudioFileException e)
-         {
+         catch (UnsupportedAudioFileException e) {
             log.error("Cannot read file", e);
+            bus.message(SHOW_ALERT).withContent("Cannot decode mp3 file").send();
          }
       }
    }

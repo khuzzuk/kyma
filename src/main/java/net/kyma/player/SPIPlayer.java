@@ -1,5 +1,7 @@
 package net.kyma.player;
 
+import static net.kyma.EventType.SHOW_ALERT;
+
 import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -24,7 +26,7 @@ public abstract class SPIPlayer implements Player {
     private static SPIPlayer currentPlayer;
     private static AtomicBoolean paused = new AtomicBoolean(false);
     private static AtomicLong skipTo = new AtomicLong(0);
-    private final Bus<EventType> bus;
+    final Bus<EventType> bus;
     private boolean closed;
     private SourceDataLine line;
     private float volume = 100;
@@ -133,8 +135,10 @@ public abstract class SPIPlayer implements Player {
                 }
             } catch (IOException e) {
                 log.error("Accessing file error during playback", e);
+                bus.message(SHOW_ALERT).withContent("No acces to file").send();
             } catch (Exception e) {
                 log.error("Error during processing a file", e);
+                bus.message(SHOW_ALERT).withContent("Cannot process sound").send();
             }
         }
 

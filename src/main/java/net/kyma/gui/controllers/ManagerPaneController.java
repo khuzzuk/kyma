@@ -1,6 +1,7 @@
 package net.kyma.gui.controllers;
 
 import static net.kyma.EventType.DATA_GET_PATHS;
+import static net.kyma.EventType.DATA_INDEXING_FINISH;
 import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
 import static net.kyma.EventType.DATA_QUERY;
 import static net.kyma.EventType.DATA_QUERY_RESULT_FOR_CONTENT_VIEW;
@@ -22,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -45,6 +45,7 @@ import net.kyma.dm.SupportedField;
 import net.kyma.gui.TableColumnFactory;
 import net.kyma.gui.tree.BaseElement;
 import net.kyma.gui.tree.ContentElement;
+import net.kyma.gui.tree.PathElementFactory;
 import net.kyma.gui.tree.RootElement;
 import net.kyma.player.PlaylistEvent;
 import net.kyma.player.PlaylistRefreshEvent;
@@ -112,41 +113,26 @@ public class ManagerPaneController implements Initializable {
         playlist.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     }
 
-    private synchronized void fillTreeView(Collection<SoundFile> sounds) {
-        RootElement root = (RootElement) filesList.getRoot();
-        List<SoundFile> soundFiles = sounds.stream().sorted().collect(Collectors.toList());
-        for (SoundFile f : soundFiles) {
-            String[] path = f.getPathView();
-            if (path.length == 0) log.error("Database inconsistency!");
-            fillChild(root, path, 0, f.getIndexedPath());
-        }
-        filesList.refresh();
-    }
-
     private synchronized void fillPaths(Map<String, Collection<String>> paths) {
         RootElement root = (RootElement) filesList.getRoot();
         for (Map.Entry<String, Collection<String>> entry : paths.entrySet()) {
+            String rootPathName = entry.getValue().iterator().next();
+            String indexingRootName = rootPathName.substring(0, rootPathName.indexOf('/'));
+
+            RootElement newIndexingRoot = new RootElement(entry.getKey());
+            newIndexingRoot.setName(indexingRootName);
             for (String path : entry.getValue()) {
                 String[] fractured = path.split("[\\\\/]+");
-                fillChild(root, fractured, 0, entry.getKey());
+                PathElementFactory.fillChild(newIndexingRoot, fractured, 1);
             }
-        }
-    }
 
-    private void fillChild(BaseElement parent, String[] path, int pos, String indexedPath) {
-        if (pos == path.length - 1) {
-            return;
-        }
-
-        BaseElement catalogue = parent.getChildElement(path[pos]);
-        if (catalogue == null) {
-            BaseElement element = pos == 0 ? new RootElement(indexedPath) : new BaseElement();
-            element.setName(path[pos]);
-            fillChild(element, path, pos + 1, indexedPath);
-            parent.addChild(element);
-            element.setParentElement(parent);
-        } else {
-            fillChild(catalogue, path, pos + 1, indexedPath);
+            RootElement currentIndexingRoot = (RootElement) root.getChildElement(indexingRootName);
+            if (currentIndexingRoot != null) {
+                currentIndexingRoot.update(newIndexingRoot);
+            } else {
+                root.addChild(newIndexingRoot);
+            }
+            bus.message(DATA_INDEXING_FINISH).send();
         }
     }
 
@@ -187,8 +173,7 @@ public class ManagerPaneController implements Initializable {
             List<SoundFile> selectedItems = playlist.getSelectionModel().getSelectedItems();
             List<SoundFile> playlistItems = playlist.getItems();
             List<PlaylistEvent> playlistEvents = new ArrayList<>(selectedItems.size());
-            for (int i = 0; i < selectedItems.size(); i++) {
-                SoundFile soundFile = selectedItems.get(i);
+            for (SoundFile soundFile : selectedItems) {
                 playlistEvents.add(new PlaylistEvent(soundFile, playlistItems.indexOf(soundFile)));
             }
             bus.message(PLAYLIST_REMOVE_LIST).withContent(playlistEvents).send();

@@ -147,14 +147,10 @@ public class TableColumnFactory
          {
             super.updateItem(item, empty);
             Label label = new Label(item);
-            if (getIndex() == property.get())
-            {
-               getStyleClass().clear();
+            getStyleClass().clear();
+            if (getIndex() == property.get()) {
                getStyleClass().add("currentlyPlayed");
-            }
-            else
-            {
-               getStyleClass().clear();
+            } else {
                getStyleClass().addAll("cell", "indexed-cell", "table-cell", "table-column");
             }
             setGraphic(label);
