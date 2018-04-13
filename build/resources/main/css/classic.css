@@ -1,0 +1,262 @@
+/*noinspection CssUnusedSymbol*/
+.root {
+    -fx-background-color: #e5dbcd;
+    -elements-opacity: 90%;
+    -containers-background: rgba(186, 177, 167, 0.6);
+    -containers-background2: rgba(186, 177, 167, 0.9);
+    -elements-background: rgba(81, 81, 81, 0.8);
+    -gold-color: rgb(191, 183, 159);
+    -fore-text-color: rgb(90, 88, 83);
+    -orange-drop-shadow: dropshadow(gaussian, -gold-color, 10, 0.2, 0, 0);
+    -element-drop-shadow: dropshadow(gaussian, -elements-background, 10, 0.2, 0, 0);
+    -container-drop-shadow: dropshadow(gaussian, -containers-background, 100, 1.6, 0, 0);
+    -dark-inner-shadow: innershadow(gaussian, -containers-background2, 5, 0.1, 0, 0);
+    -round-button-fill: radial-gradient(center 10px 10px, radius 100%, repeat, -gold-color, rgb(50, 50, 50));
+}
+
+/*noinspection CssUnusedSymbol*/
+.split-pane {
+    -fx-background-color: transparent;
+}
+
+.BackgroundContainer, #BackgroundContainer {
+    -fx-background-color: #e5dbcd;
+}
+
+.star {
+    -fx-fill: -fore-text-color;
+    -fx-stroke: -fore-text-color;
+    -fx-effect: -element-drop-shadow;
+}
+
+.star-empty {
+    -fx-fill: transparent;
+}
+
+.roundButton {
+    -fx-background-radius: 45em;
+    -fx-min-width: 45px;
+    -fx-min-height: 45px;
+    -fx-pref-width: 45px;
+    -fx-pref-height: 45px;
+    -fx-background-color: -elements-background;
+    -fx-effect: -element-drop-shadow;
+}
+
+.roundButton .play-text, .rewindButton .play-text {
+    -fx-fill: -containers-background;
+    -fx-effect: -dark-inner-shadow;
+    -fx-stroke-width: 0;
+}
+
+.rewindButton {
+    -fx-background-radius: 15em;
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-pref-width: 30px;
+    -fx-pref-height: 30px;
+    -fx-background-color: -elements-background;
+    -fx-effect: -element-drop-shadow;
+}
+
+/*noinspection CssUnusedSymbol*/
+.currentlyPlayed .text {
+    -fx-underline: true;
+    -fx-fill: -elements-background;
+}
+
+.currentlyPlayed {
+    -fx-padding: 0 0 0 0.3em;
+}
+
+.slider .track {
+    -fx-background-color: -elements-background;
+    -fx-pref-height:1;
+    -fx-effect: -element-drop-shadow;
+}
+
+.slider .thumb {
+    -fx-background-color: -round-button-fill;
+    -fx-effect: -orange-drop-shadow;
+    -fx-opacity: 100%;
+}
+
+.scroll-bar {
+    -fx-background-color: transparent;
+    -fx-pref-width: 14px;
+    -fx-padding: 2px;
+}
+
+.tree-view .corner {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .track {
+    -fx-fill: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-radius: 10px;
+    -fx-background-color: -containers-background;
+    -fx-effect: -element-drop-shadow;
+}
+
+.scroll-bar > .thumb:hover,
+.scroll-bar > .decrement-button:hover,
+.scroll-bar > .increment-button:hover {
+    -fx-background-radius: 10px;
+    -fx-background-color: -containers-background2;
+    -fx-effect: -element-drop-shadow;
+}
+
+.scroll-bar > .decrement-button,
+.scroll-bar > .increment-button {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar > .decrement-button,
+.scroll-bar > .increment-button {
+    -fx-effect: -element-drop-shadow;
+}
+
+.scroll-bar > .increment-button > .increment-arrow,
+.scroll-bar > .decrement-button > .decrement-arrow {
+    -fx-background-color: -elements-background;
+    -fx-padding: 3px;
+}
+
+.table-view, .tree-view, .list-view {
+    -fx-background-color: -containers-background;
+}
+
+.table-view .table-cell .text,
+.table-view .column-header .text,
+.tree-view .tree-cell .text,
+.list-view .list-cell .text {
+    -fx-effect: -orange-drop-shadow;
+    -fx-fill: -fore-text-color;
+}
+
+.table-view .table-cell,
+.tree-view .tree-cell,
+.list-view .list-cell {
+    -fx-background-color: transparent;
+}
+
+.table-view .table-column {
+    -fx-border-color: -containers-background2;
+    -fx-border-width: 0 0 0 1;
+    -fx-border-style: dashed;
+}
+
+.text-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fore-text-color;
+    -fx-highlight-text-fill: -containers-background;
+    -fx-highlight-fill: -elements-background;
+    -fx-padding: 0;
+}
+
+.tree-cell > .tree-disclosure-node > .arrow,
+.tree-table-row-cell > .tree-disclosure-node > .arrow {
+    -fx-background-color: -elements-background;
+    -fx-effect: -element-drop-shadow;
+}
+
+.table-row-cell:odd {
+    -fx-background: transparent;
+}
+
+/*noinspection CssUnusedSymbol*/
+
+.table-view .column-header {
+    -fx-background-color: -containers-background;
+}
+
+.table-view .column-header-background,
+.table-view .column-header-background .filler {
+    -fx-background-color: transparent;
+}
+
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-table-cell-border-color: transparent;
+}
+
+.table-row-cell:selected {
+    -fx-border-color: -gold-color;
+    -fx-effect: -element-drop-shadow;
+    -fx-padding: -1 -1 -1 -1;
+}
+
+.tree-view .tree-cell:selected {
+    -fx-border-color: -gold-color;
+    -fx-effect: -element-drop-shadow;
+}
+
+.list-cell:selected {
+    -fx-border-color: -gold-color;
+    -fx-effect: -element-drop-shadow;
+    -fx-padding: 3 0 3 7;
+}
+
+.split-pane-divider {
+    -fx-padding: 0 0 0 0;
+    -fx-background-color: transparent;
+}
+
+/* Filter titled-pane with list-view*/
+.titled-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-table-cell-border-color: transparent;
+}
+.titled-pane .title {
+    -fx-background-color: -containers-background2;
+    -fx-background-radius: 0;
+    -fx-font-weight: bold;
+}
+.titled-pane .title .text {
+    -fx-fill: -fore-text-color;
+}
+.titled-pane .label {
+    -fx-padding: 5px;
+    -fx-background-size: auto;
+}
+
+/*noinspection CssUnusedSymbol*/
+.menu-bar {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.context-menu {
+    -fx-background-color: -containers-background2;
+    -fx-effect: -element-drop-shadow;
+}
+
+.menu, .menu-item {
+    -fx-background-color: -containers-background2;
+}
+
+.menu-bar .text, .menu .text, .menu-item .text {
+    -fx-effect: -element-drop-shadow;
+    -fx-fill: -fore-text-color;
+}
+
+.combo-box {
+    -fx-background-color: -containers-background;
+}
+
+#BackgroundContainer > .text-field {
+    -fx-background-color: -containers-background;
+}
+
+#BackgroundContainer > .text-field .text {
+    -fx-effect: -element-drop-shadow;
+}
+
+#BackgroundContainer > .text-field-with-different-values {
+    -fx-background-color: -elements-background;
+}
