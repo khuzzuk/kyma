@@ -199,8 +199,7 @@ public class DataIndexer implements Loadable
       try {
          long deleteDocuments = writer.deleteDocuments(parameters.createQuery());
          commit();
-         log.debug("Deleted documents: ");
-         log.debug(deleteDocuments);
+         log.debug("Deleted documents: {}", deleteDocuments);
       } catch (IOException e) {
          log.error("Cannot remove index entries for path", e);
          bus.message(SHOW_ALERT).withContent("Indexing error").send();

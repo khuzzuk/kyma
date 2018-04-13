@@ -1,10 +1,38 @@
 package net.kyma.gui.controllers;
 
+import static net.kyma.EventType.DATA_GET_PATHS;
+import static net.kyma.EventType.DATA_INDEXING_FINISH;
+import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
+import static net.kyma.EventType.DATA_QUERY;
+import static net.kyma.EventType.DATA_QUERY_RESULT_FOR_CONTENT_VIEW;
+import static net.kyma.EventType.DATA_REFRESH_PATHS;
+import static net.kyma.EventType.DATA_SET_DISTINCT_GENRE;
+import static net.kyma.EventType.DATA_SET_DISTINCT_MOOD;
+import static net.kyma.EventType.DATA_SET_DISTINCT_OCCASION;
+import static net.kyma.EventType.DATA_SET_DISTINCT_PEOPLE;
+import static net.kyma.EventType.DATA_STORE_ITEM;
+import static net.kyma.EventType.DATA_STORE_LIST;
+import static net.kyma.EventType.PLAYLIST_REFRESH;
+import static net.kyma.EventType.PLAYLIST_REMOVE_LIST;
+
+import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
@@ -16,17 +44,12 @@ import net.kyma.dm.SupportedField;
 import net.kyma.gui.TableColumnFactory;
 import net.kyma.gui.tree.BaseElement;
 import net.kyma.gui.tree.ContentElement;
+import net.kyma.gui.tree.FilterRootElement;
 import net.kyma.gui.tree.PathElementFactory;
 import net.kyma.gui.tree.RootElement;
 import net.kyma.player.PlaylistEvent;
 import net.kyma.player.PlaylistRefreshEvent;
 import pl.khuzzuk.messaging.Bus;
-
-import java.io.File;
-import java.net.URL;
-import java.util.*;
-
-import static net.kyma.EventType.*;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -65,7 +88,6 @@ public class ManagerPaneController implements Initializable {
                 .accept((Collection<String> values) -> addFilterToTreeView(SupportedField.ARTIST, values))
                 .subscribe();
 
-        bus.subscribingFor(PLAYLIST_REMOVE_SOUND).accept(this::removeFromTreeView).subscribe();
         bus.subscribingFor(DATA_REFRESH_PATHS).onFXThread().accept(this::fillPaths).subscribe();
         bus.subscribingFor(PLAYLIST_REFRESH).accept(this::refresh).subscribe();
         bus.subscribingFor(DATA_STORE_ITEM).accept(s -> contentView.refresh()).subscribe();
@@ -93,17 +115,16 @@ public class ManagerPaneController implements Initializable {
     private synchronized void fillPaths(Map<String, Collection<String>> paths) {
         RootElement root = (RootElement) filesList.getRoot();
         for (Map.Entry<String, Collection<String>> entry : paths.entrySet()) {
-            String rootPathName = entry.getValue().iterator().next();
-            String indexingRootName = rootPathName.substring(0, rootPathName.indexOf('/'));
-
+            String rootName = entry.getKey().substring(0, entry.getKey().length() - 1);
             RootElement newIndexingRoot = new RootElement(entry.getKey());
-            newIndexingRoot.setName(indexingRootName);
+            newIndexingRoot.setName(rootName);
+
             for (String path : entry.getValue()) {
                 String[] fractured = path.split("/");
-                PathElementFactory.fillChild(newIndexingRoot, fractured, 1);
+                PathElementFactory.fillChild(newIndexingRoot, fractured, 0);
             }
 
-            RootElement currentIndexingRoot = (RootElement) root.getChildElement(indexingRootName);
+            RootElement currentIndexingRoot = (RootElement) root.getChildElement(rootName);
             if (currentIndexingRoot != null) {
                 currentIndexingRoot.update(newIndexingRoot);
             } else {
@@ -117,7 +138,7 @@ public class ManagerPaneController implements Initializable {
         RootElement root = (RootElement) filesList.getRoot();
         BaseElement filterElement = root.hasChild(filterField.getName())
                 ? root.getChildElement(filterField.getName())
-                : new BaseElement();
+                : new FilterRootElement();
         filterElement.setName(filterField.getName());
         root.addChild(filterElement);
 
@@ -126,22 +147,6 @@ public class ManagerPaneController implements Initializable {
             element.setName(value);
             filterElement.addChild(element);
         }
-    }
-
-    private void removeFromTreeView(Collection<SoundFile> soundFiles) {
-        soundFiles.stream()
-                .map(SoundFile::getPathView)
-                .forEach(path -> {
-                    BaseElement element = (BaseElement) filesList.getRoot();
-                    for (String name : path) {
-                        element = element.getChildElement(name);
-                        if (element == null) {
-                            log.error("Cannot find element in tree: {} in {}", name, path);
-                            return;
-                        }
-                    }
-                    element.detachFromParent();
-                });
     }
 
     @FXML

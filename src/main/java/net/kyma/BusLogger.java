@@ -9,13 +9,12 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import pl.khuzzuk.messaging.Bus;
 
-@Log4j2
+@Log4j2(topic = "bus")
 public class BusLogger extends PrintStream {
    @Setter
    private Bus<EventType> bus;
    BusLogger() throws FileNotFoundException {
       super("bus.log");
-      this.bus = bus;
    }
 
    @Override
@@ -25,7 +24,7 @@ public class BusLogger extends PrintStream {
 
    @Override
    public void println(Object x){
-      log.debug(x);
+      log.error(x);
       bus.message(SHOW_ALERT).withContent("Internal error").send();
    }
 }

@@ -6,8 +6,8 @@
     </Properties>
     <Appenders>
         <File name="logToFile"
-                     fileName="${logFile}.log"
-                     append="false">
+              fileName="${logFile}.log"
+              append="false">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level - %msg%n" />
         </File>
         <File name="logMessage"
@@ -20,14 +20,14 @@
         </Console>
     </Appenders>
     <Loggers>
+        <Logger name="bus" level="debug" additivity="false">
+            <!--<ThresholdFilter level="info"/>-->
+            <AppenderRef ref="logMessage"/>
+            <AppenderRef ref="STDOUT"/>
+        </Logger>
         <Root level="debug" additivity="false">
             <AppenderRef ref="logToFile"/>
             <AppenderRef ref="STDOUT"/>
-            <AppenderRef ref="logMessage"/>
         </Root>
-        <Logger level="trace" name="MessageLogger" additivity="false">
-            <ThresholdFilter level="info"/>
-            <AppenderRef ref="logMessage"/>
-        </Logger>
     </Loggers>
 </Configuration>

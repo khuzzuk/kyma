@@ -19,7 +19,7 @@ public class RootElement extends BaseElement {
 
     @Override
     public String getFullPath() {
-        return rootPath + getName();
+        return getName();
     }
 
     @Override
