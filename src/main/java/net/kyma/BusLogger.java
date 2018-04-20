@@ -24,7 +24,7 @@ public class BusLogger extends PrintStream {
 
    @Override
    public void println(Object x){
-      log.error(x);
-      bus.message(SHOW_ALERT).withContent("Internal error").send();
+      log.error(x.toString());
+      bus.message(SHOW_ALERT).withContent(x.toString()).send();
    }
 }

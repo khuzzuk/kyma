@@ -62,7 +62,10 @@ public class Playlist implements Loadable {
     }
 
     private synchronized void playNextItem() {
-        if (fileList.isEmpty()) return;
+        if (fileList.isEmpty()) {
+            bus.message(PLAYER_STOP).send();
+            return;
+        }
         if (++index == fileList.size()) index = 0;
 
         currentlyPlayed = fileList.get(index);
@@ -90,7 +93,10 @@ public class Playlist implements Loadable {
         }
 
         if (toRemove.contains(currentlyPlayed)) {
-            bus.message(PLAYER_STOP).withResponse(PLAYLIST_NEXT).send();
+            log.info("removed file was also in playlist");
+            bus.message(PLAYLIST_NEXT).send();
+        } else {
+            log.info("removed file was not in playlist");
         }
 
         sendRefreshEvent(index);
