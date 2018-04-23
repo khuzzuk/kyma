@@ -2,7 +2,6 @@ package net.kyma.player;
 
 import static net.kyma.EventType.FILES_REMOVE;
 import static net.kyma.EventType.PLAYER_PLAY;
-import static net.kyma.EventType.PLAYER_STOP;
 import static net.kyma.EventType.PLAYLIST_ADD_LIST;
 import static net.kyma.EventType.PLAYLIST_NEXT;
 import static net.kyma.EventType.PLAYLIST_PREVIOUS;
@@ -62,27 +61,20 @@ public class Playlist implements Loadable {
     }
 
     private synchronized void playNextItem() {
-        if (fileList.isEmpty()) {
-            bus.message(PLAYER_STOP).send();
-            return;
-        }
-        if (++index == fileList.size()) index = 0;
-
-        currentlyPlayed = fileList.get(index);
-        bus.message(PLAYER_PLAY).withContent(currentlyPlayed).send();
-        sendRefreshEvent(index);
+        playItemFromIndex(index + 1 >= fileList.size() ? 0 : index + 1);
     }
 
     private synchronized void playPreviousItem() {
-        if (fileList.isEmpty()) {
-            bus.message(PLAYER_STOP).send();
-            return;
-        }
-        if (--index < 0) index = fileList.size() - 1;
+        playItemFromIndex(index - 1 < 0 ? fileList.size() - 1 : index - 1);
+    }
 
-        currentlyPlayed = fileList.get(index);
-        bus.message(PLAYER_PLAY).withContent(currentlyPlayed).send();
-        sendRefreshEvent(index);
+    private void playItemFromIndex(int newIndex) {
+        index = newIndex;
+        if (!fileList.isEmpty()) {
+            currentlyPlayed = fileList.get(index);
+            bus.message(PLAYER_PLAY).withContent(currentlyPlayed).send();
+            sendRefreshEvent(index);
+        }
     }
 
     private void fileRemoved(List<SoundFile> toRemove) {
@@ -97,13 +89,12 @@ public class Playlist implements Loadable {
         }
 
         if (toRemove.contains(currentlyPlayed)) {
-            log.info("removed file was also in playlist");
+            log.info("removed file was also in playlist: {}", currentlyPlayed);
             bus.message(PLAYLIST_NEXT).send();
         } else {
-            log.info("removed file was not in playlist");
+            sendRefreshEvent(index);
         }
 
-        sendRefreshEvent(index);
         bus.message(FILES_REMOVE).withContent(toRemove).send();
     }
 
