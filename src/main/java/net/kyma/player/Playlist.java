@@ -74,10 +74,14 @@ public class Playlist implements Loadable {
     }
 
     private synchronized void playPreviousItem() {
-        if (fileList.isEmpty()) return;
+        if (fileList.isEmpty()) {
+            bus.message(PLAYER_STOP).send();
+            return;
+        }
         if (--index < 0) index = fileList.size() - 1;
 
-        bus.message(PLAYER_PLAY).withContent(fileList.get(index)).send();
+        currentlyPlayed = fileList.get(index);
+        bus.message(PLAYER_PLAY).withContent(currentlyPlayed).send();
         sendRefreshEvent(index);
     }
 
