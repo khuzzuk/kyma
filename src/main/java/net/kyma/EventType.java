@@ -20,6 +20,9 @@ public enum EventType
    PLAYLIST_PREVIOUS,
    PLAYLIST_REFRESH,
 
+   /**
+    * accepts {@link java.io.File} of directory as content
+    */
    DATA_INDEX_DIRECTORY,
    DATA_INDEX_LIST,
    DATA_INDEX_ITEM,

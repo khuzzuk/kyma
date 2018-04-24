@@ -35,9 +35,11 @@ public class ObjectContainer
    private final Bus<EventType> bus;
    private Collection<Loadable> loadables;
    private Collection<Pair<EventType, Object>> toSend;
+   private String path;
 
-   void createContainer()
+   void createContainer(String indexingPath)
    {
+      path = indexingPath;
       loadables = new ArrayList<>(32);
       toSend = new ArrayList<>(32);
       initGraph();
@@ -81,7 +83,7 @@ public class ObjectContainer
 
    private void initDataAccess() {
       try {
-         Directory directory = new NIOFSDirectory(Paths.get("index/")); //NOSONAR
+         Directory directory = new NIOFSDirectory(Paths.get(path)); //NOSONAR
          IndexWriterConfig config = new IndexWriterConfig();
          config.setRAMBufferSizeMB(64);
          IndexWriter writer = new IndexWriter(directory, config);

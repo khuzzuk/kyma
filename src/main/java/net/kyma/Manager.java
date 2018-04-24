@@ -17,35 +17,38 @@ import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
 public class Manager extends Application {
-
+    static Bus<EventType> bus;
     private static MainWindow mainWindow;
+    private static ControllerDistributor controllerDistributor;
+    private static MainController mainController;
 
-    public static void main(String[] args)
+   public static void main(String[] args)
     {
-        Bus<EventType> bus = createBus();
-
-        //GUI
-        TableColumnFactory columnFactory = new TableColumnFactory(bus);
-        ManagerPaneController managerPaneController = new ManagerPaneController(bus, columnFactory);
-        MainController mainController = new MainController(bus, managerPaneController);
-
-        PlayerPaneController playerPaneController = new PlayerPaneController(bus);
-
-        ObjectContainer container = new ObjectContainer(bus);
-        container.createContainer();
-
-        ContentView contentView = new ContentView(bus, columnFactory);
-        container.putToContainer(EventType.RET_CONTENT_VIEW, contentView);
-
-        ControllerDistributor controllerDistributor = new ControllerDistributor(
-              mainController,
-              playerPaneController,
-              managerPaneController,
-              contentView);
-
+        bus = createBus();
+        prepareApp("index/", bus);
         Platform.runLater(() -> mainWindow = new MainWindow(bus, controllerDistributor, mainController));
-
         launch(args);
+    }
+
+    static void prepareApp(String indexingPath, Bus<EventType> bus) {
+       TableColumnFactory columnFactory = new TableColumnFactory(bus);
+       ManagerPaneController managerPaneController = new ManagerPaneController(bus, columnFactory);
+       mainController = new MainController(bus, managerPaneController);
+
+       PlayerPaneController playerPaneController = new PlayerPaneController(bus);
+
+       ObjectContainer container = new ObjectContainer(bus);
+       container.createContainer(indexingPath);
+
+       ContentView contentView = new ContentView(bus, columnFactory);
+       container.putToContainer(EventType.RET_CONTENT_VIEW, contentView);
+
+       controllerDistributor = new ControllerDistributor(
+             mainController,
+             playerPaneController,
+             managerPaneController,
+             contentView);
+
     }
 
     @Override
@@ -55,7 +58,7 @@ public class Manager extends Application {
         mainWindow.show();
     }
 
-    private static Bus<EventType> createBus()
+    static Bus<EventType> createBus()
     {
         try {
             BusLogger busLogger = new BusLogger();

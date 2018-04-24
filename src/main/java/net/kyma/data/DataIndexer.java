@@ -219,7 +219,7 @@ public class DataIndexer implements Loadable
       try {
          writer.commit();
       } catch (IOException e) {
-         log.error("Error during indexing database");
+         log.error("Error during indexing database", e);
          bus.message(SHOW_ALERT).withContent("Indexing access problem").send();
       }
    }
