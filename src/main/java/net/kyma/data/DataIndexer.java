@@ -91,13 +91,11 @@ public class DataIndexer implements Loadable
 
    private synchronized void index(@NonNull Collection<SoundFile> files)
    {
-      if (files.isEmpty()) {
-         return;
+      if (!files.isEmpty()) {
+         String path = files.iterator().next().getIndexedPath();
+         indexedPaths.stream().filter(path::startsWith).findAny()
+               .ifPresent(indexed -> files.forEach(f -> f.setIndexedPath(indexed)));
       }
-
-      String path = files.iterator().next().getIndexedPath();
-      indexedPaths.stream().filter(path::startsWith).findAny()
-            .ifPresent(indexed -> files.forEach(f -> f.setIndexedPath(indexed)));
 
       files.forEach(this::indexSingleEntity);
       commit();

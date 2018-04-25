@@ -20,9 +20,7 @@ public enum EventType
    PLAYLIST_PREVIOUS,
    PLAYLIST_REFRESH,
 
-   /**
-    * accepts {@link java.io.File} of directory as content
-    */
+   /** content {@link java.io.File}*/
    DATA_INDEX_DIRECTORY,
    DATA_INDEX_LIST,
    DATA_INDEX_ITEM,
@@ -34,6 +32,7 @@ public enum EventType
    DATA_STORE_ITEM,
    DATA_STORE_LIST,
    DATA_REMOVE_ITEM,
+   /** content {@link net.kyma.data.PathQueryParameters}*/
    DATA_REMOVE_PATH,
    DATA_CONVERT_FROM_DOC,
 
