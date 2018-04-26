@@ -25,6 +25,8 @@ public enum EventType
    DATA_INDEX_LIST,
    DATA_INDEX_ITEM,
    DATA_INDEX_GET_ALL,
+   /** content {@link net.kyma.dm.SupportedField} <br>
+    * produces {@link java.util.Set}&lt{@link String}&gt*/
    DATA_INDEX_GET_DISTINCT,
    DATA_INDEX_GET_DIRECTORIES,
    DATA_GET_PATHS,

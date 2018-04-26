@@ -33,6 +33,7 @@ import net.kyma.EventType;
 import net.kyma.Loadable;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
+import net.kyma.initialization.Property;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
@@ -89,6 +90,7 @@ public class DataIndexer implements Loadable
       refreshIndexedPaths();
    }
 
+   @Property
    private synchronized void index(@NonNull Collection<SoundFile> files)
    {
       if (!files.isEmpty()) {

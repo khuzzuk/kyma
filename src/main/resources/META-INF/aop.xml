@@ -1,0 +1,8 @@
+<aspectj>
+   <aspects>
+      <aspect name="net.kyma.initialization.InitializationAspect"/>
+      <weaver options="-verbose -showWeaveInfo">
+         <include within="net.kyma..*"/>
+      </weaver>
+   </aspects>
+</aspectj>

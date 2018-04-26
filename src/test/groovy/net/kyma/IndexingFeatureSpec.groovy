@@ -37,10 +37,12 @@ class IndexingFeatureSpec extends Specification {
         given:
         def indexed = new AtomicBoolean(false)
         PropertyContainer<Map<String, Collection<String>>> refreshedPaths = new PropertyContainer<>()
+        PropertyContainer<Set<String>> distinctMood = new PropertyContainer<>()
 
         bus.subscribingFor(DATA_REFRESH_PATHS)
-                .accept({refreshedPaths.setValue(it as Map<String, Collection<String>>)})
+                .accept({refreshedPaths.value = it as Map<String, Collection<String>>})
                 .subscribe()
+        bus.subscribingFor(DATA_SET_DISTINCT_MOOD).accept({distinctMood.value = it as Set<String>})
 
         when:
         println '\n\n\n\nSTART TESTS\t\tindex file'
