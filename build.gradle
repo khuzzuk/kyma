@@ -41,10 +41,11 @@ compileJava {
         ant.iajc(
                 source: "1.9",
                 target: "1.9",
+                inpath: sourceSets.main.output.classesDir.toPath(),
                 destDir: sourceSets.main.output.classesDir.absolutePath,
                 maxmem: "512m",
                 fork: "true",
-                aspectPath: project.getBuildDir().getAbsolutePath() + "classes/java/main/*",
+                aspectPath: sourceSets.main.output.classesDir.absolutePath, //project.getBuildDir().getAbsolutePath() + "/classes/java/main/net/kyma/initialization",
                 sourceRootCopyFilter: "**/*.java",
                 classpath: "${configurations.compile.asPath}") {
         }
@@ -53,7 +54,7 @@ compileJava {
 
 dependencies {
     compile group: 'org.aspectj', name: 'aspectjrt', version: '1.9.1'
-    compile group: 'org.aspectj', name: 'aspectjweaver', version: '1.9.1'
+    compile group: 'org.aspectj', name: 'aspectjweaver', version: '1.9.1' // -javaagent:lib/aspectjweaver-1.9.1.jar
     compile group: 'org.aspectj', name: 'aspectjtools', version: '1.9.1'
     compile group: 'org.apache.lucene', name: 'lucene-core', version:'7.2.1'
     compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.7'

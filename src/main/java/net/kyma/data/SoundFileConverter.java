@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
 import static net.kyma.EventType.PLAYLIST_ADD_FILE;
+import static net.kyma.data.PathUtils.normalizePath;
 import static net.kyma.dm.SupportedField.SET;
 
 @Log4j2
@@ -50,10 +51,6 @@ public class SoundFileConverter {
 
         Optional.ofNullable(MetadataConverter.getMetadataFrom(file)).ifPresent(m -> fillData(sound, m));
         return sound;
-    }
-
-    private String normalizePath(String path) {
-        return path.replace('\\', '/');
     }
 
     private SoundFile from(Document document) {

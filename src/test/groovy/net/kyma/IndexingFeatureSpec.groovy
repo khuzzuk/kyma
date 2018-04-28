@@ -54,7 +54,7 @@ class IndexingFeatureSpec extends Specification {
         await().atMost(1000, TimeUnit.MILLISECONDS).until(
                 {refreshedPaths.hasValue() && refreshedPaths.value.size() == 1})
         def indexingPath = ++refreshedPaths.value.keySet().iterator()
-        def expectedIndexingPath = soundFilesDir.getAbsolutePath().substring(0, soundFilesDir.getAbsolutePath().lastIndexOf(File.separator) + 1)
+        def expectedIndexingPath = soundFilesDir.getAbsolutePath().substring(0, soundFilesDir.getAbsolutePath().lastIndexOf(File.separator) + 1).replace(File.separator, '/')
         indexingPath == expectedIndexingPath
 
         and:
@@ -64,7 +64,7 @@ class IndexingFeatureSpec extends Specification {
 
         then:
         await().atMost(2000, TimeUnit.MILLISECONDS).until({!indexed.get()})
-        await().atMost(1000, TimeUnit.MILLISECONDS).until(
+        await().atMost(2000, TimeUnit.MILLISECONDS).until(
                 {refreshedPaths.value.size() == 0})
 
         cleanup:
