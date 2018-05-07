@@ -27,13 +27,15 @@ import java.util.Set;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.BusRequestException;
 import net.kyma.EventType;
 import net.kyma.Loadable;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
-import net.kyma.initialization.Property;
+import net.kyma.initialization.Dependable;
+import net.kyma.initialization.Dependency;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
@@ -42,41 +44,30 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.Bits;
-import pl.khuzzuk.functions.ForceGate;
 import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
 @RequiredArgsConstructor
-public class DataIndexer implements Loadable
+public class DataIndexer extends Dependable implements Loadable
 {
    private final Bus<EventType> bus;
+   @Setter
+   @Dependency
    private IndexWriter writer;
+   @Setter
+   @Dependency
    private DocConverter docConverter;
    private Set<String> indexedPaths;
-   private ForceGate initializer;
    private static final String READ_DATA_ERROR_MESSAGE = "Cannot read data";
 
    @Override
    public void load()
    {
-      initializer = ForceGate.of(2, this::afterPropertiesSet);
       bus.subscribingFor(RET_DOC_CONVERTER).accept(this::setDocConverter).subscribe();
       bus.subscribingFor(RET_INDEX_WRITER).accept(this::setWriter).subscribe();
    }
 
-   private void setWriter(IndexWriter writer)
-   {
-      this.writer = writer;
-      initializer.on();
-   }
-
-   private void setDocConverter(DocConverter docConverter)
-   {
-      this.docConverter = docConverter;
-      initializer.on();
-   }
-
-   private void afterPropertiesSet()
+   public void afterDependenciesSet()
    {
       bus.subscribingFor(CLOSE).then(this::close).subscribe();
       bus.subscribingFor(DATA_INDEX_LIST).accept(this::index).subscribe();
@@ -90,7 +81,6 @@ public class DataIndexer implements Loadable
       refreshIndexedPaths();
    }
 
-   @Property
    private synchronized void index(@NonNull Collection<SoundFile> files)
    {
       if (!files.isEmpty()) {
@@ -236,15 +226,11 @@ public class DataIndexer implements Loadable
       }
       if (writer.isOpen())
       {
-         try
-         {
+         try {
             Thread.sleep(100);
-         }
-         catch (InterruptedException e)
-         {
-            log.error("Error during close operation, retry", e);
+         } catch (InterruptedException e) {
+            log.error("Error during close operation", e);
             Thread.currentThread().interrupt();
-            close();
          }
          close();
       }
