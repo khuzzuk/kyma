@@ -60,7 +60,7 @@ public class MainController implements Initializable {
               .then(() -> mainPane.getItems().remove(indicator)).subscribe();
         bus.subscribingFor(GUI_WINDOW_SET_FULLSCREEN).onFXThread().then(() -> stage.setFullScreen(true)).subscribe();
         bus.subscribingFor(GUI_WINDOW_SET_MAXIMIZED).onFXThread().then(() -> stage.setMaximized(true)).subscribe();
-        bus.subscribingFor(GUI_WINDOW_SET_FRAME).accept(this::resize).subscribe();
+        bus.subscribingFor(GUI_WINDOW_SET_FRAME).onFXThread().accept(this::resize).subscribe();
 
         bus.message(GUI_WINDOW_SETTINGS).send();
         managerPaneController.resizeFor(mainPane);

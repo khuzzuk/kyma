@@ -2,43 +2,34 @@
   "uiProperties" : {
     "fullScreen" : false,
     "maximized" : true,
-    "x" : 106,
-    "y" : 333,
-    "width" : 1268,
-    "height" : 654,
+    "x" : 100,
+    "y" : 50,
+    "width" : 600,
+    "height" : 400,
     "columnDefinitions" : [ {
       "field" : "TITLE",
-      "size" : 281.0
+      "size" : 100.0
     }, {
       "field" : "RATE",
       "size" : 100.0
     }, {
-      "field" : "YEAR",
-      "size" : 80.0
+      "field" : "ALBUM",
+      "size" : 100.0
     }, {
       "field" : "ARTIST",
-      "size" : 80.0
+      "size" : 100.0
     }, {
       "field" : "MOOD",
-      "size" : 80.0
-    }, {
-      "field" : "TEMPO",
-      "size" : 80.0
+      "size" : 100.0
     }, {
       "field" : "OCCASION",
-      "size" : 80.0
+      "size" : 100.0
     }, {
-      "field" : "CUSTOM1",
-      "size" : 93.0
-    }, {
-      "field" : "CUSTOM2",
-      "size" : 88.0
-    }, {
-      "field" : "CUSTOM3",
-      "size" : 79.0
+      "field" : "TEMPO",
+      "size" : 100.0
     } ]
   },
   "playerProperties" : {
-    "volume" : 29
+    "volume" : 36
   }
 }

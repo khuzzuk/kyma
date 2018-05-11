@@ -3,60 +3,49 @@ package net.kyma;
 import java.io.FileNotFoundException;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.stage.Stage;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.gui.MainWindow;
-import net.kyma.gui.TableColumnFactory;
-import net.kyma.gui.controllers.ContentView;
 import net.kyma.gui.controllers.ControllerDistributor;
-import net.kyma.gui.controllers.MainController;
-import net.kyma.gui.controllers.ManagerPaneController;
-import net.kyma.gui.controllers.PlayerPaneController;
+import pl.khuzzuk.functions.ForceGate;
 import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
 public class Manager extends Application {
     static Bus<EventType> bus;
     private static MainWindow mainWindow;
-    private static ControllerDistributor controllerDistributor;
-    private static MainController mainController;
+    private static Stage currentStage;
+    private static ForceGate gate = ForceGate.of(2, Manager::initMainWindow);
 
    public static void main(String[] args)
     {
         bus = createBus();
         prepareApp("index/", bus);
-        Platform.runLater(() -> mainWindow = new MainWindow(bus, controllerDistributor, mainController));
+        //mainWindow = new MainWindow(bus, controllerDistributor, mainController);
         launch(args);
     }
 
     static void prepareApp(String indexingPath, Bus<EventType> bus) {
-       TableColumnFactory columnFactory = new TableColumnFactory(bus);
-       ManagerPaneController managerPaneController = new ManagerPaneController(bus, columnFactory);
-       mainController = new MainController(bus, managerPaneController);
-
-       PlayerPaneController playerPaneController = new PlayerPaneController(bus);
+       bus.subscribingFor(EventType.RET_CONTROLLER_DISTRIBUTOR).onFXThread()
+             .<ControllerDistributor>accept(controllerDistributor -> {
+          mainWindow = new MainWindow(bus, controllerDistributor);
+          gate.on();
+       }).subscribe();
 
        ObjectContainer container = new ObjectContainer(bus);
        container.createContainer(indexingPath);
-
-       ContentView contentView = new ContentView(bus, columnFactory);
-       container.putToContainer(EventType.RET_CONTENT_VIEW, contentView);
-
-       controllerDistributor = new ControllerDistributor(
-             mainController,
-             playerPaneController,
-             managerPaneController,
-             contentView);
-
     }
 
     @Override
-    public void start(Stage primaryStage)
-    {
-        mainWindow.initMainWindow(primaryStage);
-        mainWindow.show();
+    public void start(Stage primaryStage) {
+       currentStage = primaryStage;
+       gate.on();
     }
+
+   private static void initMainWindow() {
+      mainWindow.initMainWindow(currentStage);
+      mainWindow.show();
+   }
 
     static Bus<EventType> createBus()
     {

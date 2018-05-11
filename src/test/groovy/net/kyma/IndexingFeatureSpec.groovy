@@ -1,9 +1,9 @@
 package net.kyma
 
 import javafx.application.Platform
+import net.kyma.dm.SupportedField
 import pl.khuzzuk.messaging.Bus
 import spock.lang.Shared
-import spock.lang.Specification
 
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import static net.kyma.EventType.*
 import static org.awaitility.Awaitility.await
 
-class IndexingFeatureSpec extends Specification {
+class IndexingFeatureSpec extends FxmlTestHelper {
     @Shared
     private Bus<EventType> bus
 
@@ -21,6 +21,7 @@ class IndexingFeatureSpec extends Specification {
     void setupSpec() {
         Platform.startup({})
         bus = Manager.createBus()
+        Manager.bus = bus
         Manager.prepareApp("test_index/", bus)
         Thread.sleep(1000)
     }
@@ -33,7 +34,7 @@ class IndexingFeatureSpec extends Specification {
         indexDir.delete()
     }
 
-    def 'index example file'() {
+    def 'index example files'() {
         given:
         def indexed = new AtomicBoolean(false)
         PropertyContainer<Map<String, Collection<String>>> refreshedPaths = new PropertyContainer<>()
@@ -42,7 +43,7 @@ class IndexingFeatureSpec extends Specification {
         bus.subscribingFor(DATA_REFRESH_PATHS)
                 .accept({refreshedPaths.value = it as Map<String, Collection<String>>})
                 .subscribe()
-        bus.subscribingFor(DATA_SET_DISTINCT_MOOD).accept({distinctMood.value = it as Set<String>})
+        bus.subscribingFor(DATA_SET_DISTINCT_MOOD).accept({distinctMood.value = it as Set<String>}).subscribe()
 
         when:
         println '\n\n\n\nSTART TESTS\t\tindex file'
@@ -51,11 +52,21 @@ class IndexingFeatureSpec extends Specification {
 
         then:
         await().atMost(2000, TimeUnit.MILLISECONDS).until({indexed.get()})
+
         await().atMost(1000, TimeUnit.MILLISECONDS).until(
                 {refreshedPaths.hasValue() && refreshedPaths.value.size() == 1})
         def indexingPath = ++refreshedPaths.value.keySet().iterator()
         def expectedIndexingPath = soundFilesDir.getAbsolutePath().substring(0, soundFilesDir.getAbsolutePath().lastIndexOf(File.separator) + 1).replace(File.separator, '/')
         indexingPath == expectedIndexingPath
+
+        and:
+        bus.message(DATA_INDEX_GET_DISTINCT).withResponse(DATA_SET_DISTINCT_MOOD).withContent(SupportedField.MOOD).send()
+
+        then:
+        await().atMost(2000, TimeUnit.MILLISECONDS).until({distinctMood.hasValue()})
+        distinctMood.value.size() == 2
+        distinctMood.value.contains('mp3 mood')
+        distinctMood.value.contains('flac mood')
 
         and:
         File renamed = new File('hide_files')

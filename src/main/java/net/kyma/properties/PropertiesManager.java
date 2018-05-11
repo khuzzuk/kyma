@@ -49,9 +49,15 @@ public class PropertiesManager implements Loadable
       bus.subscribingFor(GUI_WINDOW_SETTINGS).then(this::windowGetSettings).subscribe();
       bus.subscribingFor(PROPERTIES_STORE_WINDOW_FRAME).accept(this::windowStoreRectangle).subscribe();
       bus.subscribingFor(PROPERTIES_STORE_WINDOW_MAXIMIZED)
-            .<Boolean>accept(b -> propertiesData.getUiProperties().setMaximized(b)).subscribe();
+            .<Boolean>accept(b -> {
+               propertiesData.getUiProperties().setMaximized(b);
+               store();
+            }).subscribe();
       bus.subscribingFor(PROPERTIES_STORE_WINDOW_FULLSCREEN)
-            .<Boolean>accept(b -> propertiesData.getUiProperties().setFullScreen(b)).subscribe();
+            .<Boolean>accept(b -> {
+               propertiesData.getUiProperties().setFullScreen(b);
+               store();
+            }).subscribe();
       bus.subscribingFor(PLAYER_SET_VOLUME)
             .<Integer>accept(value -> {
                propertiesData.getPlayerProperties().setVolume(value);

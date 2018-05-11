@@ -39,6 +39,7 @@ import javafx.scene.layout.GridPane;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
+import net.kyma.Loadable;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
 import net.kyma.gui.TableColumnFactory;
@@ -53,7 +54,7 @@ import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
 @RequiredArgsConstructor
-public class ManagerPaneController implements Initializable {
+public class ManagerPaneController implements Initializable, Loadable {
     @FXML
     private GridPane managerPane;
     @FXML
@@ -70,8 +71,14 @@ public class ManagerPaneController implements Initializable {
     private ListView<String> occasionFilter;
 
     private final Bus<EventType> bus;
-    private final TableColumnFactory columnFactory;
+    private TableColumnFactory columnFactory;
     private IntegerProperty highlighted;
+
+    @Override
+    public void load() {
+        columnFactory = new TableColumnFactory(bus);
+        highlighted = new SimpleIntegerProperty(-1);
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -96,7 +103,6 @@ public class ManagerPaneController implements Initializable {
                 .<Collection<SoundFile>>accept(this::fillContentView)
                 .subscribe();
 
-        highlighted = new SimpleIntegerProperty(-1);
         filesList.setRoot(new RootElement("Content"));
 
         initPlaylistView();

@@ -67,6 +67,7 @@ import javafx.scene.input.MouseEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
+import net.kyma.Loadable;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
 import net.kyma.dm.TagUpdateRequest;
@@ -78,26 +79,34 @@ import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
 @RequiredArgsConstructor
-public class ContentView implements Initializable
+public class ContentView implements Initializable, Loadable
 {
    @FXML
    private TableView<SoundFile> mainContentView;
    private ContextMenu contentViewContextMenu;
    private final Bus<EventType> bus;
-   private final TableColumnFactory columnFactory;
+   private TableColumnFactory columnFactory;
    private SoundFileEditor editor;
    private SoundFileBulkEditor bulkEditor;
    private Collection<SoundFile> selected;
    private Map<SupportedField, Collection<String>> suggestions;
 
    @Override
-   public void initialize(URL location, ResourceBundle resources) {
-      initContentView();
-
+   public void load()
+   {
+      columnFactory = new TableColumnFactory(bus);
+      suggestions = new EnumMap<>(SupportedField.class);
       editor = new SoundFileEditor(bus);
-      editor.init(suggestions);
       bulkEditor = new SoundFileBulkEditor(bus);
+   }
+
+   @Override
+   public void initialize(URL location, ResourceBundle resources) {
+      initSuggestions();
+      editor.init(suggestions);
       bulkEditor.init(suggestions);
+
+      initContentView();
    }
 
    @SuppressWarnings("unchecked")
@@ -115,11 +124,9 @@ public class ContentView implements Initializable
       bus.subscribingFor(GUI_CONTENTVIEW_SETTINGS_SET).onFXThread().accept(this::setupColumns).subscribe();
       bus.message(GUI_CONTENTVIEW_SETTINGS_GET).withResponse(GUI_CONTENTVIEW_SETTINGS_SET).send();
 
-      initSuggestions();
    }
 
    private void initSuggestions() {
-      suggestions = new EnumMap<>(SupportedField.class);
       suggestions.put(MOOD, new TreeSet<>());
       suggestions.put(TEMPO, new TreeSet<>());
       suggestions.put(OCCASION, new TreeSet<>());

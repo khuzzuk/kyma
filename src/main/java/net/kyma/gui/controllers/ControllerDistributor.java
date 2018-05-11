@@ -24,4 +24,8 @@ public class ControllerDistributor implements Callback<Class<?>, Object> {
     public Object call(Class<?> param) {
         return controllers.get(param);
     }
+
+    public MainController getMainController() {
+        return (MainController) controllers.get(MainController.class);
+    }
 }

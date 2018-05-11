@@ -17,25 +17,22 @@ import javafx.stage.Window;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.gui.controllers.ControllerDistributor;
-import net.kyma.gui.controllers.MainController;
 import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
 public class MainWindow extends Stage {
     private final Bus<EventType> bus;
     private final ControllerDistributor controllerDistributor;
-    private final MainController mainController;
 
-    public MainWindow(Bus<EventType> bus, ControllerDistributor controllerDistributor, MainController mainController) {
+    public MainWindow(Bus<EventType> bus, ControllerDistributor controllerDistributor) {
         super(StageStyle.DECORATED);
         this.bus = bus;
         initModality(Modality.WINDOW_MODAL);
         this.controllerDistributor = controllerDistributor;
-        this.mainController = mainController;
     }
 
     public void initMainWindow(Window parent) {
-        mainController.setStage(this);
+        controllerDistributor.getMainController().setStage(this);
         initOwner(parent);
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/mainWindow.fxml"));
         loader.setControllerFactory(controllerDistributor);

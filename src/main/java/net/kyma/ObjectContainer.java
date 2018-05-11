@@ -19,6 +19,11 @@ import net.kyma.data.MetadataIndexer;
 import net.kyma.data.PlayCounter;
 import net.kyma.data.SoundFileConverter;
 import net.kyma.gui.communicate.Alert;
+import net.kyma.gui.controllers.ContentView;
+import net.kyma.gui.controllers.ControllerDistributor;
+import net.kyma.gui.controllers.MainController;
+import net.kyma.gui.controllers.ManagerPaneController;
+import net.kyma.gui.controllers.PlayerPaneController;
 import net.kyma.player.PlayerManager;
 import net.kyma.player.Playlist;
 import net.kyma.properties.PropertiesManager;
@@ -33,27 +38,25 @@ import pl.khuzzuk.messaging.Bus;
 public class ObjectContainer
 {
    private final Bus<EventType> bus;
-   private Collection<Loadable> loadables;
-   private Collection<Pair<EventType, Object>> toSend;
+   private Collection<Loadable> loadables = new ArrayList<>(64);
+   private Collection<Pair<EventType, Object>> toSend = new ArrayList<>(64);
    private String path;
 
    void createContainer(String indexingPath)
    {
       path = indexingPath;
-      loadables = new ArrayList<>(32);
-      toSend = new ArrayList<>(32);
       initGraph();
       loadables.forEach(Loadable::load);
       toSend.forEach(pair -> bus.message(pair.getKey()).withContent(pair.getValue()).send());
    }
 
-   void putToContainer(EventType retrieveEvent, Object object)
+   private void putToContainer(EventType retrieveEvent, Object object)
    {
       toSend.add(new Pair<>(retrieveEvent, object));
    }
 
    @SuppressWarnings("unused")
-   private void putToContainer(EventType retrieveEvent, Loadable loadable)
+   void putToContainer(EventType retrieveEvent, Loadable loadable)
    {
       toSend.add(new Pair<>(retrieveEvent, loadable));
       loadables.add(loadable);
@@ -114,5 +117,20 @@ public class ObjectContainer
 
    private void initGuiDependency() {
       loadables.add(new Alert(bus));
+
+      ManagerPaneController managerPaneController = new ManagerPaneController(bus);
+      loadables.add(managerPaneController);
+
+      MainController mainController = new MainController(bus, managerPaneController);
+      PlayerPaneController playerPaneController = new PlayerPaneController(bus);
+
+      ContentView contentView = new ContentView(bus);
+      putToContainer(EventType.RET_CONTENT_VIEW, contentView);
+
+      putToContainer(EventType.RET_CONTROLLER_DISTRIBUTOR, new ControllerDistributor(
+            mainController,
+            playerPaneController,
+            managerPaneController,
+            contentView));
    }
 }
