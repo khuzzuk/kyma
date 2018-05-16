@@ -1,5 +1,22 @@
 package net.kyma.data;
 
+import static java.lang.Integer.MAX_VALUE;
+import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
+import static net.kyma.EventType.DATA_QUERY;
+import static net.kyma.EventType.DATA_REFRESH_PATHS;
+import static net.kyma.EventType.RET_INDEX_WRITER;
+import static net.kyma.dm.SupportedField.INDEXED_PATH;
+import static net.kyma.dm.SupportedField.PATH;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
@@ -15,14 +32,6 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.WildcardQuery;
 import pl.khuzzuk.messaging.Bus;
 
-import java.io.IOException;
-import java.util.*;
-
-import static java.lang.Integer.MAX_VALUE;
-import static net.kyma.EventType.*;
-import static net.kyma.dm.SupportedField.INDEXED_PATH;
-import static net.kyma.dm.SupportedField.PATH;
-
 @Log4j2
 @RequiredArgsConstructor
 public class DataReader implements Loadable {
@@ -36,12 +45,12 @@ public class DataReader implements Loadable {
 
     private void setWriter(IndexWriter writer) {
         this.writer = writer;
-        bus.subscribingFor(EventType.DATA_GET_PATHS).withResponse(this::getFilePaths).subscribe();
+        bus.subscribingFor(EventType.DATA_GET_PATHS).then(this::getFilePaths).subscribe();
         bus.subscribingFor(EventType.DATA_INDEX_GET_DISTINCT).mapResponse(this::getDistinctValues).subscribe();
         bus.subscribingFor(DATA_QUERY).accept(this::search).subscribe();
     }
 
-    private Map<String, Set<String>> getFilePaths() {
+    private void getFilePaths() {
         Map<String, Set<String>> paths = new TreeMap<>();
         try (DirectoryReader reader = DirectoryReader.open(writer)) {
             IndexSearcher searcher = new IndexSearcher(reader);
@@ -59,7 +68,7 @@ public class DataReader implements Loadable {
         } catch (IOException e) {
             log.error("Error during paths refreshing from index", e);
         }
-        return paths;
+        bus.message(DATA_REFRESH_PATHS).withContent(paths).send();
     }
 
     private Set<String> getDistinctValues(SupportedField field) {

@@ -13,15 +13,14 @@ import pl.khuzzuk.messaging.Bus;
 @Log4j2
 public class Manager extends Application {
     static Bus<EventType> bus;
-    private static MainWindow mainWindow;
-    private static Stage currentStage;
+    static MainWindow mainWindow;
+    static Stage currentStage;
     private static ForceGate gate = ForceGate.of(2, Manager::initMainWindow);
 
    public static void main(String[] args)
     {
         bus = createBus();
         prepareApp("index/", bus);
-        //mainWindow = new MainWindow(bus, controllerDistributor, mainController);
         launch(args);
     }
 

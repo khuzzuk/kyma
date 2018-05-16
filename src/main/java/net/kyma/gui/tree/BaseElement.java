@@ -1,5 +1,11 @@
 package net.kyma.gui.tree;
 
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+
 import javafx.scene.control.TreeItem;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -7,10 +13,6 @@ import lombok.Setter;
 import lombok.ToString;
 import net.kyma.data.PathQueryParameters;
 import net.kyma.data.QueryParameters;
-
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -38,7 +40,7 @@ public class BaseElement extends TreeItem<String> {
         this.setValue(name);
     }
 
-    public void removeChildElementBy(String name) {
+    private void removeChildElementBy(String name) {
         getChildren().remove(childElements.get(name));
         childElements.remove(name);
     }
@@ -52,14 +54,16 @@ public class BaseElement extends TreeItem<String> {
     }
 
     public void update(BaseElement updates) {
+        Collection<String> toRemove = new LinkedList<>();
         for (Map.Entry<String, BaseElement> childNode : childElements.entrySet()) {
             if (updates.childElements.containsKey(childNode.getKey())) {
                 childNode.getValue().update(updates.getChildElement(childNode.getKey()));
                 updates.removeChildElementBy(childNode.getKey());
             } else {
-                removeChildElementBy(childNode.getKey());
+                toRemove.add(childNode.getKey());
             }
         }
+        toRemove.forEach(this::removeChildElementBy);
         for (BaseElement elementToInsert : updates.childElements.values()) {
             addChild(elementToInsert);
         }

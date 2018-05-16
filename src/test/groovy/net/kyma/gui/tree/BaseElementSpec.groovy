@@ -18,6 +18,7 @@ class BaseElementSpec extends Specification {
         fillChild(element1, ["B", "B_A", "B_A_B", "file"] as String[], 0)
         fillChild(element1, ["B", "B_B", "B_B_A", "file"] as String[], 0)
         fillChild(element1, ["B", "B_B", "B_B_B", "file"] as String[], 0)
+        fillChild(element1, ["D", "D_A", "D_A_A", "file"] as String[], 0)
 
         fillChild(element2, ["A", "A_A", "A_A_A", "file"] as String[], 0)
         fillChild(element2, ["A", "A_A", "A_A_B", "file"] as String[], 0)
@@ -48,6 +49,23 @@ class BaseElementSpec extends Specification {
         element1.getChildElement("C").hasChild("C_A")
         element1.getChildElement("C").getChildElement("C_A").hasChild("C_A_A")
         element1.getChildElement("C").getChildElement("C_A").hasChild("C_A_B")
+
+        !element1.hasChild("D")
+    }
+
+    def 'check if ConcurrentModificationException is not thrown'() {
+        given:
+        BaseElement element1 = createBaseElement("element1")
+        BaseElement element2 = createBaseElement("element2")
+
+        fillChild(element1, ["A", "A_A", "A_A_A", "file"] as String[], 0)
+        fillChild(element1, ["B", "B_A", "B_A_A", "file"] as String[], 0)
+
+        when:
+        element1.update(element2)
+
+        then:
+        element1.childElements.size() == 0
     }
 
     private static BaseElement createBaseElement(String name) {

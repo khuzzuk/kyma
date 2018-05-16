@@ -29,7 +29,9 @@ public enum EventType
     * produces {@link java.util.Set}&lt{@link String}&gt*/
    DATA_INDEX_GET_DISTINCT,
    DATA_INDEX_GET_DIRECTORIES,
+   /** empty <br> resend {@link EventType#DATA_REFRESH_PATHS}*/
    DATA_GET_PATHS,
+   /** content Map &lt String, Set &lt String &gt> */
    DATA_REFRESH_PATHS,
    DATA_STORE_ITEM,
    DATA_STORE_LIST,
@@ -37,6 +39,8 @@ public enum EventType
    /** content {@link net.kyma.data.PathQueryParameters}*/
    DATA_REMOVE_PATH,
    DATA_CONVERT_FROM_DOC,
+   /** empty */
+   DATA_INDEX_CLEAN,
 
    DATA_INDEXING_AMOUNT,
    DATA_INDEXING_PROGRESS,

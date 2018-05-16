@@ -3,13 +3,13 @@ package net.kyma.data;
 import static net.kyma.EventType.CLOSE;
 import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
 import static net.kyma.EventType.DATA_GET_PATHS;
+import static net.kyma.EventType.DATA_INDEX_CLEAN;
 import static net.kyma.EventType.DATA_INDEX_GET_ALL;
 import static net.kyma.EventType.DATA_INDEX_GET_DIRECTORIES;
 import static net.kyma.EventType.DATA_INDEX_GET_DISTINCT;
 import static net.kyma.EventType.DATA_INDEX_ITEM;
 import static net.kyma.EventType.DATA_INDEX_LIST;
 import static net.kyma.EventType.DATA_REFRESH;
-import static net.kyma.EventType.DATA_REFRESH_PATHS;
 import static net.kyma.EventType.DATA_REMOVE_ITEM;
 import static net.kyma.EventType.DATA_REMOVE_PATH;
 import static net.kyma.EventType.DATA_STORE_ITEM;
@@ -41,6 +41,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.Bits;
@@ -48,8 +49,7 @@ import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
 @RequiredArgsConstructor
-public class DataIndexer extends Dependable implements Loadable
-{
+public class DataIndexer extends Dependable implements Loadable {
    private final Bus<EventType> bus;
    @Setter
    @Dependency
@@ -61,15 +61,14 @@ public class DataIndexer extends Dependable implements Loadable
    private static final String READ_DATA_ERROR_MESSAGE = "Cannot read data";
 
    @Override
-   public void load()
-   {
+   public void load() {
       bus.subscribingFor(RET_DOC_CONVERTER).accept(this::setDocConverter).subscribe();
       bus.subscribingFor(RET_INDEX_WRITER).accept(this::setWriter).subscribe();
    }
 
-   public void afterDependenciesSet()
-   {
+   public void afterDependenciesSet() {
       bus.subscribingFor(CLOSE).then(this::close).subscribe();
+      bus.subscribingFor(DATA_INDEX_CLEAN).then(this::clearIndex).subscribe();
       bus.subscribingFor(DATA_INDEX_LIST).accept(this::index).subscribe();
       bus.subscribingFor(DATA_STORE_LIST).accept(this::index).subscribe();
       bus.subscribingFor(DATA_INDEX_ITEM).accept(this::indexSingleEntity).subscribe();
@@ -81,8 +80,7 @@ public class DataIndexer extends Dependable implements Loadable
       refreshIndexedPaths();
    }
 
-   private synchronized void index(@NonNull Collection<SoundFile> files)
-   {
+   private synchronized void index(@NonNull Collection<SoundFile> files) {
       if (!files.isEmpty()) {
          String path = files.iterator().next().getIndexedPath();
          indexedPaths.stream().filter(path::startsWith).findAny()
@@ -94,23 +92,16 @@ public class DataIndexer extends Dependable implements Loadable
       refreshIndexedPaths();
    }
 
-   private void indexSingleEntity(@NonNull SoundFile soundFile)
-   {
-      try (DirectoryReader reader = DirectoryReader.open(writer))
-      {
+   private void indexSingleEntity(@NonNull SoundFile soundFile) {
+      try (DirectoryReader reader = DirectoryReader.open(writer)) {
          IndexSearcher searcher = new IndexSearcher(reader);
-         if (isNew(soundFile, searcher))
-         {
+         if (isNew(soundFile, searcher)) {
             writer.addDocument(docConverter.docFrom(soundFile));
-         }
-         else
-         {
+         } else {
             normalizeIndexingPath(soundFile, searcher);
             writer.updateDocument(termForPath(soundFile.getPath()), docConverter.docFrom(soundFile));
          }
-      }
-      catch (IOException e)
-      {
+      } catch (IOException e) {
          log.error("Indexing occurred error", e);
       }
    }
@@ -125,9 +116,7 @@ public class DataIndexer extends Dependable implements Loadable
             previousPath = searcher.doc(scoreDocs[0].doc, Collections.singleton(SupportedField.INDEXED_PATH.getName()))
                   .get(SupportedField.INDEXED_PATH.getName());
          }
-      }
-      catch (IOException e)
-      {
+      } catch (IOException e) {
          log.error(READ_DATA_ERROR_MESSAGE, e);
       }
       soundFile.setIndexedPath(previousPath);
@@ -145,43 +134,33 @@ public class DataIndexer extends Dependable implements Loadable
                documents.add(reader.document(i));
             }
          }
-      }
-      catch (IOException e) {
+      } catch (IOException e) {
          log.error(READ_DATA_ERROR_MESSAGE, e);
       }
 
       bus.message(DATA_CONVERT_FROM_DOC).withResponse(DATA_REFRESH).withContent(documents).send();
    }
 
-   private boolean isNew(SoundFile soundFile, IndexSearcher searcher)
-   {
-      try
-      {
+   private boolean isNew(SoundFile soundFile, IndexSearcher searcher) {
+      try {
          return searcher.search(new TermQuery(termForPath(soundFile.getPath())), 1)
                .scoreDocs.length == 0;
-      }
-      catch (IOException e)
-      {
+      } catch (IOException e) {
          log.error(READ_DATA_ERROR_MESSAGE, e);
       }
       return false;
    }
 
-   private void remove(Collection<SoundFile> soundFiles)
-   {
+   private void remove(Collection<SoundFile> soundFiles) {
       soundFiles.forEach(this::remove);
       commit();
    }
 
    private void remove(SoundFile soundFile) {
-      try
-      {
+      try {
          writer.deleteDocuments(termForPath(soundFile.getPath()));
-      }
-      catch (IOException e)
-      {
-         log.error("Cannot delete document, problem with accessing the index files");
-         log.error(e);
+      } catch (IOException e) {
+         log.error("Cannot delete document, problem with accessing the index files", e);
       }
    }
 
@@ -202,7 +181,7 @@ public class DataIndexer extends Dependable implements Loadable
             .withResponse(DATA_INDEX_GET_DIRECTORIES)
             .withContent(SupportedField.INDEXED_PATH)
             .send();
-      bus.message(DATA_GET_PATHS).withResponse(DATA_REFRESH_PATHS).send();
+      bus.message(DATA_GET_PATHS).send();
    }
 
    private void commit() {
@@ -214,18 +193,23 @@ public class DataIndexer extends Dependable implements Loadable
       }
    }
 
-   private void close()
-   {
-      try
-      {
-         writer.close();
+   private void clearIndex() {
+      try {
+         writer.deleteDocuments(new MatchAllDocsQuery());
+         refreshIndexedPaths();
+      } catch (IOException e) {
+         log.error("Cannot clear index", e);
+         bus.message(SHOW_ALERT).withContent("Indexing access problem").send();
       }
-      catch (IOException e)
-      {
+   }
+
+   private void close() {
+      try {
+         writer.close();
+      } catch (IOException e) {
          log.error("error on closing database", e);
       }
-      if (writer.isOpen())
-      {
+      if (writer.isOpen()) {
          try {
             Thread.sleep(100);
          } catch (InterruptedException e) {

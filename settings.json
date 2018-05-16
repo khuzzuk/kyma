@@ -8,7 +8,7 @@
     "height" : 400,
     "columnDefinitions" : [ {
       "field" : "TITLE",
-      "size" : 100.0
+      "size" : 355.0
     }, {
       "field" : "RATE",
       "size" : 100.0

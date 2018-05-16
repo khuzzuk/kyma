@@ -107,7 +107,7 @@ public class ManagerPaneController implements Initializable, Loadable {
 
         initPlaylistView();
 
-        bus.message(DATA_GET_PATHS).withResponse(DATA_REFRESH_PATHS).send();
+        bus.message(DATA_GET_PATHS).send();
     }
 
     private void initPlaylistView() {
