@@ -14,7 +14,7 @@ import pl.khuzzuk.messaging.Bus;
 public class Manager extends Application {
     static Bus<EventType> bus;
     static MainWindow mainWindow;
-    static Stage currentStage;
+    private static Stage currentStage;
     private static ForceGate gate = ForceGate.of(2, Manager::initMainWindow);
 
    public static void main(String[] args)

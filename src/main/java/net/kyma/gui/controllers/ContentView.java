@@ -266,7 +266,7 @@ public class ContentView implements Initializable, Loadable
             if (keyEvent.isControlDown()) {
                if (selected.size() == 1) {
                   editor.showEditor(getSelected());
-               } else {
+               } else if (selected.size() > 1){
                   bulkEditor.showEditor(selected);
                }
             } else if (keyEvent.isAltDown()) {

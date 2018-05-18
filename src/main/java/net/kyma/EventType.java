@@ -38,6 +38,8 @@ public enum EventType
    DATA_REMOVE_ITEM,
    /** content {@link net.kyma.data.PathQueryParameters}*/
    DATA_REMOVE_PATH,
+   /** accept {@link java.util.Collection} of {@link org.apache.lucene.document.Document}
+    * produces {@link java.util.Collection} of {@link net.kyma.dm.SoundFile}*/
    DATA_CONVERT_FROM_DOC,
    /** empty */
    DATA_INDEX_CLEAN,
@@ -48,7 +50,10 @@ public enum EventType
    DATA_REFRESH,
    DATA_UPDATE_REQUEST,
 
+   /** accept {@link net.kyma.data.QueryParameters}
+    * no response, but response will be send according to query parameters*/
    DATA_QUERY,
+   /** accept {@link java.util.Collection}&lt{@link net.kyma.dm.SoundFile}&gt*/
    DATA_QUERY_RESULT_FOR_CONTENT_VIEW,
 
    DATA_SET_DISTINCT_PEOPLE,
