@@ -200,10 +200,25 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         contentView.items.size() == 2
         def mp3File = contentView.getItems().sorted().get(1)
         selectFirst(contentView)
+        def editedValue = "mp3 mood edited"
+        mp3File.setMood(editedValue)
+        IndexingFinishReporter.reset()
+        contentView.getColumns().stream()
+                .filter({it.text.equals(editedValue)})
+                .findAny()
+                .ifPresent({it.onEditCommit.handle(null)})
 
         and:
-        bus.message(DATA_STORE_ITEM).withContent(mp3File).send()
-        //TODO further implementation
+        await().atMost(1000, TimeUnit.MILLISECONDS).until({IndexingFinishReporter.indexingFinished})
+        contentView.items.clear()
+        selectFirst(filesList)
+        fireEventOn(filesList, 0, 0)
+        await().atMost(2000, TimeUnit.MILLISECONDS).until({ !contentView.items.isEmpty() })
+
+        then:
+        contentView.items.size() == 2
+        def modifiedFile = contentView.getItems().sorted().get(1)
+        modifiedFile.mood == editedValue
 
         cleanup:
         Arrays.stream(filesCopy.listFiles()).forEach({ it.delete() })

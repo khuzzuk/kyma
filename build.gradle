@@ -35,17 +35,36 @@ repositories {
      }
 }
 
+sourceSets {
+    test {
+        java {
+            srcDir 'src/test/aspect'
+        }
+    }
+}
+
 compileJava {
     doLast {
         ant.taskdef(resource: "org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties", classpath: configurations.compile.asPath)
         ant.iajc(
-                source: "1.9",
-                target: "1.9",
+                source: "1.9", target: "1.9", maxmem: "512m", fork: "true",
                 inpath: sourceSets.main.output.classesDir.toPath(),
                 destDir: sourceSets.main.output.classesDir.absolutePath,
-                maxmem: "512m",
-                fork: "true",
                 aspectPath: sourceSets.main.output.classesDir.absolutePath, //project.getBuildDir().getAbsolutePath() + "/classes/java/main/net/kyma/initialization",
+                sourceRootCopyFilter: "**/*.java",
+                classpath: "${configurations.compile.asPath}") {
+        }
+    }
+}
+compileTestJava {
+    doLast {
+        ant.taskdef(resource: "org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties", classpath: configurations.compile.asPath)
+        ant.iajc(
+                source: "1.9", target: "1.9", maxmem: "512m", fork: "true",
+                sourceRoots: sourceSets.test.java.srcDirs,//'/home/adrabik/java/projects/kyma/src/test/aspect',
+                inpath: sourceSets.main.output.classesDir.toPath(),
+                destDir: sourceSets.test.output.classesDir.absolutePath,
+                aspectPath: sourceSets.test.output.classesDir.absolutePath, //project.getBuildDir().getAbsolutePath() + "/classes/java/main/net/kyma/initialization",
                 sourceRootCopyFilter: "**/*.java",
                 classpath: "${configurations.compile.asPath}") {
         }
