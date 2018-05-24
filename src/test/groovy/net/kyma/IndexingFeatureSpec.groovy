@@ -2,6 +2,8 @@ package net.kyma
 
 import javafx.application.Platform
 import javafx.scene.control.ListView
+import javafx.scene.control.TableColumn
+import javafx.scene.control.TablePosition
 import javafx.scene.control.TableView
 import javafx.scene.control.TreeView
 import javafx.stage.Stage
@@ -187,6 +189,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
     def 'check modification of mp3 file metadata'() {
         given:
         File filesCopy = new File('copied_files').absoluteFile
+        def editedValue = "mp3 mood edited"
         Files.copy(soundFilesDir.toPath(), filesCopy.toPath())
         Arrays.stream(soundFilesDir.listFiles()).forEach({ Files.copy(it.toPath(), Paths.get(filesCopy.name, it.name)) })
         indexTestFiles(filesCopy)
@@ -200,16 +203,19 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         contentView.items.size() == 2
         def mp3File = contentView.getItems().sorted().get(1)
         selectFirst(contentView)
-        def editedValue = "mp3 mood edited"
         mp3File.setMood(editedValue)
+
+        TableColumn<SoundFile, String> column = contentView.getColumns().stream()
+                .filter({ it.text.equals(SupportedField.MOOD.getName()) })
+                .findAny().get() as TableColumn<SoundFile, String>
+        def tableUpdateEvent = new TableColumn.CellEditEvent<SoundFile, String>(
+                contentView, new TablePosition<SoundFile, String>(contentView, 1, column), null, editedValue)
+
         IndexingFinishReporter.reset()
-        contentView.getColumns().stream()
-                .filter({it.text.equals(editedValue)})
-                .findAny()
-                .ifPresent({it.onEditCommit.handle(null)})
+        column.onEditCommit.handle(tableUpdateEvent)
 
         and:
-        await().atMost(1000, TimeUnit.MILLISECONDS).until({IndexingFinishReporter.indexingFinished})
+        await().atMost(2000, TimeUnit.MILLISECONDS).until({IndexingFinishReporter.isIndexingFinished()})
         contentView.items.clear()
         selectFirst(filesList)
         fireEventOn(filesList, 0, 0)

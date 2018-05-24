@@ -2,23 +2,22 @@ package net.kyma;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 
 @Aspect
 public class IndexingFinishReporter
 {
    private static AtomicBoolean indexingFinished = new AtomicBoolean();
 
-   @Before("execution(public void net.kyma.data.DataIndexer.load(..))")
-   public void catchIndexingFinished()
-   {
-      System.out.println("\n\n\t\tWoven\n\n");
+   @After("execution(private void net.kyma.data.DataIndexer.indexSingleEntity(..))")
+   public void catchIndexingFinished() {
+      System.out.println("Indexing finished");
       indexingFinished.set(true);
    }
 
-   public static void reset()
-   {
+   public static void reset() {
+      System.out.println("Indexing Reporter reset");
       indexingFinished.set(false);
    }
 
