@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -82,13 +83,13 @@ public class ManagerPaneController implements Initializable, Loadable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        bus.subscribingFor(DATA_SET_DISTINCT_MOOD)
+        bus.subscribingFor(DATA_SET_DISTINCT_MOOD).onFXThread()
                 .accept((Collection<String> values) -> setupFilter(moodFilter.getItems(), values))
                 .subscribe();
-        bus.subscribingFor(DATA_SET_DISTINCT_GENRE)
+        bus.subscribingFor(DATA_SET_DISTINCT_GENRE).onFXThread()
                 .accept((Collection<String> values) -> setupFilter(genreFilter.getItems(), values))
                 .subscribe();
-        bus.subscribingFor(DATA_SET_DISTINCT_OCCASION)
+        bus.subscribingFor(DATA_SET_DISTINCT_OCCASION).onFXThread()
                 .accept((Collection<String> values) -> setupFilter(occasionFilter.getItems(), values))
                 .subscribe();
         bus.subscribingFor(DATA_SET_DISTINCT_PEOPLE).onFXThread()
@@ -96,12 +97,13 @@ public class ManagerPaneController implements Initializable, Loadable {
                 .subscribe();
 
         bus.subscribingFor(DATA_REFRESH_PATHS).onFXThread().accept(this::fillPaths).subscribe();
-        bus.subscribingFor(PLAYLIST_REFRESH).accept(this::refresh).subscribe();
-        bus.subscribingFor(DATA_STORE_ITEM).accept(s -> contentView.refresh()).subscribe();
-        bus.subscribingFor(DATA_STORE_LIST).accept(s -> contentView.refresh()).subscribe();
+        bus.subscribingFor(PLAYLIST_REFRESH).onFXThread().accept(this::refresh).subscribe();
+        bus.subscribingFor(DATA_STORE_ITEM).onFXThread().accept(s -> contentView.refresh()).subscribe();
+        bus.subscribingFor(DATA_STORE_LIST).onFXThread().accept(s -> contentView.refresh()).subscribe();
         bus.subscribingFor(DATA_QUERY_RESULT_FOR_CONTENT_VIEW).onFXThread()
                 .<Collection<SoundFile>>accept(this::fillContentView)
                 .subscribe();
+        bus.subscribingFor(DATA_QUERY_RESULT_FOR_CONTENT_VIEW).onFXThread().accept(this::updateFilters).subscribe();
 
         filesList.setRoot(new RootElement("Content"));
 
@@ -183,7 +185,7 @@ public class ManagerPaneController implements Initializable, Loadable {
     }
 
     @FXML
-    private void fillContentView() {
+    private void requestUpdateContentView() {
         BaseElement selectedItem = (BaseElement) filesList.getSelectionModel().getSelectedItem();
         if (selectedItem != null) {
             bus.message(DATA_QUERY).withContent(selectedItem.toQuery()).send();
@@ -194,6 +196,12 @@ public class ManagerPaneController implements Initializable, Loadable {
         contentView.getItems().clear();
         contentView.getItems().addAll(soundFiles);
         contentView.refresh();
+    }
+
+    private void updateFilters(Collection<SoundFile> soundFiles) {
+        setupFilter(moodFilter.getItems(), soundFiles.stream().map(SoundFile::getMood).collect(Collectors.toSet()));
+        setupFilter(genreFilter.getItems(), soundFiles.stream().map(SoundFile::getGenre).collect(Collectors.toSet()));
+        setupFilter(occasionFilter.getItems(), soundFiles.stream().map(SoundFile::getOccasion).collect(Collectors.toSet()));
     }
 
     @FXML

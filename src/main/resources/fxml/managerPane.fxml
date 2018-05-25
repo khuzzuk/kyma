@@ -14,7 +14,7 @@
         <RowConstraints/>
         <RowConstraints/>
     </rowConstraints>
-    <TreeView fx:id="filesList" maxHeight="Infinity" onMouseClicked="#fillContentView" onKeyReleased="#onKeyReleased"/>
+    <TreeView fx:id="filesList" maxHeight="Infinity" onMouseClicked="#requestUpdateContentView" onKeyReleased="#onKeyReleased"/>
     <SplitPane dividerPositions="0.2" maxHeight="Infinity" maxWidth="Infinity" orientation="VERTICAL"
                GridPane.columnIndex="1">
         <GridPane hgap="5">

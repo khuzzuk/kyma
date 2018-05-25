@@ -48,10 +48,11 @@ public enum EventType
    DATA_INDEXING_PROGRESS,
    DATA_INDEXING_FINISH,
    DATA_REFRESH,
+   /** accepts {@link net.kyma.dm.TagUpdateRequest}*/
    DATA_UPDATE_REQUEST,
 
    /** accept {@link net.kyma.data.QueryParameters}
-    * no response, but response will be send according to query parameters*/
+    * no response, but event will be send according to query parameters*/
    DATA_QUERY,
    /** accept {@link java.util.Collection}&lt{@link net.kyma.dm.SoundFile}&gt*/
    DATA_QUERY_RESULT_FOR_CONTENT_VIEW,

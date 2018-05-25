@@ -1,11 +1,7 @@
 package net.kyma
 
 import javafx.application.Platform
-import javafx.scene.control.ListView
-import javafx.scene.control.TableColumn
-import javafx.scene.control.TablePosition
-import javafx.scene.control.TableView
-import javafx.scene.control.TreeView
+import javafx.scene.control.*
 import javafx.stage.Stage
 import net.kyma.dm.RateTagUpdateRequest
 import net.kyma.dm.Rating
@@ -42,11 +38,13 @@ class IndexingFeatureSpec extends FxmlTestHelper {
     @Shared
     private TreeView<String> filesList
     @Shared
-    private TableView<SoundFile> contentView
-    @Shared
     private ContentView contentViewController
     @Shared
     private SoundFileEditor soundFileEditor
+
+    //contentView
+    @Shared
+    private TableView<SoundFile> contentView
 
     //test properties
     @Shared
@@ -99,17 +97,19 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         ManagerPaneController managerPaneController = controllerDistributor.call(ManagerPaneController.class) as ManagerPaneController
         if (managerPaneController == null) false
 
+        moodSuggestions = (moodFilterField.get(managerPaneController) as ListView<String>)?.items
+        if (moodSuggestions == null) false
+
         filesList = fileListField.get(managerPaneController) as TreeView<String>
         if (this.filesList == null) false
-
-        contentView = contentViewField.get(managerPaneController) as TableView<SoundFile>
-        if (this.contentView == null) false
 
         fileListRootElement = this.filesList.getRoot() as RootElement
         if (fileListRootElement == null) false
 
-        moodSuggestions = (moodFilterField.get(managerPaneController) as ListView<String>)?.items
-        if (moodSuggestions == null) false
+        contentView = contentViewField.get(managerPaneController) as TableView<SoundFile>
+        if (this.contentView == null) false
+
+        if (GuiPrivateFields.contentViewSuggestions == null) false
 
         true
     }
@@ -175,9 +175,11 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         distinctMood.value.contains('mp3 mood')
         distinctMood.value.contains('flac mood')
 
-        await().atMost(1000, TimeUnit.MILLISECONDS).until({ moodSuggestions.size() == 3 })
-        moodSuggestions.contains('mp3 mood')
-        moodSuggestions.contains('flac mood')
+        def suggestions = GuiPrivateFields.contentViewSuggestions
+        await().atMost(1000, TimeUnit.MILLISECONDS)
+                .until({ suggestions.get(SupportedField.MOOD).size() == 2 })
+        suggestions.get(SupportedField.MOOD).contains('mp3 mood')
+        suggestions.get(SupportedField.MOOD).contains('flac mood')
     }
 
     def 'check if reindex can cleanup paths'() {
@@ -367,5 +369,18 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         selectBySoundFilePath(contentView, selectedSoundFile)
         def modifiedFile = contentView.selectionModel.getSelectedItem()
         modifiedFile.rate == editedValue
+    }
+
+    def 'check main filters content'() {
+        given:
+        moodSuggestions.clear()
+
+        when:
+        selectFirst(filesList)
+        clickMouseOn(filesList, 0, 0)
+        await().atMost(2000, TimeUnit.MILLISECONDS).until({ !contentView.items.isEmpty() })
+
+        then:
+        moodSuggestions.size() == 2
     }
 }
