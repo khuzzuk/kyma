@@ -1,12 +1,10 @@
 package net.kyma.dm;
 
-public class RateTagUpdateRequest extends TagUpdateRequest {
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
+public class RateTagUpdateRequest implements TagUpdateRequest {
    private Rating value;
-   public RateTagUpdateRequest(Rating value)
-   {
-      super(SupportedField.RATE, value.name());
-      this.value = value;
-   }
 
    @Override
    public SoundFile update(SoundFile file)

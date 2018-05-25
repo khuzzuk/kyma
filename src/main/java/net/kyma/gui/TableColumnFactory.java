@@ -25,8 +25,8 @@ import net.kyma.EventType;
 import net.kyma.dm.RateTagUpdateRequest;
 import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
+import net.kyma.dm.StringTagUpdateRequest;
 import net.kyma.dm.SupportedField;
-import net.kyma.dm.TagUpdateRequest;
 import org.apache.commons.lang3.StringUtils;
 import pl.khuzzuk.messaging.Bus;
 
@@ -102,7 +102,7 @@ public class TableColumnFactory
       column.setCellFactory(cellFactory);
       column.setOnEditCommit(value -> {
          field.getSetter().accept(value.getRowValue(), value.getNewValue());
-         bus.message(DATA_UPDATE_REQUEST).withContent(new TagUpdateRequest(field, value.getNewValue())).send();
+         bus.message(DATA_UPDATE_REQUEST).withContent(new StringTagUpdateRequest(field, value.getNewValue())).send();
       });
       column.setPrefWidth(width);
       column.widthProperty().addListener((observable, newV, oldV) -> bus.message(GUI_CONTENTVIEW_SETTINGS_CHANGED).send());
@@ -157,7 +157,7 @@ public class TableColumnFactory
          }
       });
       column.setOnEditCommit(v -> bus.message(DATA_UPDATE_REQUEST)
-            .withContent(new TagUpdateRequest(TITLE, v.getNewValue())).send());
+            .withContent(new StringTagUpdateRequest(TITLE, v.getNewValue())).send());
       return column;
    }
 }
