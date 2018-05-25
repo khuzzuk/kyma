@@ -1,6 +1,5 @@
 package net.kyma.gui;
 
-import static net.kyma.EventType.DATA_STORE_ITEM;
 import static net.kyma.EventType.DATA_UPDATE_REQUEST;
 import static net.kyma.EventType.GUI_CONTENTVIEW_SETTINGS_CHANGED;
 import static net.kyma.dm.SupportedField.COUNTER;
@@ -23,6 +22,7 @@ import javafx.scene.input.MouseButton;
 import javafx.util.Callback;
 import lombok.AllArgsConstructor;
 import net.kyma.EventType;
+import net.kyma.dm.RateTagUpdateRequest;
 import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
@@ -69,10 +69,10 @@ public class TableColumnFactory
                   setGraphic(Rating.getStarFor((int) (e.getX() * 10 / getWidth() + 1)))));
             setOnMouseExited(e -> startFactory.accept(item, this));
             setOnMouseClicked(e -> {
-               if (e.getButton().equals(MouseButton.PRIMARY))
-               {
-                  Rating.setRate((int) (e.getX() * 10 / getWidth() + 1), item);
-                  bus.message(DATA_STORE_ITEM).withContent(item).send();
+               if (e.getButton().equals(MouseButton.PRIMARY)) {
+                  bus.message(DATA_UPDATE_REQUEST)
+                        .withContent(new RateTagUpdateRequest(Rating.getFor((int) (e.getX() * 10 / getWidth() + 1))))
+                        .send();
                }
             });
          }

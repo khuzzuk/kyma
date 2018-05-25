@@ -9,6 +9,7 @@ import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
+import net.kyma.dm.SoundFile
 import spock.lang.Specification
 
 import java.lang.reflect.Field
@@ -31,7 +32,7 @@ abstract class FxmlTestHelper extends Specification {
         }
     }
 
-    void fireEventOn(javafx.scene.Node node, int x, int y) {
+    void clickMouseOn(javafx.scene.Node node, int x, int y) {
         Event.fireEvent(node, new MouseEvent(
                 MouseEvent.MOUSE_CLICKED, x, y, x, y, MouseButton.PRIMARY, 1,
                 false, false, false, false, false,
@@ -53,7 +54,11 @@ abstract class FxmlTestHelper extends Specification {
     }
 
     void selectFirst(TableView<?> tableView) {
-        tableView.selectionModel.select(1)
+        tableView.selectionModel.select(0)
+    }
+
+    void selectBySoundFilePath(TableView<SoundFile> tableView, SoundFile byPath) {
+        tableView.selectionModel.select(byPath)
     }
 
     boolean hasValue(Object o, String fieldName) {
