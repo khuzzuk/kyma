@@ -1,7 +1,7 @@
 package net.kyma.gui.tree;
 
 import lombok.EqualsAndHashCode;
-import net.kyma.data.QueryParameters;
+import net.kyma.dm.DataQuery;
 
 @EqualsAndHashCode(callSuper = true)
 public class RootElement extends BaseElement {
@@ -33,7 +33,13 @@ public class RootElement extends BaseElement {
     }
 
     @Override
-    public QueryParameters toQuery() {
-        return QueryParameters.builder().build();
+    public boolean hasParent()
+    {
+        return false;
+    }
+
+    @Override
+    public DataQuery toQuery() {
+        return DataQuery.empty();
     }
 }

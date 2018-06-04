@@ -32,6 +32,7 @@ import lombok.extern.log4j.Log4j2;
 import net.kyma.BusRequestException;
 import net.kyma.EventType;
 import net.kyma.Loadable;
+import net.kyma.dm.DataQuery;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
 import net.kyma.initialization.Dependable;
@@ -164,9 +165,9 @@ public class DataIndexer extends Dependable implements Loadable {
       }
    }
 
-   private void removePath(PathQueryParameters parameters) {
+   private void removePath(DataQuery query) {
       try {
-         long deleteDocuments = writer.deleteDocuments(parameters.createQuery());
+         long deleteDocuments = writer.deleteDocuments(QueryUtils.from(query));
          commit();
          log.debug("Deleted documents: {}", deleteDocuments);
       } catch (IOException e) {

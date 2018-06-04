@@ -1,13 +1,12 @@
 package net.kyma.gui.tree;
 
 import lombok.EqualsAndHashCode;
-import net.kyma.data.QueryParameters;
-import net.kyma.dm.SupportedField;
+import net.kyma.dm.DataQuery;
 
 @EqualsAndHashCode(callSuper = true)
 public class FilterRootElement extends BaseElement {
     @Override
-    public QueryParameters toQuery() {
-        return QueryParameters.builder().build();
+    public DataQuery toQuery() {
+        return DataQuery.empty();
     }
 }

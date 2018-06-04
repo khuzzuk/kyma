@@ -52,7 +52,7 @@ public enum EventType
    DATA_UPDATE_REQUEST,
 
    /** accept {@link net.kyma.data.QueryParameters}
-    * no response, but event will be send according to query parameters*/
+    * produces {@link java.util.Collection}&lt{@link net.kyma.dm.SoundFile}&gt*/
    DATA_QUERY,
    /** accept {@link java.util.Collection}&lt{@link net.kyma.dm.SoundFile}&gt*/
    DATA_QUERY_RESULT_FOR_CONTENT_VIEW,

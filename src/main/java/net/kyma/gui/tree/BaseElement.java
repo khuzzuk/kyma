@@ -11,8 +11,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import net.kyma.data.PathQueryParameters;
-import net.kyma.data.QueryParameters;
+import net.kyma.dm.DataQuery;
+import net.kyma.dm.SupportedField;
 
 @Getter
 @Setter
@@ -87,7 +87,12 @@ public class BaseElement extends TreeItem<String> {
         parentElement = null;
     }
 
-    public QueryParameters toQuery() {
-        return new PathQueryParameters(getPath(), getIndexingPath());
+    public boolean hasParent() {
+        return parentElement != null;
+    }
+
+    public void applyTo(DataQuery query) {
+        query.and(SupportedField.PATH, "*" + getPath() + "/*", true)
+              .and(SupportedField.INDEXED_PATH, getIndexingPath(), false);
     }
 }

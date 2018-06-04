@@ -1,27 +1,34 @@
 package net.kyma.data;
 
 import static java.lang.Integer.MAX_VALUE;
-import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
 import static net.kyma.EventType.DATA_QUERY;
 import static net.kyma.EventType.DATA_REFRESH_PATHS;
 import static net.kyma.EventType.RET_INDEX_WRITER;
+import static net.kyma.EventType.RET_SOUND_FILE_CONVERTER;
 import static net.kyma.dm.SupportedField.INDEXED_PATH;
 import static net.kyma.dm.SupportedField.PATH;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.Loadable;
+import net.kyma.dm.DataQuery;
+import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
+import net.kyma.initialization.Dependable;
+import net.kyma.initialization.Dependency;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
@@ -34,20 +41,27 @@ import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
 @RequiredArgsConstructor
-public class DataReader implements Loadable {
+public class DataReader extends Dependable implements Loadable {
     private final Bus<EventType> bus;
+    @Setter
+    @Dependency
     private IndexWriter writer;
+    @Setter
+    @Dependency
+    private SoundFileConverter soundFileConverter;
 
     @Override
     public void load() {
         bus.subscribingFor(RET_INDEX_WRITER).accept(this::setWriter).subscribe();
+        bus.subscribingFor(RET_SOUND_FILE_CONVERTER).accept(this::setSoundFileConverter).subscribe();
     }
 
-    private void setWriter(IndexWriter writer) {
-        this.writer = writer;
+    @Override
+    public void afterDependenciesSet()
+    {
         bus.subscribingFor(EventType.DATA_GET_PATHS).then(this::getFilePaths).subscribe();
         bus.subscribingFor(EventType.DATA_INDEX_GET_DISTINCT).mapResponse(this::getDistinctValues).subscribe();
-        bus.subscribingFor(DATA_QUERY).accept(this::search).subscribe();
+        bus.subscribingFor(DATA_QUERY).mapResponse(this::search).subscribe();
     }
 
     private void getFilePaths() {
@@ -86,17 +100,17 @@ public class DataReader implements Loadable {
         return values;
     }
 
-    private void search(QueryParameters parameters) {
+    private Collection<SoundFile> search(DataQuery query) {
         List<Document> documents = new ArrayList<>();
         try (DirectoryReader reader = DirectoryReader.open(writer)) {
             IndexSearcher indexSearcher = new IndexSearcher(reader);
-            ScoreDoc[] docs = parameters.performQuery(indexSearcher);
+            ScoreDoc[] docs = indexSearcher.search(QueryUtils.from(query), Integer.MAX_VALUE).scoreDocs;
             for (ScoreDoc doc : docs) {
                 documents.add(reader.document(doc.doc));
             }
-            bus.message(DATA_CONVERT_FROM_DOC).withResponse(parameters.getReturnTopic()).withContent(documents).send();
         } catch (IOException e) {
             log.error("cannot query index", e);
         }
+        return documents.stream().map(soundFileConverter::from).collect(Collectors.toList());
     }
 }

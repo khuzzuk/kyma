@@ -30,13 +30,13 @@
                 <Insets bottom="5"/>
             </padding>
             <TitledPane text="Mood" collapsible="false">
-                <ListView fx:id="moodFilter" />
+                <ListView fx:id="moodFilter" onMouseClicked="#requestUpdateContentView"/>
             </TitledPane>
             <TitledPane text="Genre" collapsible="false" GridPane.columnIndex="1">
-                <ListView fx:id="genreFilter" />
+                <ListView fx:id="genreFilter" onMouseClicked="#requestUpdateContentView"/>
             </TitledPane>
             <TitledPane text="Occasion" collapsible="false" GridPane.columnIndex="2">
-                <ListView fx:id="occasionFilter" />
+                <ListView fx:id="occasionFilter" onMouseClicked="#requestUpdateContentView"/>
             </TitledPane>
         </GridPane>
         <fx:include fx:id="contentView" source="contentView.fxml"/>

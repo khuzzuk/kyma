@@ -21,7 +21,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javafx.beans.property.IntegerProperty;
@@ -37,10 +40,12 @@ import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.Loadable;
+import net.kyma.dm.DataQuery;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
 import net.kyma.gui.TableColumnFactory;
@@ -51,6 +56,7 @@ import net.kyma.gui.tree.PathElementFactory;
 import net.kyma.gui.tree.RootElement;
 import net.kyma.player.PlaylistEvent;
 import net.kyma.player.PlaylistRefreshEvent;
+import org.apache.commons.lang3.StringUtils;
 import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
@@ -59,12 +65,15 @@ public class ManagerPaneController implements Initializable, Loadable {
     @FXML
     private GridPane managerPane;
     @FXML
+    @Getter
     private TableView<SoundFile> contentView;
     @FXML
+    @Getter
     private TreeView<String> filesList;
     @FXML
     private TableView<SoundFile> playlist;
     @FXML
+    @Getter
     private ListView<String> moodFilter;
     @FXML
     private ListView<String> genreFilter;
@@ -100,9 +109,7 @@ public class ManagerPaneController implements Initializable, Loadable {
         bus.subscribingFor(PLAYLIST_REFRESH).onFXThread().accept(this::refresh).subscribe();
         bus.subscribingFor(DATA_STORE_ITEM).onFXThread().accept(s -> contentView.refresh()).subscribe();
         bus.subscribingFor(DATA_STORE_LIST).onFXThread().accept(s -> contentView.refresh()).subscribe();
-        bus.subscribingFor(DATA_QUERY_RESULT_FOR_CONTENT_VIEW).onFXThread()
-                .<Collection<SoundFile>>accept(this::fillContentView)
-                .subscribe();
+        bus.subscribingFor(DATA_QUERY_RESULT_FOR_CONTENT_VIEW).onFXThread().accept(this::fillContentView).subscribe();
         bus.subscribingFor(DATA_QUERY_RESULT_FOR_CONTENT_VIEW).onFXThread().accept(this::updateFilters).subscribe();
 
         filesList.setRoot(new RootElement("Content"));
@@ -186,9 +193,26 @@ public class ManagerPaneController implements Initializable, Loadable {
 
     @FXML
     private void requestUpdateContentView() {
+        DataQuery query = DataQuery.newQuery();
+
         BaseElement selectedItem = (BaseElement) filesList.getSelectionModel().getSelectedItem();
-        if (selectedItem != null) {
-            bus.message(DATA_QUERY).withContent(selectedItem.toQuery()).send();
+        if (selectedItem != null && selectedItem.hasParent()) {
+            query.and(SupportedField.PATH, "*" + selectedItem.getPath() + "/*", true);
+        }
+
+        applyFilterToQuery(moodFilter, query, SupportedField.MOOD);
+        applyFilterToQuery(genreFilter, query, SupportedField.GENRE);
+        applyFilterToQuery(occasionFilter, query, SupportedField.OCCASION);
+
+        if (query.hasParameters()) {
+            bus.message(DATA_QUERY).withContent(query).withResponse(DATA_QUERY_RESULT_FOR_CONTENT_VIEW).send();
+        }
+    }
+
+    private void applyFilterToQuery(ListView<String> filter, DataQuery query, SupportedField field) {
+        String selectedItem = filter.getSelectionModel().getSelectedItem();
+        if (selectedItem != null && !selectedItem.equals("...")) {
+            query.and(field, selectedItem, false);
         }
     }
 
@@ -199,10 +223,19 @@ public class ManagerPaneController implements Initializable, Loadable {
     }
 
     private void updateFilters(Collection<SoundFile> soundFiles) {
-        setupFilter(moodFilter.getItems(), soundFiles.stream().map(SoundFile::getMood).collect(Collectors.toSet()));
-        setupFilter(genreFilter.getItems(), soundFiles.stream().map(SoundFile::getGenre).collect(Collectors.toSet()));
-        setupFilter(occasionFilter.getItems(), soundFiles.stream().map(SoundFile::getOccasion).collect(Collectors.toSet()));
+        setupFilter(moodFilter.getItems(), filterValuesFrom(soundFiles, SoundFile::getMood));
+        setupFilter(genreFilter.getItems(), filterValuesFrom(soundFiles, SoundFile::getGenre));
+        setupFilter(occasionFilter.getItems(), filterValuesFrom(soundFiles, SoundFile::getOccasion));
     }
+
+   private Set<String> filterValuesFrom(Collection<SoundFile> soundFiles, Function<SoundFile, String> mapper)
+   {
+      return soundFiles.stream()
+            .map(mapper)
+            .filter(Objects::nonNull)
+            .filter(StringUtils::isNoneBlank)
+            .collect(Collectors.toSet());
+   }
 
     @FXML
     private void onKeyReleased(KeyEvent keyEvent) {

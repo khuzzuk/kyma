@@ -3,6 +3,7 @@ package net.kyma
 import javafx.application.Platform
 import javafx.event.Event
 import javafx.fxml.FXML
+import javafx.scene.control.ListView
 import javafx.scene.control.TableView
 import javafx.scene.control.TreeView
 import javafx.scene.input.KeyCode
@@ -55,6 +56,10 @@ abstract class FxmlTestHelper extends Specification {
 
     void selectFirst(TableView<?> tableView) {
         tableView.selectionModel.select(0)
+    }
+
+    void select(ListView<?> listView, int item) {
+        listView.selectionModel.select(item)
     }
 
     void selectBySoundFilePath(TableView<SoundFile> tableView, SoundFile byPath) {

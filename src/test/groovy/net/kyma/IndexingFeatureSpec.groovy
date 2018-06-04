@@ -1,22 +1,21 @@
 package net.kyma
 
 import javafx.application.Platform
-import javafx.scene.control.*
+import javafx.scene.control.TableColumn
+import javafx.scene.control.TablePosition
 import javafx.stage.Stage
 import net.kyma.dm.RateTagUpdateRequest
 import net.kyma.dm.Rating
 import net.kyma.dm.SoundFile
 import net.kyma.dm.SupportedField
-import net.kyma.gui.SoundFileEditor
 import net.kyma.gui.controllers.ContentView
 import net.kyma.gui.controllers.ControllerDistributor
 import net.kyma.gui.controllers.ManagerPaneController
-import net.kyma.gui.tree.RootElement
+import net.kyma.gui.controllers.ManagerPaneControllerTestHelper
 import net.kyma.player.Format
 import pl.khuzzuk.messaging.Bus
 import spock.lang.Shared
 
-import java.lang.reflect.Field
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
@@ -32,19 +31,9 @@ class IndexingFeatureSpec extends FxmlTestHelper {
 
     //ManagerPaneController
     @Shared
-    private RootElement fileListRootElement
-    @Shared
-    private Collection<String> moodSuggestions
-    @Shared
-    private TreeView<String> filesList
+    private ManagerPaneControllerTestHelper managerHelper
     @Shared
     private ContentView contentViewController
-    @Shared
-    private SoundFileEditor soundFileEditor
-
-    //contentView
-    @Shared
-    private TableView<SoundFile> contentView
 
     //test properties
     @Shared
@@ -52,15 +41,11 @@ class IndexingFeatureSpec extends FxmlTestHelper {
     @Shared
     private PropertyContainer<Set<String>> distinctMood = new PropertyContainer<>()
     @Shared
-    private PropertyContainer<SoundFile> indexedSoundFile = new PropertyContainer<>();
+    private PropertyContainer<SoundFile> indexedSoundFile = new PropertyContainer<>()
 
     private static indexDir = new File("test_index/")
     private static soundFilesDir = new File("copied_files").getAbsoluteFile()
     private static sourceDir = new File("test_files").getAbsoluteFile()
-    private static Field fileListField = ManagerPaneController.class.getDeclaredField('filesList')
-    private static Field contentViewField = ManagerPaneController.class.getDeclaredField('contentView')
-    private static Field moodFilterField = ManagerPaneController.class.getDeclaredField('moodFilter')
-    private static Field contentViewSoundFileEditor = ContentView.class.getDeclaredField('editor')
 
     void setupSpec() {
         Platform.startup({})
@@ -83,33 +68,18 @@ class IndexingFeatureSpec extends FxmlTestHelper {
     }
 
     boolean checkControllers() {
-        fileListField.setAccessible(true)
-        moodFilterField.setAccessible(true)
-        contentViewField.setAccessible(true)
-        contentViewSoundFileEditor.setAccessible(true)
+        managerHelper = new ManagerPaneControllerTestHelper()
+        def managerPaneController = controllerDistributor.call(ManagerPaneController.class) as ManagerPaneController
+        managerHelper.retrieveFields(managerPaneController)
+        if (!managerHelper.isValid()) {
+            return false
+        }
 
         contentViewController = controllerDistributor.call(ContentView.class) as ContentView
-        if (contentViewController == null) false
+        if (contentViewController == null) return false
 
-        soundFileEditor = contentViewSoundFileEditor.get(contentViewController) as SoundFileEditor
-        if (this.soundFileEditor == null) false
-
-        ManagerPaneController managerPaneController = controllerDistributor.call(ManagerPaneController.class) as ManagerPaneController
-        if (managerPaneController == null) false
-
-        moodSuggestions = (moodFilterField.get(managerPaneController) as ListView<String>)?.items
-        if (moodSuggestions == null) false
-
-        filesList = fileListField.get(managerPaneController) as TreeView<String>
-        if (this.filesList == null) false
-
-        fileListRootElement = this.filesList.getRoot() as RootElement
-        if (fileListRootElement == null) false
-
-        contentView = contentViewField.get(managerPaneController) as TableView<SoundFile>
-        if (this.contentView == null) false
-
-        if (GuiPrivateFields.contentViewSuggestions == null) false
+        if (GuiPrivateFields.contentViewSuggestions == null) return false
+        if (GuiPrivateFields.contentViewSoundFileEditor == null) return false
 
         true
     }
@@ -134,7 +104,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         cleanIndex()
         refreshedPaths.value = null
         distinctMood.value = null
-        contentView.items.clear()
+        managerHelper.contentView.items.clear()
     }
 
     void indexTestFiles() {
@@ -165,21 +135,22 @@ class IndexingFeatureSpec extends FxmlTestHelper {
     }
 
     def 'check reindexing'() {
-        when:
+        given:
         indexTestFiles()
+
+        when:
         bus.message(DATA_INDEX_GET_DISTINCT).withResponse(DATA_SET_DISTINCT_MOOD).withContent(SupportedField.MOOD).send()
+        await().atMost(2000, TimeUnit.MILLISECONDS).until({ distinctMood.hasValue() })
 
         then:
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({ distinctMood.hasValue() })
         distinctMood.value.size() == 2
-        distinctMood.value.contains('mp3 mood')
+        distinctMood.value.contains(MetadataValues.mp3Mood)
         distinctMood.value.contains('flac mood')
 
         def suggestions = GuiPrivateFields.contentViewSuggestions
         await().atMost(1000, TimeUnit.MILLISECONDS)
                 .until({ suggestions.get(SupportedField.MOOD).size() == 2 })
-        suggestions.get(SupportedField.MOOD).contains('mp3 mood')
-        suggestions.get(SupportedField.MOOD).contains('flac mood')
+        suggestions.get(SupportedField.MOOD).containsAll([MetadataValues.mp3Mood, MetadataValues.flacMood])
     }
 
     def 'check if reindex can cleanup paths'() {
@@ -202,102 +173,102 @@ class IndexingFeatureSpec extends FxmlTestHelper {
     def 'click on file list element should result in showing files in content view'() {
         given:
         indexTestFiles()
-        Platform.runLater({ contentView.getItems().clear() })
-        contentView != null
+        Platform.runLater({ this.contentView.getItems().clear() })
 
         when:
-        selectFirst(filesList)
-        clickMouseOn(filesList, 0, 0)
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({ !contentView.items.isEmpty() })
+        selectFirst(managerHelper.filesList)
+        clickMouseOn(managerHelper.filesList, 0, 0)
+        await().atMost(2000, TimeUnit.MILLISECONDS).until({ !managerHelper.contentView.items.isEmpty() })
 
         then:
-        contentView.getItems().size() == 2
-        def soundFiles = contentView.getItems().sorted()
+        managerHelper.contentView.getItems().size() == 2
+        def soundFiles = managerHelper.contentView.getItems().sorted()
         def flacFile = soundFiles.get(0)
         def mp3File = soundFiles.get(1)
 
         flacFile.format == Format.FLAC
         def expectedIndexingPath = ++refreshedPaths.value.keySet().iterator()
         flacFile.path == expectedIndexingPath + soundFilesDir.name + '/test.flac'
-        flacFile.fileName == 'test.flac'
+        flacFile.fileName == MetadataValues.flacFileName
         flacFile.indexedPath == expectedIndexingPath
-        flacFile.title == 'flac title'
-        flacFile.rate == Rating.TWO_HALF
-        flacFile.date == '2018'
-        flacFile.album == 'flac album'
-        flacFile.albumArtist == 'flac album artist'
-        flacFile.artist == 'flac artist'
-        flacFile.composer == 'flac composer'
-        flacFile.conductor == 'flac conductor'
-        flacFile.country == 'flac country'
-        flacFile.custom1 == 'flac custom1'
-        flacFile.custom2 == 'flac custom2'
-        flacFile.custom3 == 'flac custom3'
-        flacFile.custom4 == 'flac custom4'
-        flacFile.custom5 == 'flac custom5'
-        flacFile.discNo == '1'
-        flacFile.genre == 'flac genre'
-        flacFile.group == 'flac group'
-        flacFile.instrument == 'flac instrument'
-        flacFile.mood == 'flac mood'
-        flacFile.movement == 'flac movement'
-        flacFile.occasion == 'flac occasion'
-        flacFile.opus == 'flac opus'
-        flacFile.orchestra == 'flac orchestra'
-        flacFile.quality == 'flac quality'
-        flacFile.ranking == 'flac ranking'
-        flacFile.tempo == 'flac tempo'
-        flacFile.tonality == 'flac tonality'
-        flacFile.track == '1'
-        flacFile.work == 'flac work'
-        flacFile.workType == 'flac wokr type'
-        flacFile.counter == 0
+        flacFile.title == MetadataValues.flacTitle
+        flacFile.rate == MetadataValues.flacRate
+        flacFile.date == MetadataValues.flacDate
+        flacFile.album == MetadataValues.flacAlbum
+        flacFile.albumArtist == MetadataValues.flacAlbumArtist
+        flacFile.artist == MetadataValues.flacArtist
+        flacFile.composer == MetadataValues.flacComposer
+        flacFile.conductor == MetadataValues.flacConductor
+        flacFile.country == MetadataValues.flacCountry
+        flacFile.custom1 == MetadataValues.flacCustom1
+        flacFile.custom2 == MetadataValues.flacCustom2
+        flacFile.custom3 == MetadataValues.flacCustom3
+        flacFile.custom4 == MetadataValues.flacCustom4
+        flacFile.custom5 == MetadataValues.flacCustom5
+        flacFile.discNo == MetadataValues.flacDiscNo
+        flacFile.genre == MetadataValues.flacGenre
+        flacFile.group == MetadataValues.flacGroup
+        flacFile.instrument == MetadataValues.flacInstrument
+        flacFile.mood == MetadataValues.flacMood
+        flacFile.movement == MetadataValues.flacMovement
+        flacFile.occasion == MetadataValues.flacOccasion
+        flacFile.opus == MetadataValues.flacOpus
+        flacFile.orchestra == MetadataValues.flacOrchestra
+        flacFile.quality == MetadataValues.flacQuality
+        flacFile.ranking == MetadataValues.flacRanking
+        flacFile.tempo == MetadataValues.flacTempo
+        flacFile.tonality == MetadataValues.flacTonality
+        flacFile.track == MetadataValues.flacTrack
+        flacFile.work == MetadataValues.flacWork
+        flacFile.workType == MetadataValues.flacWorkType
+        flacFile.counter == MetadataValues.flacCounter
 
         mp3File.format == Format.MP3
         mp3File.path == expectedIndexingPath + soundFilesDir.name + '/test.mp3'
-        mp3File.fileName == 'test.mp3'
+        mp3File.fileName == MetadataValues.mp3FileName
         mp3File.indexedPath == expectedIndexingPath
-        mp3File.title == 'mp3Title'
-        mp3File.rate == Rating.ONE
-        mp3File.date == '2018'
-        mp3File.album == 'mp3 album'
-        mp3File.albumArtist == 'mp3 album artist'
-        mp3File.artist == 'mp3 artist'
-        mp3File.composer == 'mp3 composer'
-        mp3File.conductor == 'mp3 conductor'
-        mp3File.country == 'mp3 country'
-        mp3File.custom1 == 'mp3 custom1'
-        mp3File.custom2 == 'mp3 custom2'
-        mp3File.custom3 == 'mp3 custom3'
-        mp3File.custom4 == 'mp3 custom4'
-        mp3File.custom5 == 'mp3 custom5'
-        mp3File.discNo == ''
-        mp3File.genre == 'mp3 genre'
-        mp3File.group == 'mp3 group'
-        mp3File.instrument == 'mp3 instrument'
-        mp3File.mood == 'mp3 mood'
-        mp3File.movement == 'mp3 movement'
-        mp3File.occasion == 'mp3 occasion'
-        mp3File.opus == 'mp3 opus'
-        mp3File.orchestra == 'mp3 orchestra'
-        mp3File.quality == 'mp3 quality'
-        mp3File.ranking == 'mp3 ranking'
-        mp3File.tempo == 'mp3 tempo'
-        mp3File.tonality == 'mp3 tonality'
-        mp3File.track == ''
-        mp3File.work == 'mp3 work'
-        mp3File.workType == 'mp3 workTyp'
-        mp3File.counter == 0
+        mp3File.title == MetadataValues.mp3Title
+        mp3File.rate == MetadataValues.mp3Rate
+        mp3File.date == MetadataValues.mp3Date
+        mp3File.album == MetadataValues.mp3Album
+        mp3File.albumArtist == MetadataValues.mp3AlbumArtist
+        mp3File.artist == MetadataValues.mp3Artist
+        mp3File.composer == MetadataValues.mp3Composer
+        mp3File.conductor == MetadataValues.mp3Conductor
+        mp3File.country == MetadataValues.mp3Country
+        mp3File.custom1 == MetadataValues.mp3Custom1
+        mp3File.custom2 == MetadataValues.mp3Custom2
+        mp3File.custom3 == MetadataValues.mp3Custom3
+        mp3File.custom4 == MetadataValues.mp3Custom4
+        mp3File.custom5 == MetadataValues.mp3Custom5
+        mp3File.discNo == MetadataValues.mp3DiscNo
+        mp3File.genre == MetadataValues.mp3Genre
+        mp3File.group == MetadataValues.mp3Group
+        mp3File.instrument == MetadataValues.mp3Instrument
+        mp3File.mood == MetadataValues.mp3Mood
+        mp3File.movement == MetadataValues.mp3Movement
+        mp3File.occasion == MetadataValues.mp3Occasion
+        mp3File.opus == MetadataValues.mp3Opus
+        mp3File.orchestra == MetadataValues.mp3Orchestra
+        mp3File.quality == MetadataValues.mp3Quality
+        mp3File.ranking == MetadataValues.mp3Ranking
+        mp3File.tempo == MetadataValues.mp3Tempo
+        mp3File.tonality == MetadataValues.mp3Tonality
+        mp3File.track == MetadataValues.mp3Track
+        mp3File.work == MetadataValues.mp3Work
+        mp3File.workType == MetadataValues.mp3WorkType
+        mp3File.counter == MetadataValues.mp3Counter
     }
 
     def 'check modification of mp3 file mood metadata from contentView'() {
         given:
         indexTestFiles()
         def editedValue = "mp3 mood edited"
+        def contentView = managerHelper.contentView
 
         when:
-        selectFirst(filesList)
-        clickMouseOn(filesList, 0, 0)
+        selectFirst(managerHelper.filesList)
+        clickMouseOn(managerHelper.filesList, 0, 0)
         await().atMost(2000, TimeUnit.MILLISECONDS).until({ !contentView.items.isEmpty() })
 
         then:
@@ -321,8 +292,8 @@ class IndexingFeatureSpec extends FxmlTestHelper {
 
         and:
         contentView.items.clear()
-        selectFirst(filesList)
-        clickMouseOn(filesList, 0, 0)
+        selectFirst(managerHelper.filesList)
+        clickMouseOn(managerHelper.filesList, 0, 0)
         await().atMost(2000, TimeUnit.MILLISECONDS).until({ !contentView.items.isEmpty() })
 
         then:
@@ -335,10 +306,11 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         given:
         indexTestFiles()
         def editedValue = Rating.FIVE
+        def contentView = managerHelper.contentView
 
         when:
-        selectFirst(filesList)
-        clickMouseOn(filesList, 0, 0)
+        selectFirst(managerHelper.filesList)
+        clickMouseOn(managerHelper.filesList, 0, 0)
         await().atMost(2000, TimeUnit.MILLISECONDS).until({ !contentView.items.isEmpty() })
 
         then:
@@ -358,8 +330,8 @@ class IndexingFeatureSpec extends FxmlTestHelper {
 
         and:
         contentView.items.clear()
-        selectFirst(filesList)
-        clickMouseOn(filesList, 0, 0)
+        selectFirst(managerHelper.filesList)
+        clickMouseOn(managerHelper.filesList, 0, 0)
         await().atMost(2000, TimeUnit.MILLISECONDS).until({ !contentView.items.isEmpty() })
 
         then:
@@ -373,14 +345,32 @@ class IndexingFeatureSpec extends FxmlTestHelper {
 
     def 'check main filters content'() {
         given:
-        moodSuggestions.clear()
+        indexTestFiles()
 
         when:
-        selectFirst(filesList)
-        clickMouseOn(filesList, 0, 0)
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({ !contentView.items.isEmpty() })
+        selectFirst(managerHelper.filesList)
+        clickMouseOn(managerHelper.filesList, 0, 0)
+        await().atMost(2000, TimeUnit.MILLISECONDS).until({ !managerHelper.moodFilter.items.isEmpty() })
 
         then:
-        moodSuggestions.size() == 2
+        managerHelper.moodFilter.items.size() == 3
+        managerHelper.moodFilter.items.containsAll('...', MetadataValues.mp3Mood, MetadataValues.flacMood)
+    }
+
+    def 'check main filters action'() {
+        given:
+        indexTestFiles()
+        selectFirst(managerHelper.filesList)
+        clickMouseOn(managerHelper.filesList, 0, 0)
+        await().atMost(2000, TimeUnit.MILLISECONDS).until({ managerHelper.moodFilter.items.size() == 3 })
+        managerHelper.contentView.items.size() == 2
+
+        when:
+        select(managerHelper.moodFilter, 1)
+        clickMouseOn(managerHelper.moodFilter, 10, 10)
+        await().atMost(2000, TimeUnit.MILLISECONDS).until({ managerHelper.contentView.items.size() == 1 })
+
+        then:
+        managerHelper.contentView.items.get(0).fileName == MetadataValues.mp3FileName
     }
 }
