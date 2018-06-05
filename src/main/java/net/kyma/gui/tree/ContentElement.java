@@ -14,7 +14,7 @@ public class ContentElement extends BaseElement {
    private final SupportedField field;
 
    @Override
-   public DataQuery toQuery() {
-      return DataQuery.queryFor(field, getName(), false);
+   public void applyTo(DataQuery query) {
+      query.and(field, getName(), false);
    }
 }

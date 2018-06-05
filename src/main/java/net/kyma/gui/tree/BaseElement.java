@@ -81,16 +81,6 @@ public class BaseElement extends TreeItem<String> {
         return parentElement.getIndexingPath();
     }
 
-    public void detachFromParent()
-    {
-        parentElement.childElements.remove(name);
-        parentElement = null;
-    }
-
-    public boolean hasParent() {
-        return parentElement != null;
-    }
-
     public void applyTo(DataQuery query) {
         query.and(SupportedField.PATH, "*" + getPath() + "/*", true)
               .and(SupportedField.INDEXED_PATH, getIndexingPath(), false);

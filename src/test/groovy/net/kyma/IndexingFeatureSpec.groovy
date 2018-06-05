@@ -173,7 +173,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
     def 'click on file list element should result in showing files in content view'() {
         given:
         indexTestFiles()
-        Platform.runLater({ this.contentView.getItems().clear() })
+        Platform.runLater({ managerHelper.contentView.getItems().clear() })
 
         when:
         selectFirst(managerHelper.filesList)

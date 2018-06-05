@@ -6,7 +6,8 @@ import net.kyma.dm.DataQuery;
 @EqualsAndHashCode(callSuper = true)
 public class FilterRootElement extends BaseElement {
     @Override
-    public DataQuery toQuery() {
-        return DataQuery.empty();
+    public void applyTo(DataQuery query)
+    {
+        //nothing to query
     }
 }

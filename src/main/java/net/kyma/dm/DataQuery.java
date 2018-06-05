@@ -28,12 +28,8 @@ public class DataQuery {
       return this;
    }
 
-   public static DataQuery empty() {
-      return new DataQuery(Collections.emptyList());
-   }
-
    public boolean hasParameters() {
-      return parameters.isEmpty();
+      return !parameters.isEmpty();
    }
 
    @AllArgsConstructor(access = AccessLevel.PRIVATE)

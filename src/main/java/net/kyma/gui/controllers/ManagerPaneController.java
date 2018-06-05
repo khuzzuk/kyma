@@ -196,8 +196,8 @@ public class ManagerPaneController implements Initializable, Loadable {
         DataQuery query = DataQuery.newQuery();
 
         BaseElement selectedItem = (BaseElement) filesList.getSelectionModel().getSelectedItem();
-        if (selectedItem != null && selectedItem.hasParent()) {
-            query.and(SupportedField.PATH, "*" + selectedItem.getPath() + "/*", true);
+        if (selectedItem != null) {
+            selectedItem.applyTo(query);
         }
 
         applyFilterToQuery(moodFilter, query, SupportedField.MOOD);

@@ -28,18 +28,8 @@ public class RootElement extends BaseElement {
     }
 
     @Override
-    public void detachFromParent() {
-        throw new UnsupportedOperationException("Cannot detach root");
-    }
-
-    @Override
-    public boolean hasParent()
+    public void applyTo(DataQuery query)
     {
-        return false;
-    }
-
-    @Override
-    public DataQuery toQuery() {
-        return DataQuery.empty();
+        // nothing to query
     }
 }
