@@ -28,14 +28,19 @@ import net.kyma.Loadable;
 import net.kyma.dm.DataQuery;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
+import net.kyma.initialization.Dependable;
+import net.kyma.initialization.Dependency;
 import net.kyma.player.Format;
 import pl.khuzzuk.messaging.Bus;
 
 @RequiredArgsConstructor
-public class DirectoryIndexer implements Loadable {
+public class DirectoryIndexer extends Dependable implements Loadable {
     private final Bus<EventType> bus;
+    @Setter
+    @Dependency
     private SoundFileConverter converter;
     @Setter(AccessLevel.PRIVATE)
+    @Dependency
     private Set<String> indexedPaths;
 
     @Override
@@ -44,9 +49,8 @@ public class DirectoryIndexer implements Loadable {
         bus.subscribingFor(DATA_INDEX_GET_DIRECTORIES).accept(this::setIndexedPaths).subscribe();
     }
 
-    private void setConverter(SoundFileConverter converter)
-    {
-        this.converter = converter;
+    @Override
+    public void afterDependenciesSet() {
         bus.subscribingFor(DATA_INDEX_DIRECTORY).accept(this::indexCatalogue).subscribe();
     }
 

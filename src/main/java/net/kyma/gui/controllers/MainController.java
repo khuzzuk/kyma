@@ -53,7 +53,8 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         bus.subscribingFor(DATA_REFRESH).onFXThread().accept(o -> mainPane.getItems().remove(indicator)).subscribe();
-        bus.subscribingFor(DATA_INDEXING_AMOUNT).onFXThread().accept(this::showIndicator).subscribe();
+        bus.subscribingFor(DATA_INDEX_DIRECTORY).onFXThread().then(this::showIndicator).subscribe();
+        bus.subscribingFor(DATA_INDEXING_AMOUNT).onFXThread().accept(max -> maxProgress = (double) max).subscribe();
         bus.subscribingFor(DATA_INDEXING_PROGRESS).onFXThread()
               .<Number>accept(n -> indicator.setProgress(n.doubleValue() / maxProgress)).subscribe();
         bus.subscribingFor(DATA_INDEXING_FINISH).onFXThread()
@@ -66,9 +67,8 @@ public class MainController implements Initializable {
         managerPaneController.resizeFor(mainPane);
     }
 
-    private void showIndicator(int maxProgress)
+    private void showIndicator()
     {
-        this.maxProgress = maxProgress;
         indicator = new ProgressIndicator();
         mainPane.getItems().add(indicator);
         indicator.setVisible(true);
