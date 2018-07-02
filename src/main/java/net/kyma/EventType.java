@@ -36,7 +36,7 @@ public enum EventType
    DATA_STORE_ITEM,
    DATA_STORE_LIST,
    DATA_REMOVE_ITEM,
-   /** content {@link net.kyma.data.PathQueryParameters}*/
+   /** content {@link net.kyma.dm.DataQuery}*/
    DATA_REMOVE_PATH,
    /** accept {@link java.util.Collection} of {@link org.apache.lucene.document.Document}
     * produces {@link java.util.Collection} of {@link net.kyma.dm.SoundFile}*/
@@ -51,7 +51,7 @@ public enum EventType
    /** accepts {@link net.kyma.dm.TagUpdateRequest}*/
    DATA_UPDATE_REQUEST,
 
-   /** accept {@link net.kyma.data.QueryParameters}
+   /** accept {@link net.kyma.dm.DataQuery}
     * produces {@link java.util.Collection}&lt{@link net.kyma.dm.SoundFile}&gt*/
    DATA_QUERY,
    /** accept {@link java.util.Collection}&lt{@link net.kyma.dm.SoundFile}&gt*/
@@ -70,6 +70,7 @@ public enum EventType
    DATA_SET_DISTINCT_CUSTOM5,
 
    FILES_REMOVE,
+   FILES_EXECUTE,
 
    GUI_WINDOW_SETTINGS,
    GUI_WINDOW_SET_MAXIMIZED,

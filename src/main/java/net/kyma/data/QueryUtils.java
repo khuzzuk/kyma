@@ -19,14 +19,6 @@ class QueryUtils {
         return new Term(SupportedField.PATH.getName(), path);
     }
 
-    static Query queryFrom(QueryParameters parameters) {
-        return new TermQuery(new Term(parameters.getField().getName(), parameters.getValue()));
-    }
-
-    static Query wildcardQueryFrom(QueryParameters parameters) {
-        return new WildcardQuery(new Term(parameters.getField().getName(), parameters.getValue()));
-    }
-
     static Query from(DataQuery dataQuery) {
         if (dataQuery.getParameters().size() == 1) {
             return fromSingle(dataQuery.getParameters().get(0));
