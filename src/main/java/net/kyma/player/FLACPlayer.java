@@ -17,21 +17,16 @@ import org.kc7bfi.jflac.util.ByteData;
 import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
-public class FLACPlayer extends SPIPlayer
-{
-   private final SoundFile file;
+public class FLACPlayer extends SPIPlayer {
    @Getter
    private long length;
 
-   FLACPlayer(SoundFile file, Bus<EventType> bus)
-   {
-      super(bus);
-      this.file = file;
+   public FLACPlayer(SoundFile soundFile, Bus<EventType> bus) {
+      super(soundFile, bus);
    }
 
    @Override
-   Decoder getDecoder() throws SPIException
-   {
+   Decoder getDecoder() throws SPIException {
       try {
          FLACInternalDecoder decoder = new FLACInternalDecoder();
          decoder.refresh();
@@ -50,7 +45,7 @@ public class FLACPlayer extends SPIPlayer
 
       private void refresh() throws IOException
       {
-         externalDecoder = new FLACDecoder(new FileInputStream(file.getPath()));
+         externalDecoder = new FLACDecoder(new FileInputStream(soundFile.getPath()));
          info = externalDecoder.readStreamInfo();
          length = info.getTotalSamples();
       }

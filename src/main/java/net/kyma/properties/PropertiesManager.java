@@ -1,5 +1,6 @@
 package net.kyma.properties;
 
+import static net.kyma.EventType.FILES_EXECUTE;
 import static net.kyma.EventType.GUI_CONTENTVIEW_SETTINGS_GET;
 import static net.kyma.EventType.GUI_CONTENTVIEW_SETTINGS_STORE;
 import static net.kyma.EventType.GUI_VOLUME_GET;
@@ -27,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.Loadable;
+import net.kyma.disk.FileOperation;
 import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
@@ -38,6 +40,17 @@ public class PropertiesManager implements Loadable
    private final Bus<EventType> bus;
    private ObjectMapper objectMapper;
    private PropertiesData propertiesData;
+
+   private Runnable storeOperation = () -> {
+      try (OutputStream out = Files.newOutputStream(settingsPath))
+      {
+         objectMapper.writeValue(out, propertiesData);
+      }
+      catch (IOException e)
+      {
+         log.error("Cannot store settings", e);
+      }
+   };
 
    @Override
    public void load()
@@ -80,11 +93,11 @@ public class PropertiesManager implements Loadable
       this.objectMapper = objectMapper;
       if (Files.exists(settingsPath))
       {
-         loadPropertiesData();
+         bus.message(FILES_EXECUTE).withContent(new FileOperation(settingsPath, this::loadPropertiesData)).send();
       }
       else
       {
-         startDefaultProperties();
+         bus.message(FILES_EXECUTE).withContent(new FileOperation(settingsPath, this::startDefaultProperties)).send();
       }
    }
 
@@ -123,14 +136,7 @@ public class PropertiesManager implements Loadable
 
    private synchronized void store()
    {
-      try (OutputStream out = Files.newOutputStream(settingsPath))
-      {
-         objectMapper.writeValue(out, propertiesData);
-      }
-      catch (IOException e)
-      {
-         log.error("Cannot store settings", e);
-      }
+      bus.message(FILES_EXECUTE).withContent(new FileOperation(settingsPath, storeOperation)).send();
    }
 
    private void loadPropertiesData()

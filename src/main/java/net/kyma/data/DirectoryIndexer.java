@@ -64,22 +64,24 @@ public class DirectoryIndexer extends Dependable implements Loadable {
                 return Collections.emptyList();
             }
         }
-        Optional<File[]> content = Optional.ofNullable(file.listFiles());
-        return Arrays.stream(content.orElse(new File[]{})).flatMap(f -> getFilesFromDirectory(f).stream())
-                .collect(Collectors.toList());
+        File[] content = Optional.ofNullable(file.listFiles()).orElse(new File[]{});
+        return Arrays.stream(content)
+              .flatMap(f -> getFilesFromDirectory(f).stream())
+              .collect(Collectors.toList());
     }
 
     private void indexCatalogue(File file) {
         List<File> files = getFilesFromDirectory(file)
                 .stream().filter(f -> !f.isHidden()).collect(Collectors.toList());
         List<SoundFile> soundFiles = new ArrayList<>();
+        String convertPath = file.getParent() + "/";
+
         bus.message(DATA_INDEXING_AMOUNT).withContent(files.size()).send();
         for (int x = 0; x < files.size(); x++) {
             if (x % 10 == 0) {
                 bus.message(DATA_INDEXING_PROGRESS).withContent(x).send();
             }
-            soundFiles.add(converter.from(files.get(x),
-                    file.getPath().substring(0, file.getPath().length() - file.getName().length())));
+            soundFiles.add(converter.from(files.get(x), convertPath));
         }
 
         String directoryPath = normalizePath(file.getPath());

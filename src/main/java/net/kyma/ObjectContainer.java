@@ -18,6 +18,7 @@ import net.kyma.data.FileCleaner;
 import net.kyma.data.MetadataIndexer;
 import net.kyma.data.PlayCounter;
 import net.kyma.data.SoundFileConverter;
+import net.kyma.disk.FileAccessor;
 import net.kyma.gui.communicate.Alert;
 import net.kyma.gui.controllers.ContentView;
 import net.kyma.gui.controllers.ControllerDistributor;
@@ -62,8 +63,8 @@ public class ObjectContainer
       loadables.add(loadable);
    }
 
-   private void initGraph()
-   {
+   private void initGraph() {
+      initFileAccess();
       initJsonParser();
       initProperties();
       initDataAccess();
@@ -72,8 +73,11 @@ public class ObjectContainer
       initGuiDependency();
    }
 
-   private void initJsonParser()
-   {
+   private void initFileAccess() {
+      loadables.add(new FileAccessor(bus));
+   }
+
+   private void initJsonParser() {
       ObjectMapper mapper = new ObjectMapper();
       mapper.enable(SerializationFeature.INDENT_OUTPUT);
       putToContainer(EventType.RET_OBJECT_MAPPER, mapper);

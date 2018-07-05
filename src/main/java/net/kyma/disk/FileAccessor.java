@@ -1,5 +1,6 @@
 package net.kyma.disk;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -8,15 +9,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.Loadable;
-import net.kyma.dm.SoundFile;
 import pl.khuzzuk.messaging.Bus;
 
+@Log4j2
 @RequiredArgsConstructor
 public class FileAccessor extends Thread implements Loadable {
    private final Bus<EventType> bus;
-   private Map<SoundFile, FileOperation> fileOperations;
+   private Map<Path, FileOperation> fileOperations;
    private BlockingQueue<FileOperation> channel;
    private AtomicBoolean closed;
 
@@ -32,7 +34,7 @@ public class FileAccessor extends Thread implements Loadable {
 
    private void addOperation(FileOperation operation) {
       if (closed.get()) {
-         throw new IllegalStateException();
+         log.info("New File Operation after closing: {}", operation.getPath());
       }
 
       channel.offer(operation);
@@ -52,15 +54,15 @@ public class FileAccessor extends Thread implements Loadable {
    }
 
    private void executeFileOperation(FileOperation fileOperation) throws InterruptedException {
-      if (fileOperations.containsKey(fileOperation.getSoundFile())) {
-         if (channel.isEmpty()) {
-            wait(10);
-         }
-         channel.put(fileOperation);
-      }
+      // if (fileOperations.containsKey(fileOperation.getPath())) {
+      //    if (channel.isEmpty()) {
+      //       wait(10);
+      //    }
+      //    channel.put(fileOperation);
+      // }
 
-      fileOperations.put(fileOperation.getSoundFile(), fileOperation);
+      //fileOperations.put(fileOperation.getPath(), fileOperation);
       fileOperation.getOperation().run();
-      fileOperations.remove(fileOperation.getSoundFile());
+      //fileOperations.remove(fileOperation.getPath());
    }
 }

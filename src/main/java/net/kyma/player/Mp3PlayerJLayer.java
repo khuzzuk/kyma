@@ -19,21 +19,16 @@ import org.tritonus.share.sampled.file.TAudioFileFormat;
 import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
-public class Mp3PlayerJLayer extends SPIPlayer
-{
-   final SoundFile soundFile;
+public class Mp3PlayerJLayer extends SPIPlayer {
    @Getter
    long length;
 
-   Mp3PlayerJLayer(SoundFile file, Bus<EventType> bus)
-   {
-      super(bus);
-      this.soundFile = file;
+   public Mp3PlayerJLayer(SoundFile soundFile, Bus<EventType> bus) {
+      super(soundFile, bus);
    }
 
    @Override
-   Decoder getDecoder() throws SPIException
-   {
+   Decoder getDecoder() throws SPIException {
       try {
          Mp3Decoder decoder = new Mp3Decoder();
          decoder.refresh(0);
@@ -43,8 +38,7 @@ public class Mp3PlayerJLayer extends SPIPlayer
       }
    }
 
-   class Mp3Decoder implements Decoder
-   {
+   class Mp3Decoder implements Decoder {
       private AudioInputStream player;
       private final byte[] data = new byte[128];
       @Getter

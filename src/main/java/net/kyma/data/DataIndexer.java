@@ -21,6 +21,7 @@ import static net.kyma.data.QueryUtils.termForPath;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -88,7 +89,7 @@ public class DataIndexer extends Dependable implements Loadable {
                .ifPresent(indexed -> files.forEach(f -> f.setIndexedPath(indexed)));
       }
 
-      files.forEach(this::indexSingleEntity);
+      indexMultipleEntities(files);
       commit();
       refreshIndexedPaths();
    }
@@ -96,15 +97,33 @@ public class DataIndexer extends Dependable implements Loadable {
    private void indexSingleEntity(@NonNull SoundFile soundFile) {
       try (DirectoryReader reader = DirectoryReader.open(writer)) {
          IndexSearcher searcher = new IndexSearcher(reader);
-         if (isNew(soundFile, searcher)) {
-            writer.addDocument(docConverter.docFrom(soundFile));
-         } else {
-            normalizeIndexingPath(soundFile, searcher);
-            writer.updateDocument(termForPath(soundFile.getPath()), docConverter.docFrom(soundFile));
-         }
+         addDocument(soundFile, searcher);
       } catch (IOException e) {
-         log.error("Indexing occurred error", e);
+         reportIndexingError(e);
       }
+   }
+
+   private void indexMultipleEntities(Collection<SoundFile> files) {
+      try (DirectoryReader reader = DirectoryReader.open(writer)) {
+         IndexSearcher searcher = new IndexSearcher(reader);
+         for (SoundFile soundFile : files) addDocument(soundFile, searcher);
+      } catch (IOException e) {
+         reportIndexingError(e);
+      }
+   }
+
+   private void addDocument(SoundFile soundFile, IndexSearcher searcher) throws IOException {
+      if (isNew(soundFile, searcher)) {
+         writer.addDocument(docConverter.docFrom(soundFile));
+      } else {
+         normalizeIndexingPath(soundFile, searcher);
+         writer.updateDocument(termForPath(soundFile.getPath()), docConverter.docFrom(soundFile));
+      }
+   }
+
+   private void reportIndexingError(IOException e) {
+      bus.message(SHOW_ALERT).withContent(String.format("Error during indexing: %s", e.getMessage()));
+      bus.message(SHOW_ALERT).withContent(String.format("Indexing error report: %s", Arrays.toString(e.getStackTrace())));
    }
 
    private void normalizeIndexingPath(SoundFile soundFile, IndexSearcher searcher)
@@ -171,8 +190,8 @@ public class DataIndexer extends Dependable implements Loadable {
          commit();
          log.debug("Deleted documents: {}", deleteDocuments);
       } catch (IOException e) {
-         log.error("Cannot remove index entries for path", e);
-         bus.message(SHOW_ALERT).withContent("Indexing error").send();
+         bus.message(SHOW_ALERT).withContent(String.format("Cannot remove index entries for path: %s", e.getMessage())).send();
+         bus.message(SHOW_ALERT).withContent(String.format("Remove report: %s", Arrays.toString(e.getStackTrace()))).send();
          throw new BusRequestException(e);
       }
    }
@@ -189,8 +208,7 @@ public class DataIndexer extends Dependable implements Loadable {
       try {
          writer.commit();
       } catch (IOException e) {
-         log.error("Error during indexing database", e);
-         bus.message(SHOW_ALERT).withContent("Indexing access problem").send();
+         bus.message(SHOW_ALERT).withContent(String.format("Indexing acces Problem: %s", e.getMessage())).send();
       }
    }
 

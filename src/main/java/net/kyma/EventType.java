@@ -70,6 +70,7 @@ public enum EventType
    DATA_SET_DISTINCT_CUSTOM5,
 
    FILES_REMOVE,
+   /** accept {@link net.kyma.disk.FileOperation}*/
    FILES_EXECUTE,
 
    GUI_WINDOW_SETTINGS,

@@ -1,11 +1,11 @@
 package net.kyma.player;
 
+import static net.kyma.EventType.FILES_EXECUTE;
 import static net.kyma.EventType.SHOW_ALERT;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -16,26 +16,26 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
+import net.kyma.disk.FileOperation;
+import net.kyma.dm.SoundFile;
 import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
+@RequiredArgsConstructor
 public abstract class SPIPlayer implements Player {
-    private static final ExecutorService thread = Executors.newFixedThreadPool(1);
     private static SPIPlayer currentPlayer;
     private static AtomicBoolean paused = new AtomicBoolean(false);
     private static AtomicLong skipTo = new AtomicLong(0);
+    final SoundFile soundFile;
     final Bus<EventType> bus;
     private boolean closed;
     private SourceDataLine line;
     private float volume = 100;
     private Emitter emitter;
     private long currentPlaybackStatus;
-
-    SPIPlayer(Bus<EventType> bus) {
-        this.bus = bus;
-    }
 
     private static void globalPause() {
         paused.set(true);
@@ -59,16 +59,13 @@ public abstract class SPIPlayer implements Player {
             currentPlayer.closed = true;
         }
         emitter = new Emitter();
-        thread.submit(emitter);
+        bus.message(FILES_EXECUTE).withContent(new FileOperation(Paths.get(soundFile.getPath()), emitter)).send();
         setGlobalPlayer(this);
     }
 
     @Override
     public void stop() {
-        if (emitter != null)
-        {
-            closed = true;
-        }
+        closed = true;
     }
 
     @Override
@@ -184,6 +181,6 @@ public abstract class SPIPlayer implements Player {
     }
 
     static void closePlayers() {
-        thread.shutdownNow();
+        if (currentPlayer != null) currentPlayer.closed = true;
     }
 }

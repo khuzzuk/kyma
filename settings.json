@@ -2,10 +2,10 @@
   "uiProperties" : {
     "fullScreen" : false,
     "maximized" : true,
-    "x" : 100,
-    "y" : 50,
-    "width" : 600,
-    "height" : 400,
+    "x" : 320,
+    "y" : 0,
+    "width" : 1282,
+    "height" : 1054,
     "columnDefinitions" : [ {
       "field" : "TITLE",
       "size" : 355.0

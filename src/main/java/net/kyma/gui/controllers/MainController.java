@@ -42,23 +42,23 @@ public class MainController implements Initializable {
     private GridPane managerPane;
     @FXML
     private GridPane playerPane;
+    @FXML
+    private ProgressIndicator indicator;
 
     private final Bus<EventType> bus;
     private final ManagerPaneController managerPaneController;
-    private ProgressIndicator indicator;
     private double maxProgress;
     @Setter
     private Stage stage;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        bus.subscribingFor(DATA_REFRESH).onFXThread().accept(o -> mainPane.getItems().remove(indicator)).subscribe();
+        bus.subscribingFor(DATA_REFRESH).onFXThread().accept(o -> indicator.setVisible(false)).subscribe();
         bus.subscribingFor(DATA_INDEX_DIRECTORY).onFXThread().then(this::showIndicator).subscribe();
-        bus.subscribingFor(DATA_INDEXING_AMOUNT).onFXThread().accept(max -> maxProgress = (double) max).subscribe();
+        bus.subscribingFor(DATA_INDEXING_AMOUNT).onFXThread().accept((Integer max) -> maxProgress = max.doubleValue()).subscribe();
         bus.subscribingFor(DATA_INDEXING_PROGRESS).onFXThread()
               .<Number>accept(n -> indicator.setProgress(n.doubleValue() / maxProgress)).subscribe();
-        bus.subscribingFor(DATA_INDEXING_FINISH).onFXThread()
-              .then(() -> mainPane.getItems().remove(indicator)).subscribe();
+        bus.subscribingFor(DATA_INDEXING_FINISH).onFXThread().then(() -> indicator.setVisible(false)).subscribe();
         bus.subscribingFor(GUI_WINDOW_SET_FULLSCREEN).onFXThread().then(() -> stage.setFullScreen(true)).subscribe();
         bus.subscribingFor(GUI_WINDOW_SET_MAXIMIZED).onFXThread().then(() -> stage.setMaximized(true)).subscribe();
         bus.subscribingFor(GUI_WINDOW_SET_FRAME).onFXThread().accept(this::resize).subscribe();
@@ -67,10 +67,8 @@ public class MainController implements Initializable {
         managerPaneController.resizeFor(mainPane);
     }
 
-    private void showIndicator()
-    {
-        indicator = new ProgressIndicator();
-        mainPane.getItems().add(indicator);
+    private void showIndicator() {
+        indicator.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
         indicator.setVisible(true);
     }
 
