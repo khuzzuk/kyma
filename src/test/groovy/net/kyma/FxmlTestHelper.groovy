@@ -34,8 +34,12 @@ abstract class FxmlTestHelper extends Specification {
     }
 
     void clickMouseOn(javafx.scene.Node node, int x, int y) {
+        clickMouseOn(node, x, y, 1)
+    }
+
+    void clickMouseOn(javafx.scene.Node node, int x, int y, int clickCount) {
         Event.fireEvent(node, new MouseEvent(
-                MouseEvent.MOUSE_CLICKED, x, y, x, y, MouseButton.PRIMARY, 1,
+                MouseEvent.MOUSE_CLICKED, x, y, x, y, MouseButton.PRIMARY, clickCount,
                 false, false, false, false, false,
                 false, false, false,
                 false, false, null))

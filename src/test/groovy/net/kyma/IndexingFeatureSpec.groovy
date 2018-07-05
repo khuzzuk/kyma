@@ -373,4 +373,23 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         then:
         managerHelper.contentView.items.get(0).fileName == MetadataValues.mp3FileName
     }
+
+    def "add files to Playlist"() {
+        given:
+        indexTestFiles()
+        selectFirst(managerHelper.filesList)
+        clickMouseOn(managerHelper.filesList, 0, 0)
+        await().atMost(2000, TimeUnit.MILLISECONDS).until({ managerHelper.moodFilter.items.size() == 3 })
+        managerHelper.contentView.items.size() == 2
+
+        when:
+        selectFirst(GuiPrivateFields.mainContentView)
+        clickMouseOn(GuiPrivateFields.mainContentView, 10, 10, 2)
+        def playlistItems = GuiPrivateFields.playlistView.getItems()
+        await().atMost(2, TimeUnit.SECONDS).until({playlistItems.size() != 0})
+
+        then:
+        def soundFile = playlistItems.get(0)
+        soundFile.format == Format.MP3
+    }
 }

@@ -92,8 +92,7 @@ public class ContentView implements Initializable, Loadable
    private Map<SupportedField, Collection<String>> suggestions;
 
    @Override
-   public void load()
-   {
+   public void load() {
       columnFactory = new TableColumnFactory(bus);
       suggestions = new EnumMap<>(SupportedField.class);
       editor = new SoundFileEditor(bus);
