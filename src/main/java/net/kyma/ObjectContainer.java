@@ -123,7 +123,6 @@ public class ObjectContainer
       loadables.add(new Alert(bus));
 
       ManagerPaneController managerPaneController = new ManagerPaneController(bus);
-      loadables.add(managerPaneController);
 
       MainController mainController = new MainController(bus, managerPaneController);
       PlayerPaneController playerPaneController = new PlayerPaneController(bus);

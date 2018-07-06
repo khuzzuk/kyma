@@ -45,18 +45,11 @@ public class MainWindow extends Stage {
     }
 
     private void onClose() {
-        if (isFullScreen()) {
-            bus.message(PROPERTIES_STORE_WINDOW_FULLSCREEN).withContent(Boolean.TRUE).send();
-        } else if (isMaximized()) {
-            bus.message(PROPERTIES_STORE_WINDOW_FULLSCREEN).withContent(Boolean.FALSE).send();
-            bus.message(PROPERTIES_STORE_WINDOW_MAXIMIZED).withContent(Boolean.TRUE).send();
-        } else {
-            Rectangle rectangle = new Rectangle();
-            rectangle.setRect(getX(), getY(), getWidth(), getHeight());
-            bus.message(PROPERTIES_STORE_WINDOW_FRAME).withContent(rectangle).send();
-            bus.message(PROPERTIES_STORE_WINDOW_FULLSCREEN).withContent(Boolean.FALSE).send();
-            bus.message(PROPERTIES_STORE_WINDOW_MAXIMIZED).withContent(Boolean.FALSE).send();
-        }
+        Rectangle rectangle = new Rectangle();
+        rectangle.setRect(getX(), getY(), getWidth(), getHeight());
+        bus.message(PROPERTIES_STORE_WINDOW_FRAME).withContent(rectangle).send();
+        bus.message(PROPERTIES_STORE_WINDOW_FULLSCREEN).withContent(isFullScreen()).send();
+        bus.message(PROPERTIES_STORE_WINDOW_MAXIMIZED).withContent(isMaximized()).send();
         bus.message(CLOSE).send();
     }
 }

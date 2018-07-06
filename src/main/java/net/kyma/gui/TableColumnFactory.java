@@ -156,8 +156,6 @@ public class TableColumnFactory
             setGraphic(label);
          }
       });
-      column.setOnEditCommit(v -> bus.message(DATA_UPDATE_REQUEST)
-            .withContent(new StringTagUpdateRequest(TITLE, v.getNewValue())).send());
       return column;
    }
 }

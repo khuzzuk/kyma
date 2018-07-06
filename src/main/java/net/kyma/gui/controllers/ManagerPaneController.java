@@ -33,7 +33,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeView;
@@ -44,7 +43,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
-import net.kyma.Loadable;
 import net.kyma.dm.DataQuery;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
@@ -61,7 +59,7 @@ import pl.khuzzuk.messaging.Bus;
 
 @Log4j2
 @RequiredArgsConstructor
-public class ManagerPaneController implements Initializable, Loadable {
+public class ManagerPaneController implements Initializable {
     @FXML
     private GridPane managerPane;
     @FXML
@@ -85,13 +83,9 @@ public class ManagerPaneController implements Initializable, Loadable {
     private IntegerProperty highlighted;
 
     @Override
-    public void load() {
+    public void initialize(URL location, ResourceBundle resources) {
         columnFactory = new TableColumnFactory(bus);
         highlighted = new SimpleIntegerProperty(-1);
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
         bus.subscribingFor(DATA_SET_DISTINCT_MOOD).onFXThread()
                 .accept((Collection<String> values) -> setupFilter(moodFilter.getItems(), values))
                 .subscribe();
@@ -243,9 +237,5 @@ public class ManagerPaneController implements Initializable, Loadable {
         if (keyEvent.getCode() == KeyCode.INSERT && selected != null) {
             bus.message(DATA_INDEX_DIRECTORY).withContent(new File(selected.getFullPath())).send();
         }
-    }
-
-    void resizeFor(SplitPane splitPane) {
-        splitPane.heightProperty().addListener((obs, o, n) -> filesList.setMinHeight(n.doubleValue() - 150));
     }
 }

@@ -17,8 +17,7 @@ public class Manager extends Application {
     private static Stage currentStage;
     private static ForceGate gate = ForceGate.of(2, Manager::initMainWindow);
 
-   public static void main(String[] args)
-    {
+   public static void main(String[] args) {
         bus = createBus();
         prepareApp("index/", bus);
         launch(args);

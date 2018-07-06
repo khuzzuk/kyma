@@ -5,7 +5,9 @@ import static net.kyma.EventType.DATA_INDEXING_FINISH;
 import static net.kyma.EventType.DATA_INDEXING_PROGRESS;
 import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
 import static net.kyma.EventType.DATA_REFRESH;
-import static net.kyma.EventType.GUI_WINDOW_SETTINGS;
+import static net.kyma.EventType.GUI_WINDOW_GET_FRAME;
+import static net.kyma.EventType.GUI_WINDOW_IS_FULLSCREEN;
+import static net.kyma.EventType.GUI_WINDOW_IS_MAXIMIZED;
 import static net.kyma.EventType.GUI_WINDOW_SET_FRAME;
 import static net.kyma.EventType.GUI_WINDOW_SET_FULLSCREEN;
 import static net.kyma.EventType.GUI_WINDOW_SET_MAXIMIZED;
@@ -63,8 +65,7 @@ public class MainController implements Initializable {
         bus.subscribingFor(GUI_WINDOW_SET_MAXIMIZED).onFXThread().then(() -> stage.setMaximized(true)).subscribe();
         bus.subscribingFor(GUI_WINDOW_SET_FRAME).onFXThread().accept(this::resize).subscribe();
 
-        bus.message(GUI_WINDOW_SETTINGS).send();
-        managerPaneController.resizeFor(mainPane);
+        bus.message(GUI_WINDOW_GET_FRAME).send();
     }
 
     private void showIndicator() {
@@ -102,5 +103,7 @@ public class MainController implements Initializable {
         stage.setY(r.getY());
         stage.setWidth(r.getWidth());
         stage.setHeight(r.getHeight());
+        bus.message(GUI_WINDOW_IS_FULLSCREEN).send();
+        bus.message(GUI_WINDOW_IS_MAXIMIZED).send();
     }
 }
