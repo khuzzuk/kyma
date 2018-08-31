@@ -1,11 +1,5 @@
 package net.kyma.gui.tree;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-
 import javafx.scene.control.TreeItem;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -13,6 +7,8 @@ import lombok.Setter;
 import lombok.ToString;
 import net.kyma.dm.DataQuery;
 import net.kyma.dm.SupportedField;
+
+import java.util.*;
 
 @Getter
 @Setter

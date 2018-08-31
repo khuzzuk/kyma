@@ -1,38 +1,28 @@
 package net.kyma;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import javafx.util.Pair;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import net.kyma.data.DataIndexer;
-import net.kyma.data.DataReader;
-import net.kyma.data.DirectoryIndexer;
-import net.kyma.data.DocConverter;
-import net.kyma.data.FileCleaner;
-import net.kyma.data.MetadataIndexer;
-import net.kyma.data.PlayCounter;
-import net.kyma.data.SoundFileConverter;
+import net.kyma.data.*;
 import net.kyma.disk.FileAccessor;
 import net.kyma.gui.communicate.Alert;
-import net.kyma.gui.controllers.ContentView;
-import net.kyma.gui.controllers.ControllerDistributor;
-import net.kyma.gui.controllers.MainController;
-import net.kyma.gui.controllers.ManagerPaneController;
-import net.kyma.gui.controllers.PlayerPaneController;
+import net.kyma.gui.controllers.*;
 import net.kyma.player.PlayerManager;
 import net.kyma.player.Playlist;
 import net.kyma.properties.PropertiesManager;
+import net.kyma.web.YoutubeDownloader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NIOFSDirectory;
 import pl.khuzzuk.messaging.Bus;
+
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
 
 @RequiredArgsConstructor
 @Log4j2
@@ -70,6 +60,7 @@ public class ObjectContainer
       initDataAccess();
       initDataIndex();
       initPlayer();
+      initWeb();
       initGuiDependency();
    }
 
@@ -135,5 +126,9 @@ public class ObjectContainer
             playerPaneController,
             managerPaneController,
             contentView));
+   }
+
+   private void initWeb() {
+      loadables.add(new YoutubeDownloader(bus));
    }
 }

@@ -1,25 +1,5 @@
 package net.kyma.gui.controllers;
 
-import static net.kyma.EventType.DATA_INDEXING_AMOUNT;
-import static net.kyma.EventType.DATA_INDEXING_FINISH;
-import static net.kyma.EventType.DATA_INDEXING_PROGRESS;
-import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
-import static net.kyma.EventType.DATA_REFRESH;
-import static net.kyma.EventType.GUI_WINDOW_GET_FRAME;
-import static net.kyma.EventType.GUI_WINDOW_IS_FULLSCREEN;
-import static net.kyma.EventType.GUI_WINDOW_IS_MAXIMIZED;
-import static net.kyma.EventType.GUI_WINDOW_SET_FRAME;
-import static net.kyma.EventType.GUI_WINDOW_SET_FULLSCREEN;
-import static net.kyma.EventType.GUI_WINDOW_SET_MAXIMIZED;
-import static net.kyma.EventType.PLAYLIST_ADD_FILE;
-import static net.kyma.EventType.PLAYLIST_ADD_SOUND;
-
-import java.awt.Rectangle;
-import java.io.File;
-import java.net.URL;
-import java.util.Optional;
-import java.util.ResourceBundle;
-
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ProgressIndicator;
@@ -33,6 +13,14 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import pl.khuzzuk.messaging.Bus;
+
+import java.awt.*;
+import java.io.File;
+import java.net.URL;
+import java.util.Optional;
+import java.util.ResourceBundle;
+
+import static net.kyma.EventType.*;
 
 @SuppressWarnings("WeakerAccess")
 @Log4j2
@@ -57,7 +45,9 @@ public class MainController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         bus.subscribingFor(DATA_REFRESH).onFXThread().accept(o -> indicator.setVisible(false)).subscribe();
         bus.subscribingFor(DATA_INDEX_DIRECTORY).onFXThread().then(this::showIndicator).subscribe();
-        bus.subscribingFor(DATA_INDEXING_AMOUNT).onFXThread().accept((Integer max) -> maxProgress = max.doubleValue()).subscribe();
+        bus.subscribingFor(DATA_INDEXING_AMOUNT).onFXThread()
+                .then(this::showIndicator)
+                .accept((Integer max) -> maxProgress = max.doubleValue()).subscribe();
         bus.subscribingFor(DATA_INDEXING_PROGRESS).onFXThread()
               .<Number>accept(n -> indicator.setProgress(n.doubleValue() / maxProgress)).subscribe();
         bus.subscribingFor(DATA_INDEXING_FINISH).onFXThread().then(() -> indicator.setVisible(false)).subscribe();

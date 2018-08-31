@@ -192,7 +192,7 @@
 
 .tree-view .tree-cell:selected {
     -fx-border-color: -gold-color;
-    -fx-effect: -element-drop-shadow;
+    /*-fx-effect: -element-drop-shadow;*/
 }
 
 .list-cell:selected {

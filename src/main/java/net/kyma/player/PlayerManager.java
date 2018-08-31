@@ -10,6 +10,7 @@ import static net.kyma.EventType.PLAYER_SET_SLIDER;
 import static net.kyma.EventType.PLAYER_SET_VOLUME;
 import static net.kyma.EventType.PLAYER_STOP;
 
+import javafx.application.Platform;
 import javafx.scene.control.Slider;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -112,7 +113,7 @@ public class PlayerManager implements Loadable
       if (currentPlayer != null)
       {
          currentPlayer.startFrom(millis);
-         slider.setMax(currentPlayer.getLength());
+         Platform.runLater(() -> slider.setMax(currentPlayer.getLength()));
          timer.start();
       }
    }
@@ -131,8 +132,9 @@ public class PlayerManager implements Loadable
       if (currentPlayer != null)
       {
          long length = currentPlayer.getLength();
+         Platform.runLater(() -> {
          if (slider.getMax() != length) slider.setMax(length);
-         slider.setValue(currentPlayer.playbackStatus());
+         slider.setValue(currentPlayer.playbackStatus());});
       }
    }
 }

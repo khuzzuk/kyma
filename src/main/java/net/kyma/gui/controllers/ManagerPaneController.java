@@ -1,41 +1,10 @@
 package net.kyma.gui.controllers;
 
-import static net.kyma.EventType.DATA_GET_PATHS;
-import static net.kyma.EventType.DATA_INDEXING_FINISH;
-import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
-import static net.kyma.EventType.DATA_QUERY;
-import static net.kyma.EventType.DATA_QUERY_RESULT_FOR_CONTENT_VIEW;
-import static net.kyma.EventType.DATA_REFRESH_PATHS;
-import static net.kyma.EventType.DATA_SET_DISTINCT_GENRE;
-import static net.kyma.EventType.DATA_SET_DISTINCT_MOOD;
-import static net.kyma.EventType.DATA_SET_DISTINCT_OCCASION;
-import static net.kyma.EventType.DATA_SET_DISTINCT_PEOPLE;
-import static net.kyma.EventType.DATA_STORE_ITEM;
-import static net.kyma.EventType.DATA_STORE_LIST;
-import static net.kyma.EventType.PLAYLIST_REFRESH;
-import static net.kyma.EventType.PLAYLIST_REMOVE_LIST;
-
-import java.io.File;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
@@ -46,16 +15,21 @@ import net.kyma.EventType;
 import net.kyma.dm.DataQuery;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
+import net.kyma.gui.NetworkPopup;
 import net.kyma.gui.TableColumnFactory;
-import net.kyma.gui.tree.BaseElement;
-import net.kyma.gui.tree.ContentElement;
-import net.kyma.gui.tree.FilterRootElement;
-import net.kyma.gui.tree.PathElementFactory;
-import net.kyma.gui.tree.RootElement;
+import net.kyma.gui.tree.*;
 import net.kyma.player.PlaylistEvent;
 import net.kyma.player.PlaylistRefreshEvent;
 import org.apache.commons.lang3.StringUtils;
 import pl.khuzzuk.messaging.Bus;
+
+import java.io.File;
+import java.net.URL;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static net.kyma.EventType.*;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -107,6 +81,7 @@ public class ManagerPaneController implements Initializable {
         bus.subscribingFor(DATA_QUERY_RESULT_FOR_CONTENT_VIEW).onFXThread().accept(this::updateFilters).subscribe();
 
         filesList.setRoot(new RootElement("Content"));
+        addNetworkView();
 
         initPlaylistView();
 
@@ -119,6 +94,15 @@ public class ManagerPaneController implements Initializable {
         columnForPlaylist.setSortable(false);
         playlist.getColumns().add(columnForPlaylist);
         playlist.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+    }
+
+    private void addNetworkView() {
+        NetworkPopup networkPopup = new NetworkPopup(bus);
+        networkPopup.init();
+        NetworkElement networkElement = new NetworkElement(networkPopup);
+        networkElement.setName("Import from youtube");
+        RootElement root = (RootElement) filesList.getRoot();
+        root.addChild(networkElement);
     }
 
     private synchronized void fillPaths(Map<String, Collection<String>> paths) {
@@ -191,6 +175,10 @@ public class ManagerPaneController implements Initializable {
 
         BaseElement selectedItem = (BaseElement) filesList.getSelectionModel().getSelectedItem();
         if (selectedItem != null) {
+            if (selectedItem instanceof NetworkElement) {
+                ((NetworkElement) selectedItem).importFromNetwork();
+                return;
+            }
             selectedItem.applyTo(query);
         }
 
@@ -222,14 +210,13 @@ public class ManagerPaneController implements Initializable {
         setupFilter(occasionFilter.getItems(), filterValuesFrom(soundFiles, SoundFile::getOccasion));
     }
 
-   private Set<String> filterValuesFrom(Collection<SoundFile> soundFiles, Function<SoundFile, String> mapper)
-   {
-      return soundFiles.stream()
-            .map(mapper)
-            .filter(Objects::nonNull)
-            .filter(StringUtils::isNoneBlank)
-            .collect(Collectors.toSet());
-   }
+    private Set<String> filterValuesFrom(Collection<SoundFile> soundFiles, Function<SoundFile, String> mapper) {
+        return soundFiles.stream()
+                .map(mapper)
+                .filter(Objects::nonNull)
+                .filter(StringUtils::isNoneBlank)
+                .collect(Collectors.toSet());
+    }
 
     @FXML
     private void onKeyReleased(KeyEvent keyEvent) {
