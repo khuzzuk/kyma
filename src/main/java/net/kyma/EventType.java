@@ -34,6 +34,7 @@ public enum EventType
    DATA_GET_PATHS,
    /** content Map &lt String, Set &lt String &gt> */
    DATA_REFRESH_PATHS,
+   DATA_REFRESH_DOWNLOADED_PATHS,
    DATA_STORE_ITEM,
    DATA_STORE_LIST,
    DATA_REMOVE_ITEM,

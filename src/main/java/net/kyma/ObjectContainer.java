@@ -12,6 +12,7 @@ import net.kyma.gui.controllers.*;
 import net.kyma.player.PlayerManager;
 import net.kyma.player.Playlist;
 import net.kyma.properties.PropertiesManager;
+import net.kyma.web.YoutubeDownloadedFilesReader;
 import net.kyma.web.YoutubeDownloader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -130,5 +131,6 @@ public class ObjectContainer
 
    private void initWeb() {
       loadables.add(new YoutubeDownloader(bus));
+      loadables.add(new YoutubeDownloadedFilesReader(bus));
    }
 }

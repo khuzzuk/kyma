@@ -1,30 +1,12 @@
 package net.kyma.data;
 
-import static java.lang.Integer.MAX_VALUE;
-import static net.kyma.EventType.DATA_QUERY;
-import static net.kyma.EventType.DATA_REFRESH_PATHS;
-import static net.kyma.EventType.RET_INDEX_WRITER;
-import static net.kyma.EventType.RET_SOUND_FILE_CONVERTER;
-import static net.kyma.dm.SupportedField.INDEXED_PATH;
-import static net.kyma.dm.SupportedField.PATH;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.Loadable;
 import net.kyma.dm.DataQuery;
+import net.kyma.dm.IndexingRoot;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
 import net.kyma.initialization.Dependable;
@@ -38,6 +20,15 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.WildcardQuery;
 import pl.khuzzuk.messaging.Bus;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.lang.Integer.MAX_VALUE;
+import static net.kyma.EventType.*;
+import static net.kyma.dm.SupportedField.INDEXED_PATH;
+import static net.kyma.dm.SupportedField.PATH;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -65,7 +56,7 @@ public class DataReader extends Dependable implements Loadable {
     }
 
     private void getFilePaths() {
-        Map<String, Set<String>> paths = new TreeMap<>();
+        Map<IndexingRoot, Set<String>> paths = new TreeMap<>();
         try (DirectoryReader reader = DirectoryReader.open(writer)) {
             IndexSearcher searcher = new IndexSearcher(reader);
             TopDocs search = searcher.search(new WildcardQuery(new Term(PATH.getName(), "*")), MAX_VALUE);
@@ -74,10 +65,10 @@ public class DataReader extends Dependable implements Loadable {
             for (ScoreDoc doc : search.scoreDocs) {
                 Document document = searcher.doc(doc.doc, queryField);
                 String path = document.get(PATH.getName());
-                String indexedPath = document.get(INDEXED_PATH.getName());
+                IndexingRoot indexedPath = IndexingRoot.forPathOnDisk(document.get(INDEXED_PATH.getName()));
 
                 paths.computeIfAbsent(indexedPath, s -> new TreeSet<>())
-                        .add(path.replaceFirst(indexedPath.replace("\\", "\\\\"), ""));
+                        .add(path.replaceFirst(indexedPath.toPathRepresentation(), ""));
             }
         } catch (IOException e) {
             log.error("Error during paths refreshing from index", e);

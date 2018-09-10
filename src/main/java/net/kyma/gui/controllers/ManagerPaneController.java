@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.dm.DataQuery;
+import net.kyma.dm.IndexingRoot;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
 import net.kyma.gui.NetworkPopup;
@@ -105,11 +106,11 @@ public class ManagerPaneController implements Initializable {
         root.addChild(networkElement);
     }
 
-    private synchronized void fillPaths(Map<String, Collection<String>> paths) {
+    private synchronized void fillPaths(Map<IndexingRoot, Collection<String>> paths) {
         RootElement root = (RootElement) filesList.getRoot();
-        for (Map.Entry<String, Collection<String>> entry : paths.entrySet()) {
-            String rootName = entry.getKey().substring(0, entry.getKey().length() - 1);
-            RootElement newIndexingRoot = new RootElement(entry.getKey());
+        for (Map.Entry<IndexingRoot, Collection<String>> entry : paths.entrySet()) {
+            String rootName = entry.getKey().representation();
+            RootElement newIndexingRoot = new RootElement(entry.getKey().representation());
             newIndexingRoot.setName(rootName);
 
             for (String path : entry.getValue()) {

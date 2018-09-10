@@ -13,7 +13,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -21,8 +22,9 @@ import static net.kyma.log.Logger.reportToUser;
 
 @RequiredArgsConstructor
 public class YoutubeDownloader extends Thread implements Loadable {
-    private static final String execPrefix = "youtube-dl -x --audio-format mp3 --audio-quality 0 %s";
-    private static final Path basePath = Paths.get("downloaded");
+    private static final String EXEC_PREFIX = "youtube-dl -x --audio-format mp3 --audio-quality 0 %s";
+    static final Path BASE_PATH = Paths.get("downloaded");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("uuuu-MM-dd-kk-mm-ss-SSS");
 
     private final Bus<EventType> bus;
     private BlockingQueue<URL> tasks;
@@ -31,9 +33,10 @@ public class YoutubeDownloader extends Thread implements Loadable {
     public void load() {
         setDaemon(true);
         try {
-            if (Files.notExists(basePath)) Files.createDirectory(basePath);
+            if (Files.notExists(BASE_PATH)) Files.createDirectory(BASE_PATH);
             tasks = new LinkedBlockingQueue<>();
             bus.subscribingFor(EventType.PLAYLIST_ADD_YOUTUBE).<URL>accept(tasks::offer).subscribe();
+            bus.message(EventType.DATA_GET_PATHS).send();
             start();
         } catch (IOException e) {
             bus.message(EventType.SHOW_ALERT).withContent(ExceptionUtils.getStackTrace(e)).send();
@@ -57,8 +60,8 @@ public class YoutubeDownloader extends Thread implements Loadable {
 
     private void downloadFromUrl(URL url) {
         try {
-            Path newDir = Files.createDirectory(basePath.resolve(UUID.randomUUID().toString())).toAbsolutePath();
-            String command = String.format(execPrefix, url.toString());
+            Path newDir = Files.createDirectory(BASE_PATH.resolve(LocalDateTime.now().format(FORMATTER))).toAbsolutePath();
+            String command = String.format(EXEC_PREFIX, url.toString());
             Process process = Runtime.getRuntime().exec(command, null, newDir.toFile());
             reportProgress(process);
         } catch (IOException e) {
