@@ -2,31 +2,29 @@ package net.kyma.gui.tree
 
 import spock.lang.Specification
 
-import static net.kyma.gui.tree.PathElementFactory.fillChild
-
 class BaseElementSpec extends Specification {
     def "check update graph"() {
         given:
         BaseElement element1 = createBaseElement("element1")
         BaseElement element2 = createBaseElement("element2")
 
-        fillChild(element1, ["A", "A_A", "A_A_A", "file"] as String[], 0)
-        fillChild(element1, ["A", "A_A", "A_A_B", "file"] as String[], 0)
-        fillChild(element1, ["A", "A_B", "A_B_A", "file"] as String[], 0)
-        fillChild(element1, ["A", "A_B", "A_B_B", "file"] as String[], 0)
-        fillChild(element1, ["B", "B_A", "B_A_A", "file"] as String[], 0)
-        fillChild(element1, ["B", "B_A", "B_A_B", "file"] as String[], 0)
-        fillChild(element1, ["B", "B_B", "B_B_A", "file"] as String[], 0)
-        fillChild(element1, ["B", "B_B", "B_B_B", "file"] as String[], 0)
-        fillChild(element1, ["D", "D_A", "D_A_A", "file"] as String[], 0)
+        element1.addChildFor(["A", "A_A", "A_A_A", "file"] as String[], 0)
+        element1.addChildFor(["A", "A_A", "A_A_B", "file"] as String[], 0)
+        element1.addChildFor(["A", "A_B", "A_B_A", "file"] as String[], 0)
+        element1.addChildFor(["A", "A_B", "A_B_B", "file"] as String[], 0)
+        element1.addChildFor(["B", "B_A", "B_A_A", "file"] as String[], 0)
+        element1.addChildFor(["B", "B_A", "B_A_B", "file"] as String[], 0)
+        element1.addChildFor(["B", "B_B", "B_B_A", "file"] as String[], 0)
+        element1.addChildFor(["B", "B_B", "B_B_B", "file"] as String[], 0)
+        element1.addChildFor(["D", "D_A", "D_A_A", "file"] as String[], 0)
 
-        fillChild(element2, ["A", "A_A", "A_A_A", "file"] as String[], 0)
-        fillChild(element2, ["A", "A_A", "A_A_B", "file"] as String[], 0)
-        fillChild(element2, ["B", "B_A", "B_A_A", "file"] as String[], 0)
-        fillChild(element2, ["B", "B_B", "B_B_A", "file"] as String[], 0)
-        fillChild(element2, ["B", "B_B", "B_B_B", "file"] as String[], 0)
-        fillChild(element2, ["C", "C_A", "C_A_A", "file"] as String[], 0)
-        fillChild(element2, ["C", "C_A", "C_A_B", "file"] as String[], 0)
+        element2.addChildFor(["A", "A_A", "A_A_A", "file"] as String[], 0)
+        element2.addChildFor(["A", "A_A", "A_A_B", "file"] as String[], 0)
+        element2.addChildFor(["B", "B_A", "B_A_A", "file"] as String[], 0)
+        element2.addChildFor(["B", "B_B", "B_B_A", "file"] as String[], 0)
+        element2.addChildFor(["B", "B_B", "B_B_B", "file"] as String[], 0)
+        element2.addChildFor(["C", "C_A", "C_A_A", "file"] as String[], 0)
+        element2.addChildFor(["C", "C_A", "C_A_B", "file"] as String[], 0)
 
         when:
         element1.update(element2);
@@ -58,8 +56,8 @@ class BaseElementSpec extends Specification {
         BaseElement element1 = createBaseElement("element1")
         BaseElement element2 = createBaseElement("element2")
 
-        fillChild(element1, ["A", "A_A", "A_A_A", "file"] as String[], 0)
-        fillChild(element1, ["B", "B_A", "B_A_A", "file"] as String[], 0)
+        element1.addChildFor(["A", "A_A", "A_A_A", "file"] as String[], 0)
+        element1.addChildFor(["B", "B_A", "B_A_A", "file"] as String[], 0)
 
         when:
         element1.update(element2)

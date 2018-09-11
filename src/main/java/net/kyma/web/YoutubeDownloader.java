@@ -74,6 +74,7 @@ public class YoutubeDownloader extends Thread implements Loadable {
             String line;
             bus.message(EventType.DATA_INDEXING_AMOUNT).withContent(100).send();
             while ((line = reader.readLine()) !=null) {
+                System.out.println(line);
                 if (line.contains("%")) {
                     Integer progress = Double.valueOf(line.split("\\s+")[1].replace("%", "")).intValue();
                     bus.message(EventType.DATA_INDEXING_PROGRESS).withContent(progress).send();

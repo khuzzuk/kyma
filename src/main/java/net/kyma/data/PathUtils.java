@@ -4,7 +4,7 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class PathUtils {
-    public static String normalizePath(String path) {
+    static String normalizePath(String path) {
         return path.replace('\\', '/');
     }
 }

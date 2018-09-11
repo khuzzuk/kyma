@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.dm.DataQuery;
-import net.kyma.dm.IndexingRoot;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
 import net.kyma.gui.NetworkPopup;
@@ -21,6 +20,7 @@ import net.kyma.gui.TableColumnFactory;
 import net.kyma.gui.tree.*;
 import net.kyma.player.PlaylistEvent;
 import net.kyma.player.PlaylistRefreshEvent;
+import net.kyma.web.YoutubeDownloadedFilesReader;
 import org.apache.commons.lang3.StringUtils;
 import pl.khuzzuk.messaging.Bus;
 
@@ -100,22 +100,22 @@ public class ManagerPaneController implements Initializable {
     private void addNetworkView() {
         NetworkPopup networkPopup = new NetworkPopup(bus);
         networkPopup.init();
-        NetworkElement networkElement = new NetworkElement(networkPopup);
-        networkElement.setName("Import from youtube");
+        NetworkRoot networkElement = new NetworkRoot(networkPopup);
+        networkElement.setName(YoutubeDownloadedFilesReader.LABEL_NAME);
         RootElement root = (RootElement) filesList.getRoot();
         root.addChild(networkElement);
     }
 
-    private synchronized void fillPaths(Map<IndexingRoot, Collection<String>> paths) {
+    private synchronized void fillPaths(Map<String, Collection<String>> paths) {
         RootElement root = (RootElement) filesList.getRoot();
-        for (Map.Entry<IndexingRoot, Collection<String>> entry : paths.entrySet()) {
-            String rootName = entry.getKey().representation();
-            RootElement newIndexingRoot = new RootElement(entry.getKey().representation());
+        for (Map.Entry<String, Collection<String>> entry : paths.entrySet()) {
+            String rootName = entry.getKey().substring(0, entry.getKey().length() - 1);
+            RootElement newIndexingRoot = new RootElement(entry.getKey());
             newIndexingRoot.setName(rootName);
 
             for (String path : entry.getValue()) {
                 String[] fractured = path.split("/");
-                PathElementFactory.fillChild(newIndexingRoot, fractured, 0);
+                newIndexingRoot.addChildFor(fractured, 0);
             }
 
             RootElement currentIndexingRoot = (RootElement) root.getChildElement(rootName);
@@ -137,7 +137,7 @@ public class ManagerPaneController implements Initializable {
         root.addChild(filterElement);
 
         for (String value : values) {
-            ContentElement element = new ContentElement(bus, filterField);
+            ContentElement element = new ContentElement(filterField);
             element.setName(value);
             filterElement.addChild(element);
         }
@@ -173,22 +173,13 @@ public class ManagerPaneController implements Initializable {
     @FXML
     private void requestUpdateContentView() {
         DataQuery query = DataQuery.newQuery();
-
-        BaseElement selectedItem = (BaseElement) filesList.getSelectionModel().getSelectedItem();
-        if (selectedItem != null) {
-            if (selectedItem instanceof NetworkElement) {
-                ((NetworkElement) selectedItem).importFromNetwork();
-                return;
-            }
-            selectedItem.applyTo(query);
-        }
-
         applyFilterToQuery(moodFilter, query, SupportedField.MOOD);
         applyFilterToQuery(genreFilter, query, SupportedField.GENRE);
         applyFilterToQuery(occasionFilter, query, SupportedField.OCCASION);
 
-        if (query.hasParameters()) {
-            bus.message(DATA_QUERY).withContent(query).withResponse(DATA_QUERY_RESULT_FOR_CONTENT_VIEW).send();
+        BaseElement selectedItem = (BaseElement) filesList.getSelectionModel().getSelectedItem();
+        if (selectedItem != null) {
+            selectedItem.onClick(bus, query);
         }
     }
 

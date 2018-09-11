@@ -10,11 +10,10 @@ import pl.khuzzuk.messaging.Bus;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class ContentElement extends BaseElement {
-   private final Bus<EventType> bus;
    private final SupportedField field;
 
    @Override
-   public void applyTo(DataQuery query) {
+   void applyTo(DataQuery query) {
       query.and(field, getName(), false);
    }
 }

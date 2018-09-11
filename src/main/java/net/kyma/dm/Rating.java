@@ -1,13 +1,13 @@
 package net.kyma.dm;
 
-import java.util.EnumSet;
-import java.util.Set;
-
 import javafx.scene.Node;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.kyma.gui.StarsFactory;
 import net.kyma.player.Format;
+
+import java.util.EnumSet;
+import java.util.Set;
 
 @AllArgsConstructor
 public enum Rating {
@@ -34,10 +34,6 @@ public enum Rating {
     @Getter
     private final int rate;
     private static final Set<Rating> SET = EnumSet.allOf(Rating.class);
-
-    public static Node getStarFor(SoundFile soundFile) {
-        return StarsFactory.defineForRating(soundFile.getRate().rate);
-    }
 
     public static Node getStarFor(int rate) {
         return StarsFactory.defineForRating(rate);

@@ -6,7 +6,6 @@ import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.Loadable;
 import net.kyma.dm.DataQuery;
-import net.kyma.dm.IndexingRoot;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
 import net.kyma.initialization.Dependable;
@@ -56,7 +55,7 @@ public class DataReader extends Dependable implements Loadable {
     }
 
     private void getFilePaths() {
-        Map<IndexingRoot, Set<String>> paths = new TreeMap<>();
+        Map<String, Set<String>> paths = new TreeMap<>();
         try (DirectoryReader reader = DirectoryReader.open(writer)) {
             IndexSearcher searcher = new IndexSearcher(reader);
             TopDocs search = searcher.search(new WildcardQuery(new Term(PATH.getName(), "*")), MAX_VALUE);
@@ -65,10 +64,10 @@ public class DataReader extends Dependable implements Loadable {
             for (ScoreDoc doc : search.scoreDocs) {
                 Document document = searcher.doc(doc.doc, queryField);
                 String path = document.get(PATH.getName());
-                IndexingRoot indexedPath = IndexingRoot.forPathOnDisk(document.get(INDEXED_PATH.getName()));
+                String indexedPath = document.get(INDEXED_PATH.getName());
 
                 paths.computeIfAbsent(indexedPath, s -> new TreeSet<>())
-                        .add(path.replaceFirst(indexedPath.toPathRepresentation(), ""));
+                        .add(path.replaceFirst(indexedPath.replace("\\", "\\\\"), ""));
             }
         } catch (IOException e) {
             log.error("Error during paths refreshing from index", e);

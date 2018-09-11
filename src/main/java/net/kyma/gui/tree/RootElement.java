@@ -13,6 +13,11 @@ public class RootElement extends BaseElement {
     }
 
     @Override
+    public void addChild(BaseElement child) {
+        super.addChild(child);
+    }
+
+    @Override
     public String getPath() {
         return getName();
     }
@@ -28,7 +33,7 @@ public class RootElement extends BaseElement {
     }
 
     @Override
-    public void applyTo(DataQuery query)
+    void applyTo(DataQuery query)
     {
         // nothing to query
     }

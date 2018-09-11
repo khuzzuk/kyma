@@ -5,10 +5,15 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import net.kyma.EventType;
 import net.kyma.dm.DataQuery;
 import net.kyma.dm.SupportedField;
+import pl.khuzzuk.messaging.Bus;
 
 import java.util.*;
+
+import static net.kyma.EventType.DATA_QUERY;
+import static net.kyma.EventType.DATA_QUERY_RESULT_FOR_CONTENT_VIEW;
 
 @Getter
 @Setter
@@ -29,6 +34,19 @@ public class BaseElement extends TreeItem<String> {
             getChildren().add(child);
             getChildren().sort(Comparator.comparing(TreeItem::getValue));
         }
+    }
+
+    public void addChildFor(String[] path, int pos) {
+        if (path.length <= pos) return;
+
+        BaseElement child = childElements.get(path[pos]);
+        if (child == null) {
+            child = new BaseElement();
+            child.setName(path[pos]);
+            addChild(child);
+            child.setParentElement(this);
+        }
+        child.addChildFor(path, pos + 1);
     }
 
     public void setName(String name) {
@@ -77,8 +95,12 @@ public class BaseElement extends TreeItem<String> {
         return parentElement.getIndexingPath();
     }
 
-    public void applyTo(DataQuery query) {
-        query.and(SupportedField.PATH, "*" + getPath() + "/*", true)
+    public void onClick(Bus<EventType> bus, DataQuery dataQuery) {
+        applyTo(dataQuery);
+        bus.message(DATA_QUERY).withContent(dataQuery).withResponse(DATA_QUERY_RESULT_FOR_CONTENT_VIEW).send();
+    }
+    void applyTo(DataQuery query) {
+        query.and(SupportedField.PATH, getPath() + "/*", true)
               .and(SupportedField.INDEXED_PATH, getIndexingPath(), false);
     }
 }

@@ -1,16 +1,5 @@
 package net.kyma.gui;
 
-import static net.kyma.EventType.DATA_UPDATE_REQUEST;
-import static net.kyma.EventType.GUI_CONTENTVIEW_SETTINGS_CHANGED;
-import static net.kyma.dm.SupportedField.COUNTER;
-import static net.kyma.dm.SupportedField.RATE;
-import static net.kyma.dm.SupportedField.TITLE;
-
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -22,13 +11,19 @@ import javafx.scene.input.MouseButton;
 import javafx.util.Callback;
 import lombok.AllArgsConstructor;
 import net.kyma.EventType;
-import net.kyma.dm.RateTagUpdateRequest;
-import net.kyma.dm.Rating;
-import net.kyma.dm.SoundFile;
-import net.kyma.dm.StringTagUpdateRequest;
-import net.kyma.dm.SupportedField;
+import net.kyma.dm.*;
 import org.apache.commons.lang3.StringUtils;
 import pl.khuzzuk.messaging.Bus;
+
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+
+import static net.kyma.EventType.DATA_UPDATE_REQUEST;
+import static net.kyma.EventType.GUI_CONTENTVIEW_SETTINGS_CHANGED;
+import static net.kyma.dm.SupportedField.COUNTER;
+import static net.kyma.dm.SupportedField.RATE;
 
 @AllArgsConstructor
 public class TableColumnFactory
@@ -36,7 +31,11 @@ public class TableColumnFactory
    private Bus<EventType> bus;
 
    private static final BiConsumer<SoundFile, TableCell<?, ?>> startFactory =
-         (s, cell) -> Optional.ofNullable(s).map(Rating::getStarFor).ifPresent(cell::setGraphic);
+         (s, cell) -> Optional.ofNullable(s)
+                 .map(SoundFile::getRate)
+                 .map(Rating::getValue)
+                 .map(Rating::getStarFor)
+                 .ifPresent(cell::setGraphic);
 
    public TableColumn<SoundFile, ?> getColumnFor(SupportedField field, double width, Collection<String> suggestions)
    {

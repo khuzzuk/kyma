@@ -56,6 +56,8 @@ public enum EventType
    /** accept {@link net.kyma.dm.DataQuery}
     * produces {@link java.util.Collection}&lt{@link net.kyma.dm.SoundFile}&gt*/
    DATA_QUERY,
+   /** accept {@link String}, produces {@link java.util.Collection}&lt{@link net.kyma.dm.SoundFile}&gt*/
+   DATA_WEB_DOWNLOADS_QUERY,
    /** accept {@link java.util.Collection}&lt{@link net.kyma.dm.SoundFile}&gt*/
    DATA_QUERY_RESULT_FOR_CONTENT_VIEW,
 
