@@ -1,12 +1,14 @@
 package net.kyma.player;
 
-import java.util.EnumSet;
-import java.util.Set;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.kyma.dm.SoundFile;
 import pl.khuzzuk.messaging.Bus;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.EnumSet;
+import java.util.Set;
 
 @AllArgsConstructor
 @Getter
@@ -36,5 +38,14 @@ public enum Format {
 
     public static boolean isSupportingFormat(String extension) {
         return supportedFormats.contains(extension);
+    }
+
+    public static boolean isSupportingFormat(Path path) {
+        String filename = path.getFileName().toString();
+        if (Files.isRegularFile(path) && filename.contains(".")) {
+            String ext = filename.substring(filename.lastIndexOf('.')).toLowerCase();
+            return supportedFormats.contains(ext);
+        }
+        return false;
     }
 }

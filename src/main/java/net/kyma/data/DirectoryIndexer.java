@@ -1,25 +1,5 @@
 package net.kyma.data;
 
-import static net.kyma.EventType.DATA_INDEXING_AMOUNT;
-import static net.kyma.EventType.DATA_INDEXING_PROGRESS;
-import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
-import static net.kyma.EventType.DATA_INDEX_GET_DIRECTORIES;
-import static net.kyma.EventType.DATA_INDEX_LIST;
-import static net.kyma.EventType.DATA_QUERY;
-import static net.kyma.EventType.DATA_QUERY_RESULT_FOR_CONTENT_VIEW;
-import static net.kyma.EventType.DATA_REMOVE_PATH;
-import static net.kyma.EventType.RET_SOUND_FILE_CONVERTER;
-import static net.kyma.data.PathUtils.normalizePath;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -32,6 +12,13 @@ import net.kyma.initialization.Dependable;
 import net.kyma.initialization.Dependency;
 import net.kyma.player.Format;
 import pl.khuzzuk.messaging.Bus;
+
+import java.io.File;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static net.kyma.EventType.*;
+import static net.kyma.data.PathUtils.normalizePath;
 
 @RequiredArgsConstructor
 public class DirectoryIndexer extends Dependable implements Loadable {
@@ -56,13 +43,7 @@ public class DirectoryIndexer extends Dependable implements Loadable {
 
     private List<File> getFilesFromDirectory(File file) {
         if (file.isFile()) {
-            String name = file.getName();
-            if (name.contains(".") &&
-                    Format.isSupportingFormat(name.substring(name.lastIndexOf('.')).toLowerCase())) {
-                return Collections.singletonList(file);
-            } else {
-                return Collections.emptyList();
-            }
+            return Format.isSupportingFormat(file.toPath()) ? Collections.singletonList(file) : Collections.emptyList();
         }
         File[] content = Optional.ofNullable(file.listFiles()).orElse(new File[]{});
         return Arrays.stream(content)

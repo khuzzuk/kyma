@@ -24,6 +24,7 @@ import static net.kyma.EventType.*
 import static org.awaitility.Awaitility.await
 
 class IndexingFeatureSpec extends FxmlTestHelper {
+    private static final int WAITING_SECONDS = 5
     @Shared
     private Bus<EventType> bus
     @Shared
@@ -57,12 +58,11 @@ class IndexingFeatureSpec extends FxmlTestHelper {
 
         Manager.bus = bus
         Manager.prepareApp("test_index/", bus)
-        Thread.sleep(1000)
-        await().atMost(2000, TimeUnit.MILLISECONDS)
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS)
                 .until({ Manager.mainWindow != null && controllerDistributor != null })
 
         Platform.runLater({ Manager.mainWindow.initMainWindow(new Stage()) })
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({ checkControllers() })
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({ checkControllers() })
 
         prepareProperties()
     }
@@ -95,7 +95,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
     void cleanupSpec() {
         cleanIndex()
         bus.message(CLOSE).send()
-        Thread.sleep(2000)
+        Thread.sleep(2200)
         Arrays.stream(indexDir.listFiles()).forEach({ it.delete() })
         indexDir.delete()
     }
@@ -111,12 +111,12 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         Files.copy(sourceDir.toPath(), soundFilesDir.toPath())
         Arrays.stream(sourceDir.listFiles()).forEach({ Files.copy(it.toPath(), Paths.get(soundFilesDir.name, it.name)) })
         bus.message(DATA_INDEX_DIRECTORY).withContent(soundFilesDir).send()
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({ refreshedPaths.value?.size() == 1 })
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({ refreshedPaths.value?.size() == 1 })
     }
 
     void cleanIndex() {
         bus.message(DATA_INDEX_CLEAN).send()
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({ refreshedPaths.value?.size() == 0 })
+        await().atMost(WAITING_SECONDS*2, TimeUnit.SECONDS).until({ refreshedPaths.value?.size() == 0 })
         if (soundFilesDir.exists())
             Arrays.stream(soundFilesDir.listFiles()).forEach({ it.delete() })
         soundFilesDir.delete()
@@ -127,7 +127,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         indexTestFiles()
 
         then:
-        await().atMost(1000, TimeUnit.MILLISECONDS).until(
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until(
                 { refreshedPaths.hasValue() && refreshedPaths.value.size() == 1 })
         def indexingPath = ++refreshedPaths.value.keySet().iterator()
         def expectedIndexingPath = soundFilesDir.getAbsolutePath().substring(0, soundFilesDir.getAbsolutePath().lastIndexOf(File.separator) + 1).replace(File.separator, '/')
@@ -140,7 +140,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
 
         when:
         bus.message(DATA_INDEX_GET_DISTINCT).withResponse(DATA_SET_DISTINCT_MOOD).withContent(SupportedField.MOOD).send()
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({ distinctMood.hasValue() })
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({ distinctMood.hasValue() })
 
         then:
         distinctMood.value.size() == 2
@@ -148,7 +148,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         distinctMood.value.contains('flac mood')
 
         def suggestions = GuiPrivateFields.contentViewSuggestions
-        await().atMost(1000, TimeUnit.MILLISECONDS)
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS)
                 .until({ suggestions.get(SupportedField.MOOD).size() == 2 })
         suggestions.get(SupportedField.MOOD).containsAll([MetadataValues.mp3Mood, MetadataValues.flacMood])
     }
@@ -163,7 +163,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         bus.message(DATA_INDEX_DIRECTORY).withContent(soundFilesDir).send()
 
         then:
-        await().atMost(2000, TimeUnit.MILLISECONDS).until(
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until(
                 { refreshedPaths.value.size() == 0 })
 
         cleanup:
@@ -178,7 +178,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         when:
         selectFirst(managerHelper.filesList)
         clickMouseOn(managerHelper.filesList, 0, 0)
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({ !managerHelper.contentView.items.isEmpty() })
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({ !managerHelper.contentView.items.isEmpty() })
 
         then:
         managerHelper.contentView.getItems().size() == 2
@@ -269,7 +269,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         when:
         selectFirst(managerHelper.filesList)
         clickMouseOn(managerHelper.filesList, 0, 0)
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({ !contentView.items.isEmpty() })
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({ !contentView.items.isEmpty() })
 
         then:
         contentView.items.size() == 2
@@ -285,7 +285,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
 
         IndexingFinishReporter.reset()
         column.onEditCommit.handle(tableUpdateEvent)
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({IndexingFinishReporter.isIndexingFinished()})
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({IndexingFinishReporter.isIndexingFinished()})
 
         then:
         indexedSoundFile.value.mood == editedValue
@@ -294,7 +294,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         contentView.items.clear()
         selectFirst(managerHelper.filesList)
         clickMouseOn(managerHelper.filesList, 0, 0)
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({ !contentView.items.isEmpty() })
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({ !contentView.items.isEmpty() })
 
         then:
         contentView.items.size() == 2
@@ -311,7 +311,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         when:
         selectFirst(managerHelper.filesList)
         clickMouseOn(managerHelper.filesList, 0, 0)
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({ !contentView.items.isEmpty() })
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({ !contentView.items.isEmpty() })
 
         then:
         contentView.items.size() == 2
@@ -323,7 +323,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
 
         IndexingFinishReporter.reset()
         bus.message(DATA_UPDATE_REQUEST).withContent(new RateTagUpdateRequest(editedValue)).send()
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({IndexingFinishReporter.isIndexingFinished()})
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({IndexingFinishReporter.isIndexingFinished()})
 
         then:
         indexedSoundFile.value.rate == editedValue
@@ -332,7 +332,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         contentView.items.clear()
         selectFirst(managerHelper.filesList)
         clickMouseOn(managerHelper.filesList, 0, 0)
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({ !contentView.items.isEmpty() })
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({ !contentView.items.isEmpty() })
 
         then:
         contentView.items.size() == 2
@@ -350,7 +350,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         when:
         selectFirst(managerHelper.filesList)
         clickMouseOn(managerHelper.filesList, 0, 0)
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({ !managerHelper.moodFilter.items.isEmpty() })
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({ !managerHelper.moodFilter.items.isEmpty() })
 
         then:
         managerHelper.moodFilter.items.size() == 3
@@ -362,13 +362,13 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         indexTestFiles()
         selectFirst(managerHelper.filesList)
         clickMouseOn(managerHelper.filesList, 0, 0)
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({ managerHelper.moodFilter.items.size() == 3 })
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({ managerHelper.moodFilter.items.size() == 3 })
         managerHelper.contentView.items.size() == 2
 
         when:
         select(managerHelper.moodFilter, 1)
         clickMouseOn(managerHelper.moodFilter, 10, 10)
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({ managerHelper.contentView.items.size() == 1 })
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({ managerHelper.contentView.items.size() == 1 })
 
         then:
         managerHelper.contentView.items.get(0).fileName == MetadataValues.mp3FileName
@@ -379,14 +379,14 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         indexTestFiles()
         selectFirst(managerHelper.filesList)
         clickMouseOn(managerHelper.filesList, 0, 0)
-        await().atMost(2000, TimeUnit.MILLISECONDS).until({ managerHelper.moodFilter.items.size() == 3 })
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({ managerHelper.moodFilter.items.size() == 3 })
         managerHelper.contentView.items.size() == 2
 
         when:
         selectFirst(GuiPrivateFields.mainContentView)
         clickMouseOn(GuiPrivateFields.mainContentView, 10, 10, 2)
         def playlistItems = GuiPrivateFields.playlistView.getItems()
-        await().atMost(2, TimeUnit.SECONDS).until({playlistItems.size() != 0})
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({playlistItems.size() != 0})
 
         then:
         def soundFile = playlistItems.get(0)

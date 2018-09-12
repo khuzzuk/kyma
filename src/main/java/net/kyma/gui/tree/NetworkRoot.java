@@ -21,6 +21,8 @@ public class NetworkRoot extends RootElement {
     @Override
     public void update(BaseElement updates) {
         getChildElements().clear();
-        addChild(NetworkElement.from(updates));
+        updates.getChildElements().values().stream()
+                .map(NetworkElement::from)
+                .forEach(this::addChild);
     }
 }

@@ -81,6 +81,7 @@ public class YoutubeDownloader extends Thread implements Loadable {
                 }
             }
             bus.message(EventType.DATA_INDEXING_FINISH).send();
+            bus.message(EventType.DATA_GET_PATHS).send();
         }
     }
 }

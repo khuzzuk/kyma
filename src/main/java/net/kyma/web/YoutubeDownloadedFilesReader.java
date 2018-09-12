@@ -5,15 +5,16 @@ import net.kyma.EventType;
 import net.kyma.Loadable;
 import net.kyma.data.SoundFileConverter;
 import net.kyma.dm.SoundFile;
+import net.kyma.player.Format;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import pl.khuzzuk.messaging.Bus;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 public class YoutubeDownloadedFilesReader implements Loadable {
@@ -56,14 +57,8 @@ public class YoutubeDownloadedFilesReader implements Loadable {
     }
 
     private void addSoundFilesToCollection(Path path, String basePath, Collection<SoundFile> soundFiles) {
-        try (Stream<Path> files = Files.walk(path)){
-            files.forEach(System.out::print);
-        } catch (IOException e) {
-            bus.message(EventType.SHOW_ALERT).withContent(ExceptionUtils.getStackTrace(e)).send();
-        }
-        try (Stream<Path> files = Files.walk(path)){
-            files.map(p -> soundFileConverter.from(p.toFile(), basePath))
-                    .forEach(soundFiles::add);
+        try (DirectoryStream<Path> files = Files.newDirectoryStream(path, Format::isSupportingFormat)) {
+            files.forEach(p -> soundFiles.add(soundFileConverter.from(p.toFile(), basePath)));
         } catch (IOException e) {
             bus.message(EventType.SHOW_ALERT).withContent(ExceptionUtils.getStackTrace(e)).send();
         }

@@ -1,9 +1,5 @@
 package net.kyma.gui;
 
-import static java.lang.Math.cos;
-import static java.lang.Math.sin;
-import static java.lang.Math.toRadians;
-
 import javafx.scene.Node;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.ClosePath;
@@ -12,6 +8,8 @@ import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.tuple.Pair;
+
+import static java.lang.Math.*;
 
 @UtilityClass
 public class StarsFactory

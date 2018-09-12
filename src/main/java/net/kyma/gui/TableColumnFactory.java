@@ -33,7 +33,7 @@ public class TableColumnFactory
    private static final BiConsumer<SoundFile, TableCell<?, ?>> startFactory =
          (s, cell) -> Optional.ofNullable(s)
                  .map(SoundFile::getRate)
-                 .map(Rating::getValue)
+                 .map(Rating::getRate)
                  .map(Rating::getStarFor)
                  .ifPresent(cell::setGraphic);
 
