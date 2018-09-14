@@ -62,6 +62,7 @@ public class YoutubeDownloader extends Thread implements Loadable {
         try {
             Path newDir = Files.createDirectory(BASE_PATH.resolve(LocalDateTime.now().format(FORMATTER))).toAbsolutePath();
             String command = String.format(EXEC_PREFIX, url.toString());
+            System.out.println(command);
             Process process = Runtime.getRuntime().exec(command, null, newDir.toFile());
             reportProgress(process);
         } catch (IOException e) {
@@ -70,7 +71,8 @@ public class YoutubeDownloader extends Thread implements Loadable {
     }
 
     private void reportProgress(Process process) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+             BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
             String line;
             bus.message(EventType.DATA_INDEXING_AMOUNT).withContent(100).send();
             while ((line = reader.readLine()) !=null) {
@@ -79,6 +81,13 @@ public class YoutubeDownloader extends Thread implements Loadable {
                     Integer progress = Double.valueOf(line.split("\\s+")[1].replace("%", "")).intValue();
                     bus.message(EventType.DATA_INDEXING_PROGRESS).withContent(progress).send();
                 }
+            }
+            while ((line = errorReader.readLine()) != null) {
+                System.out.println(line);
+                bus.message(EventType.SHOW_ALERT).withContent(line).send();
+            }
+            if (process.exitValue() != 0) {
+                bus.message(EventType.SHOW_ALERT).withContent("Not able to download file from Youtube").send();
             }
             bus.message(EventType.DATA_INDEXING_FINISH).send();
             bus.message(EventType.DATA_GET_PATHS).send();

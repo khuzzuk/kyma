@@ -15,6 +15,7 @@ import net.kyma.gui.controllers.ManagerPaneControllerTestHelper
 import net.kyma.player.Format
 import pl.khuzzuk.messaging.Bus
 import spock.lang.Shared
+import spock.lang.Stepwise
 
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeUnit
 import static net.kyma.EventType.*
 import static org.awaitility.Awaitility.await
 
+@Stepwise
 class IndexingFeatureSpec extends FxmlTestHelper {
     private static final int WAITING_SECONDS = 5
     @Shared
@@ -39,6 +41,8 @@ class IndexingFeatureSpec extends FxmlTestHelper {
     //test properties
     @Shared
     private PropertyContainer<Map<String, Collection<String>>> refreshedPaths = new PropertyContainer<>()
+    @Shared
+    private PropertyContainer<Collection<Integer>> refreshedPathsSizes = new PropertyContainer<>()
     @Shared
     private PropertyContainer<Set<String>> distinctMood = new PropertyContainer<>()
     @Shared
@@ -86,8 +90,13 @@ class IndexingFeatureSpec extends FxmlTestHelper {
 
     void prepareProperties() {
         IndexingFinishReporter.setPropertyContainer(indexedSoundFile)
+        refreshedPaths.value = new HashMap<>()
+        refreshedPathsSizes.value = new ArrayList<>()
         bus.subscribingFor(DATA_REFRESH_PATHS)
-                .accept({ refreshedPaths.value = it as Map<String, Collection<String>> })
+                .accept({
+            refreshedPaths.value.putAll(it as Map<String, Collection<String>>)
+            refreshedPathsSizes.value.add((it as Map<String, Collection<String>>).size())
+        })
                 .subscribe()
         bus.subscribingFor(DATA_SET_DISTINCT_MOOD).accept({ distinctMood.value = it as Set<String> }).subscribe()
     }
@@ -102,7 +111,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
 
     void setup() {
         cleanIndex()
-        refreshedPaths.value = null
+        refreshedPaths.value = new HashMap<>()
         distinctMood.value = null
         managerHelper.contentView.items.clear()
     }
@@ -111,12 +120,12 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         Files.copy(sourceDir.toPath(), soundFilesDir.toPath())
         Arrays.stream(sourceDir.listFiles()).forEach({ Files.copy(it.toPath(), Paths.get(soundFilesDir.name, it.name)) })
         bus.message(DATA_INDEX_DIRECTORY).withContent(soundFilesDir).send()
-        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({ refreshedPaths.value?.size() == 1 })
+        await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({ refreshedPaths.value.size() == 2 })
     }
 
     void cleanIndex() {
         bus.message(DATA_INDEX_CLEAN).send()
-        await().atMost(WAITING_SECONDS*2, TimeUnit.SECONDS).until({ refreshedPaths.value?.size() == 0 })
+        await().atMost(WAITING_SECONDS*2, TimeUnit.SECONDS).until({ refreshedPathsSizes.value.contains(0) })
         if (soundFilesDir.exists())
             Arrays.stream(soundFilesDir.listFiles()).forEach({ it.delete() })
         soundFilesDir.delete()
@@ -128,10 +137,9 @@ class IndexingFeatureSpec extends FxmlTestHelper {
 
         then:
         await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until(
-                { refreshedPaths.hasValue() && refreshedPaths.value.size() == 1 })
-        def indexingPath = ++refreshedPaths.value.keySet().iterator()
+                { refreshedPaths.hasValue() && refreshedPaths.value.size() == 2 })
         def expectedIndexingPath = soundFilesDir.getAbsolutePath().substring(0, soundFilesDir.getAbsolutePath().lastIndexOf(File.separator) + 1).replace(File.separator, '/')
-        indexingPath == expectedIndexingPath
+        refreshedPaths.value.containsKey(expectedIndexingPath)
     }
 
     def 'check reindexing'() {
@@ -164,7 +172,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
 
         then:
         await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until(
-                { refreshedPaths.value.size() == 0 })
+                { refreshedPathsSizes.value.contains(0) })
 
         cleanup:
         renamed?.renameTo soundFilesDir.getAbsolutePath()
@@ -187,10 +195,8 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         def mp3File = soundFiles.get(1)
 
         flacFile.format == Format.FLAC
-        def expectedIndexingPath = ++refreshedPaths.value.keySet().iterator()
-        flacFile.path == expectedIndexingPath + soundFilesDir.name + '/test.flac'
+        refreshedPaths.value.keySet().stream().anyMatch({ (flacFile.indexedPath == it) })
         flacFile.fileName == MetadataValues.flacFileName
-        flacFile.indexedPath == expectedIndexingPath
         flacFile.title == MetadataValues.flacTitle
         flacFile.rate == MetadataValues.flacRate
         flacFile.date == MetadataValues.flacDate
@@ -224,9 +230,8 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         flacFile.counter == MetadataValues.flacCounter
 
         mp3File.format == Format.MP3
-        mp3File.path == expectedIndexingPath + soundFilesDir.name + '/test.mp3'
+        refreshedPaths.value.keySet().stream().anyMatch({ (mp3File.indexedPath == it) })
         mp3File.fileName == MetadataValues.mp3FileName
-        mp3File.indexedPath == expectedIndexingPath
         mp3File.title == MetadataValues.mp3Title
         mp3File.rate == MetadataValues.mp3Rate
         mp3File.date == MetadataValues.mp3Date

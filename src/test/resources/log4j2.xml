@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--suppress XmlUnboundNsPrefix -->
+<Configuration>
+    <Properties>
+        <Property name="logFile">app</Property>
+    </Properties>
+    <Appenders>
+        <File name="logToFile"
+              fileName="${logFile}.log"
+              append="false">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level - %msg%n" />
+        </File>
+        <File name="logMessage"
+              fileName="bus.log"
+              append="false">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level - %msg%n" />
+        </File>
+        <Console name="STDOUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level - %msg%n" />
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Logger name="bus" level="debug" additivity="false">
+            <!--<ThresholdFilter level="info"/>-->
+            <AppenderRef ref="logMessage"/>
+            <AppenderRef ref="STDOUT"/>
+        </Logger>
+        <Root level="debug" additivity="false">
+            <AppenderRef ref="logToFile"/>
+            <AppenderRef ref="STDOUT"/>
+        </Root>
+    </Loggers>
+</Configuration>
