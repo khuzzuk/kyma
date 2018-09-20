@@ -37,7 +37,7 @@ public class BaseElement extends TreeItem<String> {
     }
 
     public void addChildFor(String[] path, int pos) {
-        if (path.length <= pos) return;
+        if (path.length - 1 <= pos) return;
 
         BaseElement child = childElements.get(path[pos]);
         if (child == null) {

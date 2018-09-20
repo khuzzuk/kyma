@@ -1,4 +1,4 @@
-/*noinspection CssUnusedSymbol*/
+/*
 .root {
     -fx-background-color: #e5dbcd;
     -elements-opacity: 90%;
@@ -14,7 +14,6 @@
     -round-button-fill: radial-gradient(center 10px 10px, radius 100%, repeat, -gold-color, rgb(50, 50, 50));
 }
 
-/*noinspection CssUnusedSymbol*/
 .split-pane {
     -fx-background-color: transparent;
 }
@@ -28,11 +27,15 @@
     -fx-stroke: -fore-text-color;
     -fx-effect: -element-drop-shadow;
 }
-
+*/
+.star {
+    -fx-fill: rgb(90, 88, 83);
+    -fx-stroke: rgb(90, 88, 83);
+}
 .star-empty {
     -fx-fill: transparent;
 }
-
+/*
 .roundButton {
     -fx-background-radius: 45em;
     -fx-min-width: 45px;
@@ -59,7 +62,6 @@
     -fx-effect: -element-drop-shadow;
 }
 
-/*noinspection CssUnusedSymbol*/
 .currentlyPlayed .text {
     -fx-underline: true;
     -fx-fill: -elements-background;
@@ -167,8 +169,6 @@
     -fx-background: transparent;
 }
 
-/*noinspection CssUnusedSymbol*/
-
 .table-view .column-header {
     -fx-background-color: -containers-background;
 }
@@ -193,6 +193,7 @@
 .tree-view .tree-cell:selected {
     -fx-border-color: -gold-color;
     /*-fx-effect: -element-drop-shadow;*/
+/*
 }
 
 .list-cell:selected {
@@ -206,7 +207,6 @@
     -fx-background-color: transparent;
 }
 
-/* Filter titled-pane with list-view*/
 .titled-pane {
     -fx-background-color: transparent;
     -fx-background: transparent;
@@ -225,7 +225,6 @@
     -fx-background-size: auto;
 }
 
-/*noinspection CssUnusedSymbol*/
 .menu-bar {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
@@ -260,3 +259,4 @@
 #BackgroundContainer > .text-field-with-different-values {
     -fx-background-color: -elements-background;
 }
+*/
