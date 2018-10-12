@@ -5,6 +5,6 @@
 <TableView xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="net.kyma.gui.controllers.ContentView"
-           onMouseClicked="#onMouseEvent" onKeyReleased="#onKeyReleased"
+           onMouseClicked="#onMouseEvent" onKeyPressed="#onKeyReleased"
            editable="true" fx:id="mainContentView">
 </TableView>

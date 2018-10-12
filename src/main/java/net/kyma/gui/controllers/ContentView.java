@@ -70,6 +70,7 @@ public class ContentView implements Initializable, Loadable {
         createContextMenu(Collections.emptyList());
 
         mainContentView.setEditable(true);
+        mainContentView.getSelectionModel().cellSelectionEnabledProperty().setValue(true);
         mainContentView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         mainContentView.getColumns().clear();
         selected = mainContentView.getSelectionModel().getSelectedItems();
@@ -228,6 +229,18 @@ public class ContentView implements Initializable, Loadable {
                     }
                 } else if (keyEvent.isAltDown()) {
                     bus.message(PLAYLIST_ADD_LIST).withContent(selected).send();
+                }
+                break;
+
+            case TAB:
+            TablePosition<SoundFile, ?> editingCell = mainContentView.getEditingCell();
+                if (editingCell != null) {
+                    editingCell.getTableColumn().getOnEditCommit().handle(null);
+                    int columnIndex = editingCell.getColumn();
+                    int maxColumn = mainContentView.getColumns().size() - 1;
+                    int nextColumn = columnIndex == maxColumn ? 0 : columnIndex + 1;
+                    mainContentView.getSelectionModel().select(editingCell.getRow(), mainContentView.getColumns().get(nextColumn));
+                    keyEvent.consume();
                 }
                 break;
 
