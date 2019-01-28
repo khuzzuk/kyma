@@ -1,15 +1,12 @@
 package net.kyma.data;
 
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.Loadable;
 import net.kyma.dm.DataQuery;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
-import net.kyma.initialization.Dependable;
-import net.kyma.initialization.Dependency;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
@@ -31,13 +28,9 @@ import static net.kyma.dm.SupportedField.PATH;
 
 @Log4j2
 @RequiredArgsConstructor
-public class DataReader extends Dependable implements Loadable {
+public class DataReader implements Loadable {
     private final Bus<EventType> bus;
-    @Setter
-    @Dependency
     private IndexWriter writer;
-    @Setter
-    @Dependency
     private SoundFileConverter soundFileConverter;
 
     @Override
@@ -46,11 +39,24 @@ public class DataReader extends Dependable implements Loadable {
         bus.subscribingFor(RET_SOUND_FILE_CONVERTER).accept(this::setSoundFileConverter).subscribe();
     }
 
-    @Override
-    public void afterDependenciesSet()
+    private synchronized void setWriter(IndexWriter writer) {
+        this.writer = writer;
+        if (soundFileConverter != null) {
+            afterDependenciesSet();
+        } //TODO resolve this dependency cycle
+    }
+
+    private synchronized void setSoundFileConverter(SoundFileConverter soundFileConverter) {
+        this.soundFileConverter = soundFileConverter;
+        if (writer != null) {
+            afterDependenciesSet();
+        }
+    }
+
+    private void afterDependenciesSet()
     {
-        bus.subscribingFor(EventType.DATA_GET_PATHS).then(this::getFilePaths).subscribe();
-        bus.subscribingFor(EventType.DATA_INDEX_GET_DISTINCT).mapResponse(this::getDistinctValues).subscribe();
+        bus.subscribingFor(DATA_GET_PATHS).then(this::getFilePaths).subscribe();
+        bus.subscribingFor(DATA_INDEX_GET_DISTINCT).mapResponse(this::getDistinctValues).subscribe();
         bus.subscribingFor(DATA_QUERY).mapResponse(this::search).subscribe();
     }
 

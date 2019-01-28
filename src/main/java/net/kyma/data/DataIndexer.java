@@ -1,34 +1,7 @@
 package net.kyma.data;
 
-import static net.kyma.EventType.CLOSE;
-import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
-import static net.kyma.EventType.DATA_GET_PATHS;
-import static net.kyma.EventType.DATA_INDEX_CLEAN;
-import static net.kyma.EventType.DATA_INDEX_GET_ALL;
-import static net.kyma.EventType.DATA_INDEX_GET_DIRECTORIES;
-import static net.kyma.EventType.DATA_INDEX_GET_DISTINCT;
-import static net.kyma.EventType.DATA_INDEX_ITEM;
-import static net.kyma.EventType.DATA_INDEX_LIST;
-import static net.kyma.EventType.DATA_REFRESH;
-import static net.kyma.EventType.DATA_REMOVE_ITEM;
-import static net.kyma.EventType.DATA_REMOVE_PATH;
-import static net.kyma.EventType.DATA_STORE_ITEM;
-import static net.kyma.EventType.DATA_STORE_LIST;
-import static net.kyma.EventType.RET_DOC_CONVERTER;
-import static net.kyma.EventType.RET_INDEX_WRITER;
-import static net.kyma.EventType.SHOW_ALERT;
-import static net.kyma.data.QueryUtils.termForPath;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.BusRequestException;
 import net.kyma.EventType;
@@ -36,8 +9,6 @@ import net.kyma.Loadable;
 import net.kyma.dm.DataQuery;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
-import net.kyma.initialization.Dependable;
-import net.kyma.initialization.Dependency;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
@@ -49,26 +20,27 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.Bits;
 import pl.khuzzuk.messaging.Bus;
 
+import java.io.IOException;
+import java.util.*;
+
+import static net.kyma.EventType.*;
+import static net.kyma.data.QueryUtils.termForPath;
+
 @Log4j2
 @RequiredArgsConstructor
-public class DataIndexer extends Dependable implements Loadable {
+public class DataIndexer implements Loadable {
    private final Bus<EventType> bus;
-   @Setter
-   @Dependency
    private IndexWriter writer;
-   @Setter
-   @Dependency
-   private DocConverter docConverter;
    private Set<String> indexedPaths;
    private static final String READ_DATA_ERROR_MESSAGE = "Cannot read data";
 
    @Override
    public void load() {
-      bus.subscribingFor(RET_DOC_CONVERTER).accept(this::setDocConverter).subscribe();
-      bus.subscribingFor(RET_INDEX_WRITER).accept(this::setWriter).subscribe();
+      bus.subscribingFor(RET_INDEX_WRITER).accept(this::init).subscribe();
    }
 
-   public void afterDependenciesSet() {
+   public void init(IndexWriter writer) {
+      this.writer = writer;
       bus.subscribingFor(CLOSE).then(this::close).subscribe();
       bus.subscribingFor(DATA_INDEX_CLEAN).then(this::clearIndex).subscribe();
       bus.subscribingFor(DATA_INDEX_LIST).accept(this::index).subscribe();
@@ -114,10 +86,10 @@ public class DataIndexer extends Dependable implements Loadable {
 
    private void addDocument(SoundFile soundFile, IndexSearcher searcher) throws IOException {
       if (isNew(soundFile, searcher)) {
-         writer.addDocument(docConverter.docFrom(soundFile));
+         writer.addDocument(DocConverter.docFrom(soundFile));
       } else {
          normalizeIndexingPath(soundFile, searcher);
-         writer.updateDocument(termForPath(soundFile.getPath()), docConverter.docFrom(soundFile));
+         writer.updateDocument(termForPath(soundFile.getPath()), DocConverter.docFrom(soundFile));
       }
    }
 

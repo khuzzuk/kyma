@@ -44,6 +44,7 @@ public class ManagerPaneController implements Initializable {
     @Getter
     private TreeView<String> filesList;
     @FXML
+    @Getter
     private TableView<SoundFile> playlist;
     @FXML
     @Getter

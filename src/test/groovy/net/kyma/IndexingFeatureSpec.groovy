@@ -3,12 +3,14 @@ package net.kyma
 import javafx.application.Platform
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TablePosition
+import javafx.scene.control.TableView
 import javafx.stage.Stage
 import net.kyma.dm.RateTagUpdateRequest
 import net.kyma.dm.Rating
 import net.kyma.dm.SoundFile
 import net.kyma.dm.SupportedField
 import net.kyma.gui.controllers.ContentView
+import net.kyma.gui.controllers.ContentViewTestHelper
 import net.kyma.gui.controllers.ControllerDistributor
 import net.kyma.gui.controllers.ManagerPaneController
 import net.kyma.gui.controllers.ManagerPaneControllerTestHelper
@@ -82,10 +84,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         contentViewController = controllerDistributor.call(ContentView.class) as ContentView
         if (contentViewController == null) return false
 
-        if (GuiPrivateFields.contentViewSuggestions == null) return false
-        if (GuiPrivateFields.contentViewSoundFileEditor == null) return false
-
-        true
+        ContentViewTestHelper.hasSuggestions(contentViewController) && ContentViewTestHelper.hasEditor(contentViewController)
     }
 
     void prepareProperties() {
@@ -155,7 +154,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         distinctMood.value.contains(MetadataValues.mp3Mood)
         distinctMood.value.contains('flac mood')
 
-        def suggestions = GuiPrivateFields.contentViewSuggestions
+        def suggestions = ContentViewTestHelper.getSuggestions(contentViewController)
         await().atMost(WAITING_SECONDS, TimeUnit.SECONDS)
                 .until({ suggestions.get(SupportedField.MOOD).size() == 2 })
         suggestions.get(SupportedField.MOOD).containsAll([MetadataValues.mp3Mood, MetadataValues.flacMood])
@@ -387,10 +386,12 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({ managerHelper.moodFilter.items.size() == 3 })
         managerHelper.contentView.items.size() == 2
 
+        TableView<SoundFile> mainContentView = ContentViewTestHelper.getMainContentView(contentViewController)
+
         when:
-        selectFirst(GuiPrivateFields.mainContentView)
-        clickMouseOn(GuiPrivateFields.mainContentView, 10, 10, 2)
-        def playlistItems = GuiPrivateFields.playlistView.getItems()
+        selectFirst(mainContentView)
+        clickMouseOn(mainContentView, 10, 10, 2)
+        def playlistItems = managerHelper.playList.getItems()
         await().atMost(WAITING_SECONDS, TimeUnit.SECONDS).until({playlistItems.size() != 0})
 
         then:

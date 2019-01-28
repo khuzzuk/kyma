@@ -3,6 +3,7 @@ package net.kyma;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.kyma.dm.SoundFile;
+import org.apache.lucene.index.IndexWriter;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 

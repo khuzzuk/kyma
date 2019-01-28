@@ -2,6 +2,7 @@ package net.kyma;
 
 public class PropertyContainer<T> {
     private T value;
+
     public boolean hasValue() {
         return value != null;
     }

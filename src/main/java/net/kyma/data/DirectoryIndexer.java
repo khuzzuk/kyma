@@ -1,15 +1,11 @@
 package net.kyma.data;
 
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import net.kyma.EventType;
 import net.kyma.Loadable;
 import net.kyma.dm.DataQuery;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
-import net.kyma.initialization.Dependable;
-import net.kyma.initialization.Dependency;
 import net.kyma.player.Format;
 import pl.khuzzuk.messaging.Bus;
 
@@ -21,13 +17,9 @@ import static net.kyma.EventType.*;
 import static net.kyma.data.PathUtils.normalizePath;
 
 @RequiredArgsConstructor
-public class DirectoryIndexer extends Dependable implements Loadable {
+public class DirectoryIndexer implements Loadable {
     private final Bus<EventType> bus;
-    @Setter
-    @Dependency
     private SoundFileConverter converter;
-    @Setter(AccessLevel.PRIVATE)
-    @Dependency
     private Set<String> indexedPaths;
 
     @Override
@@ -36,8 +28,21 @@ public class DirectoryIndexer extends Dependable implements Loadable {
         bus.subscribingFor(DATA_INDEX_GET_DIRECTORIES).accept(this::setIndexedPaths).subscribe();
     }
 
-    @Override
-    public void afterDependenciesSet() {
+    private synchronized void setConverter(SoundFileConverter converter) {
+        this.converter = converter;
+        if (indexedPaths != null) {
+            afterDependenciesSet();
+        }
+    }
+
+    private synchronized void setIndexedPaths(Set<String> indexedPaths) {
+        this.indexedPaths = indexedPaths;
+        if (converter != null) {
+            afterDependenciesSet();
+        } //TODO resolve this dependency cycle
+    }
+
+    private void afterDependenciesSet() {
         bus.subscribingFor(DATA_INDEX_DIRECTORY).accept(this::indexCatalogue).subscribe();
     }
 

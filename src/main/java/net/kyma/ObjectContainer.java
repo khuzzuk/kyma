@@ -2,7 +2,6 @@ package net.kyma;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import javafx.util.Pair;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.data.*;
@@ -14,6 +13,7 @@ import net.kyma.player.Playlist;
 import net.kyma.properties.PropertiesManager;
 import net.kyma.web.YoutubeDownloadedFilesReader;
 import net.kyma.web.YoutubeDownloader;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
@@ -44,13 +44,13 @@ public class ObjectContainer
 
    private void putToContainer(EventType retrieveEvent, Object object)
    {
-      toSend.add(new Pair<>(retrieveEvent, object));
+      toSend.add(Pair.of(retrieveEvent, object));
    }
 
    @SuppressWarnings("unused")
    void putToContainer(EventType retrieveEvent, Loadable loadable)
    {
-      toSend.add(new Pair<>(retrieveEvent, loadable));
+      toSend.add(Pair.of(retrieveEvent, loadable));
       loadables.add(loadable);
    }
 

@@ -1,25 +1,19 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.3'
-    }
+plugins {
+    id 'idea'
+    id 'java'
+    id 'groovy'
+    id 'maven'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.7'
 }
-
-apply plugin: 'idea'
-apply plugin: 'com.github.johnrengelman.shadow'
-apply plugin: 'java'
-apply plugin: 'groovy'
-apply plugin: 'maven'
 
 group = 'kyma.net'
 version = '1.0-SNAPSHOT'
 
 description = "Kyma music player and manager"
 
-sourceCompatibility = 9
-targetCompatibility = 9
+sourceCompatibility = 11
+targetCompatibility = 11
 
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
@@ -35,38 +29,16 @@ repositories {
      }
 }
 
-compileJava {
-    doLast {
-        ant.taskdef(resource: "org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties", classpath: configurations.compile.asPath)
-        ant.iajc(
-                source: "1.9", target: "1.9", maxmem: "512m", fork: "true",
-                inpath: sourceSets.main.output.classesDir.toPath(),
-                destDir: sourceSets.main.output.classesDir.absolutePath,
-                aspectPath: sourceSets.main.output.classesDir.absolutePath, //project.getBuildDir().getAbsolutePath() + "/classes/java/main/net/kyma/initialization",
-                sourceRootCopyFilter: "**/*.java",
-                classpath: "${configurations.compile.asPath}") {
-        }
-    }
-}
-compileTestJava {
-    doLast {
-        ant.taskdef(resource: "org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties", classpath: configurations.compile.asPath)
-        ant.iajc(
-                source: "1.9", target: "1.9", maxmem: "512m", fork: "true",
-                sourceRoots: sourceSets.test.java.srcDirs[0],//'/home/adrabik/java/projects/kyma/src/test/aspect',
-                inpath: sourceSets.main.output.classesDir.toPath(),
-                destDir: sourceSets.test.output.classesDir.absolutePath,
-                aspectPath: sourceSets.test.output.classesDir.absolutePath,
-                sourceRootCopyFilter: "**/*.java",
-                classpath: "${configurations.compile.asPath}") {
-        }
-    }
+javafx {
+    modules = [ 'javafx.controls', 'javafx.graphics', 'javafx.fxml' ]
 }
 
 dependencies {
-    compile group: 'org.aspectj', name: 'aspectjrt', version: '1.9.1'
-    compile group: 'org.aspectj', name: 'aspectjweaver', version: '1.9.1' // -javaagent:lib/aspectjweaver-1.9.1.jar
-    compile group: 'org.aspectj', name: 'aspectjtools', version: '1.9.1'
+    //javafx
+//    compile group: 'org.openjfx', name: 'javafx-controls', version: '11.0.2'
+//    compile group: 'org.openjfx', name: 'javafx-graphics', version: '11.0.2'
+//    compile group: 'org.openjfx', name: 'javafx-fxml', version: '11.0.2'
+
     compile group: 'org.apache.lucene', name: 'lucene-core', version:'7.2.1'
     compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.7'
     compile group: 'org.apache.commons', name: 'commons-collections4', version:'4.1'
@@ -87,23 +59,15 @@ dependencies {
     testCompile group: 'org.testng', name: 'testng', version:'6.14.3'
     testCompile group: 'org.spockframework', name: 'spock-core', version: '1.1-groovy-2.4'
     testCompile group: 'org.awaitility', name: 'awaitility', version: '3.1.0'
-    compileOnly group: 'org.projectlombok', name: 'lombok', version:'1.16.20'
+    compileOnly group: 'org.projectlombok', name: 'lombok', version:'1.18.4'
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version:'1.18.4'
 }
 
-task bootJar(type: Jar) {
+jar {
     manifest {
         attributes 'Main-class': 'net.kyma.Manager'
     }
-}
-
-shadowJar {
-    baseName = 'kyma'
-    classifier = null
-    version = null
-    manifest {
-        inheritFrom project.tasks.bootJar.manifest
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
-    mergeServiceFiles()
 }
-
-project.tasks.bootJar.dependsOn project.tasks.shadowJar

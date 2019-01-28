@@ -11,19 +11,17 @@ class ManagerPaneControllerTestHelper {
     ManagerPaneController managerPaneController
     ListView<String> moodFilter
     TableView<SoundFile> contentView
+    TableView<SoundFile> playList
     TreeView<String> filesList
 
     void retrieveFields(ManagerPaneController managerPaneController) {
         this.managerPaneController = managerPaneController
-        if (managerPaneController == null) false
+        if (managerPaneController == null) throw new IllegalArgumentException('controller cannot be null')
 
         moodFilter = managerPaneController.moodFilter
         contentView = managerPaneController.contentView
+        playList = managerPaneController.playlist
         filesList = managerPaneController.filesList
-
-        moodFilter != null &&
-                contentView != null &&
-                filesList != null
     }
 
     boolean isValid() {
