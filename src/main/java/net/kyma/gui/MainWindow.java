@@ -1,13 +1,5 @@
 package net.kyma.gui;
 
-import static net.kyma.EventType.CLOSE;
-import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_FRAME;
-import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_FULLSCREEN;
-import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_MAXIMIZED;
-
-import java.awt.Rectangle;
-import java.io.IOException;
-
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
@@ -18,6 +10,13 @@ import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.gui.controllers.ControllerDistributor;
 import pl.khuzzuk.messaging.Bus;
+
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+
+import static net.kyma.EventType.*;
 
 @Log4j2
 public class MainWindow extends Stage {
@@ -31,10 +30,10 @@ public class MainWindow extends Stage {
         this.controllerDistributor = controllerDistributor;
     }
 
-    public void initMainWindow(Window parent) {
+    public void initMainWindow(Window parent) throws MalformedURLException {
         controllerDistributor.getMainController().setStage(this);
         initOwner(parent);
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/mainWindow.fxml"));
+        FXMLLoader loader = new FXMLLoader(new File("gui/fxml/mainWindow.fxml").toURI().toURL());
         loader.setControllerFactory(controllerDistributor);
         try {
             setScene(new Scene(loader.load()));

@@ -1,11 +1,11 @@
 {
   "uiProperties" : {
     "fullScreen" : false,
-    "maximized" : true,
-    "x" : 1920,
+    "maximized" : false,
+    "x" : 0,
     "y" : 0,
-    "width" : 1920,
-    "height" : 1054,
+    "width" : 1156,
+    "height" : 720,
     "columnDefinitions" : [ {
       "field" : "TITLE",
       "size" : 355.0

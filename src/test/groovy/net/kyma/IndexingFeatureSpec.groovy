@@ -190,7 +190,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
         then:
         managerHelper.contentView.getItems().size() == 2
         def soundFiles = managerHelper.contentView.getItems().sorted()
-        def flacFile = soundFiles.get(0)
+        def flacFile = sounPlayerManagerPropertiesdFiles.get(0)
         def mp3File = soundFiles.get(1)
 
         flacFile.format == Format.FLAC
