@@ -36,6 +36,10 @@ javafx {
     modules = ['javafx.controls', 'javafx.graphics', 'javafx.fxml']
 }
 
+ext {
+    zipPath = '$buildDir/images/image.zip'
+}
+
 dependencies {
     compile group: 'org.apache.lucene', name: 'lucene-core', version: '7.6.0'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
@@ -72,9 +76,18 @@ jar {
 }
 
 jlink {
+    imageZip = file(zipPath)
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
     launcher {
         name = 'kyma'
     }
     forceMerge('log4j-api')
+}
+
+tasks.jlink {
+    doLast {
+        copy {
+            from './gui' into '$zipPath/bin/gui'
+        }
+    }
 }
