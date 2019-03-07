@@ -12,9 +12,7 @@ import net.kyma.gui.controllers.ControllerDistributor;
 import pl.khuzzuk.messaging.Bus;
 
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 
 import static net.kyma.EventType.*;
 
@@ -30,10 +28,10 @@ public class MainWindow extends Stage {
         this.controllerDistributor = controllerDistributor;
     }
 
-    public void initMainWindow(Window parent) throws MalformedURLException {
+    public void initMainWindow(Window parent) {
         controllerDistributor.getMainController().setStage(this);
         initOwner(parent);
-        FXMLLoader loader = new FXMLLoader(new File("gui/fxml/mainWindow.fxml").toURI().toURL());
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/mainWindow.fxml"));
         loader.setControllerFactory(controllerDistributor);
         try {
             setScene(new Scene(loader.load()));

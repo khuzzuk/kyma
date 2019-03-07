@@ -1,5 +1,7 @@
 package net.kyma;
 
+import java.io.FileNotFoundException;
+
 import javafx.application.Application;
 import javafx.stage.Stage;
 import lombok.extern.log4j.Log4j2;
@@ -7,9 +9,6 @@ import net.kyma.gui.MainWindow;
 import net.kyma.gui.controllers.ControllerDistributor;
 import pl.khuzzuk.functions.ForceGate;
 import pl.khuzzuk.messaging.Bus;
-
-import java.io.FileNotFoundException;
-import java.net.MalformedURLException;
 
 @Log4j2
 public class Manager extends Application {
@@ -42,12 +41,8 @@ public class Manager extends Application {
     }
 
    private static void initMainWindow() {
-       try {
-           mainWindow.initMainWindow(currentStage);
-           mainWindow.show();
-       } catch (MalformedURLException e) {
-           e.printStackTrace();
-       }
+       mainWindow.initMainWindow(currentStage);
+       mainWindow.show();
    }
 
     static Bus<EventType> createBus()

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+
+<TableView xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="net.kyma.gui.controllers.ContentView"
+           onMouseClicked="#onMouseEvent" onKeyPressed="#onKeyReleased"
+           editable="true" fx:id="mainContentView">
+</TableView>
