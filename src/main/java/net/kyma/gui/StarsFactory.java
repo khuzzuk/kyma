@@ -2,6 +2,7 @@ package net.kyma.gui;
 
 import javafx.scene.Node;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.ClosePath;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
@@ -42,6 +43,7 @@ public class StarsFactory
    private static Pair<Path, Path> getHalfStar()
    {
       Path half1 = new Path();
+      half1.setFill(Color.BLACK);
       half1.getElements().add(new MoveTo(0, R));
       drawStarLines(half1, 0, 5);
       half1.getElements().add(new ClosePath());
@@ -63,6 +65,7 @@ public class StarsFactory
          {
             Path star = getStar();
             star.getStyleClass().add("star");
+            star.setFill(Color.BLACK);
             pane.getChildren().add(star);
             AnchorPane.setTopAnchor(star, 0d);
             AnchorPane.setLeftAnchor(star, (double) (i * START_SPACING) + i);

@@ -66,10 +66,36 @@ dependencies {
     testCompile group: 'org.spockframework', name: 'spock-core', version: '1.1-groovy-2.4'
     testCompile group: 'org.awaitility', name: 'awaitility', version: '3.1.0'
     compileOnly group: 'org.projectlombok', name: 'lombok', version: lombokVersion
-    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: 'edge-SNAPSHOT'
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 }
 
 mainClassName = 'kyma/net.kyma.Manager'
+
+sourceSets {
+    main.output.resourcesDir = main.java.outputDir
+}
+
+compileJava {
+    inputs.property('moduleName', moduleName)
+    doFirst {
+        options.compilerArgs = [
+                '--module-path', classpath.asPath,
+                '--patch-module', "$moduleName=" + files(sourceSets.main.resources.srcDirs).asPath,
+                //'--module-version', "$moduleVersion"
+        ]
+    }
+}
+
+run {
+    inputs.property('moduleName', moduleName)
+    doFirst {
+        jvmArgs = [
+                '--module-path', classpath.asPath,
+                '--module-version', "$mainClassName"
+        ]
+        classpath = files()
+    }
+}
 
 jar {
     manifest {

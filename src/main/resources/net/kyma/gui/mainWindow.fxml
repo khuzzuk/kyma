@@ -3,7 +3,7 @@
 <SplitPane dividerPositions="0,0.85" orientation="VERTICAL"
            xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="net.kyma.gui.controllers.MainController"
-           stylesheets="/net/kyma/gui/classic.css" styleClass="BackgroundContainer"
+           styleClass="BackgroundContainer"
            maxHeight="Infinity" maxWidth="Infinity"
            fx:id="mainPane">
     <MenuBar>

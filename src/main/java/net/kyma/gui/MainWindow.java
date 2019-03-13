@@ -1,6 +1,7 @@
 package net.kyma.gui;
 
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -31,10 +32,11 @@ public class MainWindow extends Stage {
     public void initMainWindow(Window parent) {
         controllerDistributor.getMainController().setStage(this);
         initOwner(parent);
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/mainWindow.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/net/kyma/gui/mainWindow.fxml"));
         loader.setControllerFactory(controllerDistributor);
         try {
-            setScene(new Scene(loader.load()));
+            Parent root = loader.load();
+            setScene(new Scene(root));
         } catch (IOException e) {
             log.fatal("Error during gui initialization", e);
         }
