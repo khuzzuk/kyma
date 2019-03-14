@@ -1,7 +1,7 @@
 package net.kyma.gui;
 
+import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -30,19 +30,21 @@ class MainPane extends SplitPane {
         this.managerPane = managerPane;
         this.controller = controller;
 
-        //getChildren().addAll(mainMenuBar, this.managerPane, playerBox);
-        getChildren().addAll(mainMenuBar, new Button("BUTTON"), new Button("1"));
-        setDividerPositions(0.2d, 0.85d);
-/*
         setOrientation(Orientation.VERTICAL);
-        setMinHeight(Double.MAX_VALUE);
-        setMinWidth(Double.MAX_VALUE);
-*/
+        setDividerPositions(0, 0.85);
 
         playerBox.setAlignment(Pos.CENTER);
         playerBox.setSpacing(5);
         playerBox.setMaxHeight(Double.MAX_VALUE);
         playerBox.getChildren().addAll(indicator, playerPane);
+
+        getItems().addAll(
+                mainMenuBar,
+                managerPane,
+                playerBox
+        );
+
+        indicator.setVisible(false);
 
         controller.setIndicator(indicator);
         controller.setStage(stage);

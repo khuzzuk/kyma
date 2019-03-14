@@ -1,13 +1,6 @@
 package net.kyma.gui;
 
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.SplitPane;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -18,7 +11,7 @@ import net.kyma.gui.controllers.ControllerDistributor;
 import net.kyma.gui.manager.ManagerPane;
 import pl.khuzzuk.messaging.Bus;
 
-import java.awt.Rectangle;
+import java.awt.*;
 
 import static net.kyma.EventType.CLOSE;
 import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_FRAME;
@@ -42,17 +35,7 @@ public class MainWindow extends Stage {
         initOwner(parent);
         ManagerPane managerPane = new ManagerPane(controllerDistributor.getManagerPaneController());
         MainPane mainPane = new MainPane(managerPane, controllerDistributor.getController(), this);
-        SplitPane splitPane = new SplitPane(new Button("BUTTON"), new Button("1"));
-        splitPane.setDividerPositions(0.8d);
-        splitPane.setMaxWidth(Double.MAX_VALUE);
-        splitPane.setMinWidth(1800d);
-        splitPane.setBackground(new Background(new BackgroundFill(Color.VIOLET, null, null)));
-        HBox hBox = new HBox(splitPane);
-        hBox.setFillHeight(true);
-        HBox.setHgrow(hBox, Priority.ALWAYS);
-        hBox.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
-        setMaxHeight(Double.MAX_VALUE);
-        setScene(new Scene(hBox));
+        setScene(new Scene(mainPane));
         setOnCloseRequest(event -> onClose());
     }
 
