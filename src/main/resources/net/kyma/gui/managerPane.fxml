@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <GridPane hgap="10" vgap="10" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1"
-          fx:controller="net.kyma.gui.controllers.ManagerPaneController"
+          fx:controller="net.kyma.gui.manager.ManagerPaneController"
           fx:id="managerPane">
     <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0"/>

@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane fx:id="managerPane" hgap="10" stylesheets="@../css/classic.css" vgap="10" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.kyma.gui.controllers.ManagerPaneController">
+<GridPane fx:id="managerPane" hgap="10" stylesheets="@../css/classic.css" vgap="10" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.kyma.gui.manager.ManagerPaneController">
     <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0" />
         <ColumnConstraints hgrow="SOMETIMES" percentWidth="60.0" />

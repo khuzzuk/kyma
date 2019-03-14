@@ -5,7 +5,6 @@ plugins {
     id 'maven'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.7'
-    id 'net.ltgt.apt' version '0.10' // for edge lombok release
     id "org.beryx.jlink" version "2.4.4"
 }
 
@@ -26,7 +25,6 @@ repositories {
     maven { url "http://repo1.maven.org/maven2" }
     maven { url "https://raw.github.com/khuzzuk/MessageBus/mvn-repo/" }
     maven { url "https://raw.github.com/khuzzuk/functional-logic/mvn-repo/" }
-    maven { url 'https://projectlombok.org/edge-releases' }
     flatDir {
         dirs 'lib'
     }
@@ -71,9 +69,13 @@ dependencies {
 
 mainClassName = 'kyma/net.kyma.Manager'
 
+println sourceSets.main.output.resourcesDir
+
 sourceSets {
     main.output.resourcesDir = main.java.outputDir
 }
+
+println sourceSets.main.output.resourcesDir
 
 compileJava {
     inputs.property('moduleName', moduleName)

@@ -8,6 +8,7 @@ import net.kyma.data.*;
 import net.kyma.disk.FileAccessor;
 import net.kyma.gui.communicate.Alert;
 import net.kyma.gui.controllers.*;
+import net.kyma.gui.manager.ManagerPaneController;
 import net.kyma.player.PlayerManager;
 import net.kyma.player.Playlist;
 import net.kyma.properties.PropertiesManager;
@@ -116,7 +117,7 @@ public class ObjectContainer
 
       ManagerPaneController managerPaneController = new ManagerPaneController(bus);
 
-      MainController mainController = new MainController(bus, managerPaneController);
+      MainController mainController = new MainController(bus);
       PlayerPaneController playerPaneController = new PlayerPaneController(bus);
 
       ContentView contentView = new ContentView(bus);

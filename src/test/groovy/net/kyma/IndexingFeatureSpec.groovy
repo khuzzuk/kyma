@@ -12,7 +12,7 @@ import net.kyma.dm.SupportedField
 import net.kyma.gui.controllers.ContentView
 import net.kyma.gui.controllers.ContentViewTestHelper
 import net.kyma.gui.controllers.ControllerDistributor
-import net.kyma.gui.controllers.ManagerPaneController
+import net.kyma.gui.manager.ManagerPaneController
 import net.kyma.gui.controllers.ManagerPaneControllerTestHelper
 import net.kyma.player.Format
 import pl.khuzzuk.messaging.Bus

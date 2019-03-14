@@ -5,6 +5,7 @@ import javafx.scene.control.ListView
 import javafx.scene.control.TableView
 import javafx.scene.control.TreeView
 import net.kyma.dm.SoundFile
+import net.kyma.gui.manager.ManagerPaneController
 
 @CompileStatic
 class ManagerPaneControllerTestHelper {
