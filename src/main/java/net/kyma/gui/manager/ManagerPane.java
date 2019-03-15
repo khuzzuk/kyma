@@ -5,38 +5,49 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeView;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.RowConstraints;
 import net.kyma.dm.SoundFile;
 
+import static net.kyma.gui.components.GridPaneUtils.columnConstraints;
+import static net.kyma.gui.components.GridPaneUtils.rowConstraints;
+
 public class ManagerPane extends GridPane {
-    private final ManagerPaneController managerPaneController;
 
-    private TreeView<String> filesList = new TreeView<>();
-    private TableView<SoundFile> contentView;
-    private TableView<SoundFile> playlist = new TableView<>();
-    private ListView<String> moodFilter = new ListView<>();
-    private ListView<String> genreFilter = new ListView<>();
-    private ListView<String> occasionFilter = new ListView<>();
-
-    private HBox filters = new HBox(moodFilter, genreFilter, occasionFilter);
-    private SplitPane mainSplitPane = new SplitPane();
+    private static final int FIRST_COL = 20;
+    private static final int SECOND_COL = 60;
+    private static final int THIRD_COL = 20;
+    private static final double FILTERS_CONTENT_DIVISION = 0.2;
 
     public ManagerPane(ManagerPaneController managerPaneController, TableView<SoundFile> contentView) {
-        this.managerPaneController = managerPaneController;
-        this.contentView = contentView;
+        getRowConstraints().addAll(rowConstraints(0));
+        getColumnConstraints().addAll(columnConstraints(FIRST_COL), columnConstraints(SECOND_COL), columnConstraints(THIRD_COL));
 
-        RowConstraints rowConstraints = new RowConstraints();
-        rowConstraints.setVgrow(Priority.ALWAYS);
-        getRowConstraints().addAll(rowConstraints);
-        getColumnConstraints().addAll(columnConstraints(20), columnConstraints(60), columnConstraints(20));
+        TreeView<String> filesList = new TreeView<>();
+        filesList.setOnMouseClicked(event -> managerPaneController.requestUpdateContentView());
+        filesList.setOnKeyReleased(managerPaneController::onKeyReleased);
 
-        mainSplitPane.setDividerPositions(0.2);
+        ListView<String> moodFilter = new ListView<>();
+        moodFilter.setOnMouseClicked(event -> managerPaneController.requestUpdateContentView());
+        HBox.setHgrow(moodFilter, Priority.ALWAYS);
+
+        ListView<String> genreFilter = new ListView<>();
+        genreFilter.setOnMouseClicked(event -> managerPaneController.requestUpdateContentView());
+        HBox.setHgrow(genreFilter, Priority.ALWAYS);
+
+        ListView<String> occasionFilter = new ListView<>();
+        occasionFilter.setOnMouseClicked(event -> managerPaneController.requestUpdateContentView());
+        HBox.setHgrow(occasionFilter, Priority.ALWAYS);
+
+        HBox filters = new HBox(moodFilter, genreFilter, occasionFilter);
+
+        SplitPane mainSplitPane = new SplitPane();
+        mainSplitPane.setDividerPositions(FILTERS_CONTENT_DIVISION);
         mainSplitPane.setOrientation(Orientation.VERTICAL);
         mainSplitPane.getItems().addAll(filters, contentView);
+
+        TableView<SoundFile> playlist = new TableView<>();
 
         add(filesList, 0, 0);
         add(mainSplitPane, 1, 0);
@@ -49,12 +60,5 @@ public class ManagerPane extends GridPane {
         managerPaneController.setGenreFilter(genreFilter);
         managerPaneController.setOccasionFilter(occasionFilter);
         managerPaneController.initialize();
-    }
-
-    private static ColumnConstraints columnConstraints(double percentageWidth) {
-        ColumnConstraints columnConstraints = new ColumnConstraints();
-        columnConstraints.setHgrow(Priority.SOMETIMES);
-        columnConstraints.setPercentWidth(percentageWidth);
-        return columnConstraints;
     }
 }

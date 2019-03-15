@@ -3,15 +3,15 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<?import net.kyma.gui.PlayButton?>
-<?import net.kyma.gui.StopButton?>
+<?import net.kyma.gui.player.PlayButton?>
+<?import net.kyma.gui.player.StopButton?>
 <?import javafx.geometry.Insets?>
-<?import net.kyma.gui.PreviousPlayButton?>
-<?import net.kyma.gui.NextPlayButton?>
+<?import net.kyma.gui.player.PreviousPlayButton?>
+<?import net.kyma.gui.player.NextPlayButton?>
 <GridPane hgap="5" vgap="5"
           xmlns="http://javafx.com/javafx"
           xmlns:fx="http://javafx.com/fxml"
-          fx:controller="net.kyma.gui.controllers.PlayerPaneController">
+          fx:controller="net.kyma.gui.player.PlayerPaneController">
     <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" percentWidth="2.0"/>
         <ColumnConstraints hgrow="SOMETIMES" percentWidth="18.0"/>

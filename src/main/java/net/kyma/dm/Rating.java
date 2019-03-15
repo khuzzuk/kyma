@@ -3,7 +3,7 @@ package net.kyma.dm;
 import javafx.scene.Node;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import net.kyma.gui.StarsFactory;
+import net.kyma.gui.components.StarsFactory;
 import net.kyma.player.Format;
 
 import java.util.EnumSet;

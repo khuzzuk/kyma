@@ -1,6 +1,5 @@
-package net.kyma.gui.controllers;
+package net.kyma.gui;
 
-import javafx.fxml.FXML;
 import javafx.scene.control.ProgressIndicator;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -61,14 +60,12 @@ public class MainController {
         indicator.setVisible(true);
     }
 
-    @FXML
-    private void openFile() {
+    void openFile() {
         Optional.ofNullable(getFile(new FileChooser.ExtensionFilter("Pliki dźwiękowe", "*.mp3")))
                 .ifPresent(file -> bus.message(PLAYLIST_ADD_FILE).withResponse(PLAYLIST_ADD_SOUND).withContent(file).send());
     }
 
-    @FXML
-    private void indexCatalogue() {
+    void indexDirectory() {
         Optional.ofNullable(getFile()).ifPresent(file -> bus.message(DATA_INDEX_DIRECTORY).withContent(file).send());
     }
 

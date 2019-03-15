@@ -2,7 +2,7 @@ package net.kyma.gui.tree;
 
 import net.kyma.EventType;
 import net.kyma.dm.DataQuery;
-import net.kyma.gui.NetworkPopup;
+import net.kyma.gui.components.NetworkPopup;
 import pl.khuzzuk.messaging.Bus;
 
 public class NetworkRoot extends RootElement {

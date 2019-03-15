@@ -1,11 +1,11 @@
-package net.kyma.gui;
-
-import java.util.Collection;
+package net.kyma.gui.components;
 
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 import lombok.RequiredArgsConstructor;
 import net.kyma.dm.SoundFile;
+
+import java.util.Collection;
 
 @RequiredArgsConstructor
 public class AutoCompleteTableCell extends TableCell<SoundFile, String>

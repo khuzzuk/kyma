@@ -1,4 +1,4 @@
-package net.kyma.gui;
+package net.kyma.gui.components;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Button;

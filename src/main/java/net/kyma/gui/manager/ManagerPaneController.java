@@ -18,8 +18,8 @@ import net.kyma.EventType;
 import net.kyma.dm.DataQuery;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
-import net.kyma.gui.NetworkPopup;
-import net.kyma.gui.TableColumnFactory;
+import net.kyma.gui.components.NetworkPopup;
+import net.kyma.gui.components.TableColumnFactory;
 import net.kyma.gui.tree.BaseElement;
 import net.kyma.gui.tree.ContentElement;
 import net.kyma.gui.tree.FilterRootElement;
@@ -191,8 +191,7 @@ public class ManagerPaneController {
         filter.remove("");
     }
 
-    @FXML
-    private void requestUpdateContentView() {
+    void requestUpdateContentView() {
         DataQuery query = DataQuery.newQuery();
         applyFilterToQuery(moodFilter, query, SupportedField.MOOD);
         applyFilterToQuery(genreFilter, query, SupportedField.GENRE);
@@ -231,8 +230,7 @@ public class ManagerPaneController {
                 .collect(Collectors.toSet());
     }
 
-    @FXML
-    private void onKeyReleased(KeyEvent keyEvent) {
+    void onKeyReleased(KeyEvent keyEvent) {
         BaseElement selected = (BaseElement) filesList.getSelectionModel().getSelectedItem();
         if (keyEvent.getCode() == KeyCode.INSERT && selected != null) {
             bus.message(DATA_INDEX_DIRECTORY).withContent(new File(selected.getFullPath())).send();

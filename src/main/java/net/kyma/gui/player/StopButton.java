@@ -1,4 +1,4 @@
-package net.kyma.gui;
+package net.kyma.gui.player;
 
 
 import javafx.scene.Group;
@@ -10,5 +10,7 @@ public class StopButton extends Button {
         Rectangle rectangle = new Rectangle(0, 0, 10, 10);
         rectangle.getStyleClass().add("play-text");
         setGraphic(new Group(rectangle));
+
+        getStyleClass().add("roundButton");
     }
 }

@@ -1,4 +1,4 @@
-package net.kyma.gui;
+package net.kyma.gui.components;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;

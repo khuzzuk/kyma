@@ -1,4 +1,4 @@
-package net.kyma.gui;
+package net.kyma.gui.components;
 
 import javafx.collections.ObservableList;
 import javafx.geometry.Side;
@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 @UtilityClass
 public class AutoCompletionUtils {
-    static void bindAutoCompletions(TextField textField, Collection<String> suggestions) {
+    public static void bindAutoCompletions(TextField textField, Collection<String> suggestions) {
         ContextMenu suggestionsContextMenu = new ContextMenu();
 
         textField.textProperty().addListener((observable, oldValue, newValue) -> {

@@ -8,11 +8,11 @@ import javafx.stage.Window;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.gui.content.ContentPane;
-import net.kyma.gui.controllers.ControllerDistributor;
 import net.kyma.gui.manager.ManagerPane;
+import net.kyma.gui.player.PlayerPane;
 import pl.khuzzuk.messaging.Bus;
 
-import java.awt.*;
+import java.awt.Rectangle;
 
 import static net.kyma.EventType.CLOSE;
 import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_FRAME;
@@ -34,10 +34,11 @@ public class MainWindow extends Stage {
     public void initMainWindow(Window parent) {
         controllerDistributor.getController().setStage(this);
         initOwner(parent);
+        PlayerPane playerPane = new PlayerPane(controllerDistributor.getPlayerPaneController());
         ContentPane contentPane = new ContentPane(controllerDistributor.getContentPaneController());
         ManagerPane managerPane = new ManagerPane(controllerDistributor.getManagerPaneController(), contentPane);
-        MainPane mainPane = new MainPane(managerPane, controllerDistributor.getController(), this);
-        setScene(new Scene(mainPane));
+        MainPane mainPane = new MainPane(managerPane, playerPane, controllerDistributor.getController(), this);
+        setScene(ClassicTheme.style(new Scene(mainPane)));
         setOnCloseRequest(event -> onClose());
     }
 

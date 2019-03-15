@@ -4,15 +4,21 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.event.EventTarget;
-import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TablePosition;
+import javafx.scene.control.TableView;
 import javafx.scene.control.skin.TableColumnHeader;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.Loadable;
@@ -20,24 +26,65 @@ import net.kyma.dm.SoundFile;
 import net.kyma.dm.StringTagUpdateRequest;
 import net.kyma.dm.SupportedField;
 import net.kyma.dm.TagUpdateRequest;
-import net.kyma.gui.SoundFileBulkEditor;
-import net.kyma.gui.SoundFileEditor;
-import net.kyma.gui.TableColumnFactory;
+import net.kyma.gui.components.editor.SoundFileBulkEditor;
+import net.kyma.gui.components.editor.SoundFileEditor;
+import net.kyma.gui.components.TableColumnFactory;
 import net.kyma.properties.UIProperties;
 import org.apache.commons.lang3.StringUtils;
 import pl.khuzzuk.messaging.Bus;
 
-import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import static net.kyma.EventType.*;
-import static net.kyma.dm.SupportedField.*;
+import static net.kyma.EventType.DATA_INDEX_GET_DISTINCT;
+import static net.kyma.EventType.DATA_REMOVE_ITEM;
+import static net.kyma.EventType.DATA_SET_DISTINCT_CUSTOM1;
+import static net.kyma.EventType.DATA_SET_DISTINCT_CUSTOM2;
+import static net.kyma.EventType.DATA_SET_DISTINCT_CUSTOM3;
+import static net.kyma.EventType.DATA_SET_DISTINCT_CUSTOM4;
+import static net.kyma.EventType.DATA_SET_DISTINCT_CUSTOM5;
+import static net.kyma.EventType.DATA_SET_DISTINCT_GENRE;
+import static net.kyma.EventType.DATA_SET_DISTINCT_INSTRUMENT;
+import static net.kyma.EventType.DATA_SET_DISTINCT_MOOD;
+import static net.kyma.EventType.DATA_SET_DISTINCT_OCCASION;
+import static net.kyma.EventType.DATA_SET_DISTINCT_PEOPLE;
+import static net.kyma.EventType.DATA_SET_DISTINCT_TEMPO;
+import static net.kyma.EventType.DATA_STORE_ITEM;
+import static net.kyma.EventType.DATA_UPDATE_REQUEST;
+import static net.kyma.EventType.GUI_CONTENTVIEW_SETTINGS_CHANGED;
+import static net.kyma.EventType.GUI_CONTENTVIEW_SETTINGS_GET;
+import static net.kyma.EventType.GUI_CONTENTVIEW_SETTINGS_SET;
+import static net.kyma.EventType.GUI_CONTENTVIEW_SETTINGS_STORE;
+import static net.kyma.EventType.PLAYLIST_ADD_LIST;
+import static net.kyma.EventType.PLAYLIST_NEXT;
+import static net.kyma.EventType.PLAYLIST_REMOVE_SOUND;
+import static net.kyma.dm.SupportedField.ARTIST;
+import static net.kyma.dm.SupportedField.COMPOSER;
+import static net.kyma.dm.SupportedField.CONDUCTOR;
+import static net.kyma.dm.SupportedField.CUSTOM1;
+import static net.kyma.dm.SupportedField.CUSTOM2;
+import static net.kyma.dm.SupportedField.CUSTOM3;
+import static net.kyma.dm.SupportedField.CUSTOM4;
+import static net.kyma.dm.SupportedField.CUSTOM5;
+import static net.kyma.dm.SupportedField.GENRE;
+import static net.kyma.dm.SupportedField.INSTRUMENT;
+import static net.kyma.dm.SupportedField.MOOD;
+import static net.kyma.dm.SupportedField.OCCASION;
+import static net.kyma.dm.SupportedField.SUPPORTED_TAG;
+import static net.kyma.dm.SupportedField.TEMPO;
+import static net.kyma.dm.SupportedField.TITLE;
 
 @Log4j2
 @RequiredArgsConstructor
-public class ContentPaneController implements Initializable, Loadable {
-    @FXML
+public class ContentPaneController implements Loadable {
+    @Setter(AccessLevel.PACKAGE)
     private TableView<SoundFile> mainContentView;
     private ContextMenu columnContextMenu;
     private ContextMenu contentContextMenu;
@@ -56,8 +103,7 @@ public class ContentPaneController implements Initializable, Loadable {
         bulkEditor = new SoundFileBulkEditor(bus);
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public void initialize() {
         initSuggestions();
         editor.init(suggestions);
         bulkEditor.init(suggestions);
