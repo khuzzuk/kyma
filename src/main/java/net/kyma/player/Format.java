@@ -2,6 +2,7 @@ package net.kyma.player;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import net.kyma.EventType;
 import net.kyma.dm.SoundFile;
 import pl.khuzzuk.messaging.Bus;
 
@@ -16,24 +17,25 @@ public enum Format {
     MP3(Mp3PlayerJLayer::new, true),
     M4A(M4aPlayerSPI::new, false),
     FLAC(FLACPlayer::new, false),
+    OGG(OggPlayerSPI::new, false),
     UNKNOWN(null, false);
 
     final PlayerSupplier playerSupplier;
     private static final Set<Format> SET = EnumSet.allOf(Format.class);
-    private static final Set<String> supportedFormats = Set.of(".mp3", ".flac", ".m4a");
+    private static final Set<String> supportedFormats = Set.of(".mp3", ".flac", ".m4a", ".ogg");
     private boolean byteScale;
 
     public static Format forPath(String path) {
         return SET.stream().filter(f -> path.toUpperCase().endsWith(f.name())).findAny().orElse(UNKNOWN);
     }
 
-    public Player getPlayer(SoundFile file, Bus bus) {
+    public Player getPlayer(SoundFile file, Bus<EventType> bus) {
         if (playerSupplier != null) return playerSupplier.getPlayer(file, bus);
         return null;
     }
 
     interface PlayerSupplier {
-        Player getPlayer(SoundFile file, Bus bus);
+        Player getPlayer(SoundFile file, Bus<EventType> bus);
     }
 
     public static boolean isSupportingFormat(String extension) {
