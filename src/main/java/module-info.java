@@ -16,6 +16,4 @@ module kyma {
     exports net.kyma;
     exports net.kyma.properties;
     exports net.kyma.dm;
-    opens net.kyma.gui to javafx.fxml;
-    opens net.kyma.gui.controllers to javafx.fxml;
 }

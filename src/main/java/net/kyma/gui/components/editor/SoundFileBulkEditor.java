@@ -1,9 +1,4 @@
-package net.kyma.gui;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+package net.kyma.gui.components.editor;
 
 import javafx.scene.control.TextField;
 import net.kyma.EventType;
@@ -11,6 +6,11 @@ import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
 import org.apache.commons.lang3.StringUtils;
 import pl.khuzzuk.messaging.Bus;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class SoundFileBulkEditor extends SoundFileEditor {
     private Collection<SoundFile> soundFiles;

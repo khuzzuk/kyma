@@ -1,6 +1,5 @@
-/*
 .root {
-    -fx-background-color: #e5dbcd;
+    -fx-background-color: rgb(229, 219, 205);
     -elements-opacity: 90%;
     -containers-background: rgba(186, 177, 167, 0.6);
     -containers-background2: rgba(186, 177, 167, 0.9);
@@ -27,7 +26,6 @@
     -fx-stroke: -fore-text-color;
     -fx-effect: -element-drop-shadow;
 }
-*/
 .star {
     -fx-fill: rgb(90, 88, 83);
     -fx-stroke: rgb(90, 88, 83);
@@ -35,7 +33,6 @@
 .star-empty {
     -fx-fill: transparent;
 }
-/*
 .roundButton {
     -fx-background-radius: 45em;
     -fx-min-width: 45px;
@@ -193,7 +190,6 @@
 .tree-view .tree-cell:selected {
     -fx-border-color: -gold-color;
     /*-fx-effect: -element-drop-shadow;*/
-/*
 }
 
 .list-cell:selected {
@@ -259,4 +255,3 @@
 #BackgroundContainer > .text-field-with-different-values {
     -fx-background-color: -elements-background;
 }
-*/

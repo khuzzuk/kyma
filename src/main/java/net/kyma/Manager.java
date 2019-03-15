@@ -6,7 +6,7 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.gui.MainWindow;
-import net.kyma.gui.controllers.ControllerDistributor;
+import net.kyma.gui.ControllerDistributor;
 import pl.khuzzuk.functions.ForceGate;
 import pl.khuzzuk.messaging.Bus;
 

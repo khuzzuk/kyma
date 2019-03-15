@@ -4,7 +4,7 @@
 
 <TableView xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
-           fx:controller="net.kyma.gui.controllers.ContentView"
+           fx:controller="net.kyma.gui.content.ContentPaneController"
            onMouseClicked="#onMouseEvent" onKeyPressed="#onKeyReleased"
            editable="true" fx:id="mainContentView">
 </TableView>

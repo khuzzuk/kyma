@@ -1,10 +1,4 @@
-package net.kyma.gui;
-
-import static net.kyma.dm.SupportedField.*;
-
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.Map;
+package net.kyma.gui.components.editor;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -21,8 +15,47 @@ import net.kyma.EventType;
 import net.kyma.dm.Rating;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
+import net.kyma.gui.components.StarsFactory;
+import net.kyma.gui.components.AutoCompletionUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import pl.khuzzuk.messaging.Bus;
+
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.Map;
+
+import static net.kyma.dm.SupportedField.ALBUM;
+import static net.kyma.dm.SupportedField.ALBUM_ARTIST;
+import static net.kyma.dm.SupportedField.ALBUM_ARTISTS;
+import static net.kyma.dm.SupportedField.ARTIST;
+import static net.kyma.dm.SupportedField.ARTISTS;
+import static net.kyma.dm.SupportedField.COMPOSER;
+import static net.kyma.dm.SupportedField.CONDUCTOR;
+import static net.kyma.dm.SupportedField.COUNTRY;
+import static net.kyma.dm.SupportedField.CUSTOM1;
+import static net.kyma.dm.SupportedField.CUSTOM2;
+import static net.kyma.dm.SupportedField.CUSTOM3;
+import static net.kyma.dm.SupportedField.CUSTOM4;
+import static net.kyma.dm.SupportedField.CUSTOM5;
+import static net.kyma.dm.SupportedField.DISC_NO;
+import static net.kyma.dm.SupportedField.FILE_NAME;
+import static net.kyma.dm.SupportedField.GENRE;
+import static net.kyma.dm.SupportedField.GROUP;
+import static net.kyma.dm.SupportedField.INSTRUMENT;
+import static net.kyma.dm.SupportedField.MOOD;
+import static net.kyma.dm.SupportedField.MOVEMENT;
+import static net.kyma.dm.SupportedField.OCCASION;
+import static net.kyma.dm.SupportedField.OPUS;
+import static net.kyma.dm.SupportedField.ORCHESTRA;
+import static net.kyma.dm.SupportedField.QUALITY;
+import static net.kyma.dm.SupportedField.RANKING;
+import static net.kyma.dm.SupportedField.TEMPO;
+import static net.kyma.dm.SupportedField.TITLE;
+import static net.kyma.dm.SupportedField.TONALITY;
+import static net.kyma.dm.SupportedField.TRACK;
+import static net.kyma.dm.SupportedField.WORK;
+import static net.kyma.dm.SupportedField.WORK_TYPE;
+import static net.kyma.dm.SupportedField.YEAR;
 
 @RequiredArgsConstructor
 public class SoundFileEditor

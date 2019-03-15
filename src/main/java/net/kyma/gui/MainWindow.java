@@ -1,7 +1,5 @@
 package net.kyma.gui;
 
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -9,13 +7,17 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
-import net.kyma.gui.controllers.ControllerDistributor;
+import net.kyma.gui.content.ContentPane;
+import net.kyma.gui.manager.ManagerPane;
+import net.kyma.gui.player.PlayerPane;
 import pl.khuzzuk.messaging.Bus;
 
-import java.awt.*;
-import java.io.IOException;
+import java.awt.Rectangle;
 
-import static net.kyma.EventType.*;
+import static net.kyma.EventType.CLOSE;
+import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_FRAME;
+import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_FULLSCREEN;
+import static net.kyma.EventType.PROPERTIES_STORE_WINDOW_MAXIMIZED;
 
 @Log4j2
 public class MainWindow extends Stage {
@@ -30,16 +32,13 @@ public class MainWindow extends Stage {
     }
 
     public void initMainWindow(Window parent) {
-        controllerDistributor.getMainController().setStage(this);
+        controllerDistributor.getController().setStage(this);
         initOwner(parent);
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/net/kyma/gui/mainWindow.fxml"));
-        loader.setControllerFactory(controllerDistributor);
-        try {
-            Parent root = loader.load();
-            setScene(new Scene(root));
-        } catch (IOException e) {
-            log.fatal("Error during gui initialization", e);
-        }
+        PlayerPane playerPane = new PlayerPane(controllerDistributor.getPlayerPaneController());
+        ContentPane contentPane = new ContentPane(controllerDistributor.getContentPaneController());
+        ManagerPane managerPane = new ManagerPane(controllerDistributor.getManagerPaneController(), contentPane);
+        MainPane mainPane = new MainPane(managerPane, playerPane, controllerDistributor.getController(), this);
+        setScene(ClassicTheme.style(new Scene(mainPane)));
         setOnCloseRequest(event -> onClose());
     }
 

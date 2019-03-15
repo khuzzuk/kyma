@@ -1,23 +1,30 @@
-package net.kyma.gui.controllers;
+package net.kyma.gui.manager;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.GridPane;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.dm.DataQuery;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
-import net.kyma.gui.NetworkPopup;
-import net.kyma.gui.TableColumnFactory;
-import net.kyma.gui.tree.*;
+import net.kyma.gui.components.NetworkPopup;
+import net.kyma.gui.components.TableColumnFactory;
+import net.kyma.gui.tree.BaseElement;
+import net.kyma.gui.tree.ContentElement;
+import net.kyma.gui.tree.FilterRootElement;
+import net.kyma.gui.tree.NetworkRoot;
+import net.kyma.gui.tree.RootElement;
 import net.kyma.player.PlaylistEvent;
 import net.kyma.player.PlaylistRefreshEvent;
 import net.kyma.web.YoutubeDownloadedFilesReader;
@@ -25,41 +32,54 @@ import org.apache.commons.lang3.StringUtils;
 import pl.khuzzuk.messaging.Bus;
 
 import java.io.File;
-import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static net.kyma.EventType.*;
+import static net.kyma.EventType.DATA_GET_PATHS;
+import static net.kyma.EventType.DATA_INDEXING_FINISH;
+import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
+import static net.kyma.EventType.DATA_QUERY_RESULT_FOR_CONTENT_VIEW;
+import static net.kyma.EventType.DATA_REFRESH_PATHS;
+import static net.kyma.EventType.DATA_SET_DISTINCT_GENRE;
+import static net.kyma.EventType.DATA_SET_DISTINCT_MOOD;
+import static net.kyma.EventType.DATA_SET_DISTINCT_OCCASION;
+import static net.kyma.EventType.DATA_SET_DISTINCT_PEOPLE;
+import static net.kyma.EventType.DATA_STORE_ITEM;
+import static net.kyma.EventType.DATA_STORE_LIST;
+import static net.kyma.EventType.PLAYLIST_REFRESH;
+import static net.kyma.EventType.PLAYLIST_REMOVE_LIST;
 
 @Log4j2
 @RequiredArgsConstructor
-public class ManagerPaneController implements Initializable {
-    @FXML
-    private GridPane managerPane;
-    @FXML
+public class ManagerPaneController {
     @Getter
+    @Setter
     private TableView<SoundFile> contentView;
-    @FXML
     @Getter
+    @Setter
     private TreeView<String> filesList;
-    @FXML
     @Getter
+    @Setter
     private TableView<SoundFile> playlist;
-    @FXML
     @Getter
+    @Setter
     private ListView<String> moodFilter;
-    @FXML
+    @Setter
     private ListView<String> genreFilter;
-    @FXML
+    @Setter
     private ListView<String> occasionFilter;
 
     private final Bus<EventType> bus;
     private TableColumnFactory columnFactory;
     private IntegerProperty highlighted;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public void initialize() {
         columnFactory = new TableColumnFactory(bus);
         highlighted = new SimpleIntegerProperty(-1);
         bus.subscribingFor(DATA_SET_DISTINCT_MOOD).onFXThread()
@@ -171,8 +191,7 @@ public class ManagerPaneController implements Initializable {
         filter.remove("");
     }
 
-    @FXML
-    private void requestUpdateContentView() {
+    void requestUpdateContentView() {
         DataQuery query = DataQuery.newQuery();
         applyFilterToQuery(moodFilter, query, SupportedField.MOOD);
         applyFilterToQuery(genreFilter, query, SupportedField.GENRE);
@@ -211,8 +230,7 @@ public class ManagerPaneController implements Initializable {
                 .collect(Collectors.toSet());
     }
 
-    @FXML
-    private void onKeyReleased(KeyEvent keyEvent) {
+    void onKeyReleased(KeyEvent keyEvent) {
         BaseElement selected = (BaseElement) filesList.getSelectionModel().getSelectedItem();
         if (keyEvent.getCode() == KeyCode.INSERT && selected != null) {
             bus.message(DATA_INDEX_DIRECTORY).withContent(new File(selected.getFullPath())).send();

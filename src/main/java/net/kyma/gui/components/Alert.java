@@ -1,4 +1,4 @@
-package net.kyma.gui.communicate;
+package net.kyma.gui.components;
 
 import static net.kyma.EventType.SHOW_ALERT;
 

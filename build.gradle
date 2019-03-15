@@ -5,7 +5,6 @@ plugins {
     id 'maven'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.7'
-    id 'net.ltgt.apt' version '0.10' // for edge lombok release
     id "org.beryx.jlink" version "2.4.4"
 }
 
@@ -26,7 +25,6 @@ repositories {
     maven { url "http://repo1.maven.org/maven2" }
     maven { url "https://raw.github.com/khuzzuk/MessageBus/mvn-repo/" }
     maven { url "https://raw.github.com/khuzzuk/functional-logic/mvn-repo/" }
-    maven { url 'https://projectlombok.org/edge-releases' }
     flatDir {
         dirs 'lib'
     }
@@ -55,6 +53,7 @@ dependencies {
     compile group: 'com.googlecode.soundlibs', name: 'jlayer', version: '1.0.1.4'
     compile group: 'com.googlecode.soundlibs', name: 'tritonus-share', version: '0.3.7.4'
     compile group: 'com.googlecode.soundlibs', name: 'mp3spi', version: '1.9.5.4'
+    compile group: 'com.github.trilarion', name: 'vorbis-support', version: '1.1.0'
     compile name: 'jaudiotagger-2.2.6-SNAPSHOT'
     compile name: 'jflac-1.3'
     compile name: 'jaad-0.8.6f'
@@ -71,9 +70,13 @@ dependencies {
 
 mainClassName = 'kyma/net.kyma.Manager'
 
+println sourceSets.main.output.resourcesDir
+
 sourceSets {
     main.output.resourcesDir = main.java.outputDir
 }
+
+println sourceSets.main.output.resourcesDir
 
 compileJava {
     inputs.property('moduleName', moduleName)
