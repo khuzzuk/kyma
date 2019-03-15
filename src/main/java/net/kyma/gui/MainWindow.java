@@ -7,6 +7,7 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
+import net.kyma.gui.content.ContentPane;
 import net.kyma.gui.controllers.ControllerDistributor;
 import net.kyma.gui.manager.ManagerPane;
 import pl.khuzzuk.messaging.Bus;
@@ -33,7 +34,8 @@ public class MainWindow extends Stage {
     public void initMainWindow(Window parent) {
         controllerDistributor.getController().setStage(this);
         initOwner(parent);
-        ManagerPane managerPane = new ManagerPane(controllerDistributor.getManagerPaneController());
+        ContentPane contentPane = new ContentPane(controllerDistributor.getContentPaneController());
+        ManagerPane managerPane = new ManagerPane(controllerDistributor.getManagerPaneController(), contentPane);
         MainPane mainPane = new MainPane(managerPane, controllerDistributor.getController(), this);
         setScene(new Scene(mainPane));
         setOnCloseRequest(event -> onClose());

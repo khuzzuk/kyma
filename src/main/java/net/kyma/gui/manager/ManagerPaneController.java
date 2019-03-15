@@ -3,7 +3,6 @@ package net.kyma.gui.manager;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
@@ -33,13 +32,11 @@ import org.apache.commons.lang3.StringUtils;
 import pl.khuzzuk.messaging.Bus;
 
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -60,7 +57,7 @@ import static net.kyma.EventType.PLAYLIST_REMOVE_LIST;
 
 @Log4j2
 @RequiredArgsConstructor
-public class ManagerPaneController implements Initializable {
+public class ManagerPaneController {
     @Getter
     @Setter
     private TableView<SoundFile> contentView;
@@ -82,8 +79,7 @@ public class ManagerPaneController implements Initializable {
     private TableColumnFactory columnFactory;
     private IntegerProperty highlighted;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public void initialize() {
         columnFactory = new TableColumnFactory(bus);
         highlighted = new SimpleIntegerProperty(-1);
         bus.subscribingFor(DATA_SET_DISTINCT_MOOD).onFXThread()

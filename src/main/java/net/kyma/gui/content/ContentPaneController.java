@@ -1,4 +1,4 @@
-package net.kyma.gui.controllers;
+package net.kyma.gui.content;
 
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -36,7 +36,7 @@ import static net.kyma.dm.SupportedField.*;
 
 @Log4j2
 @RequiredArgsConstructor
-public class ContentView implements Initializable, Loadable {
+public class ContentPaneController implements Initializable, Loadable {
     @FXML
     private TableView<SoundFile> mainContentView;
     private ContextMenu columnContextMenu;
@@ -186,8 +186,7 @@ public class ContentView implements Initializable, Loadable {
         return mainContentView.getSelectionModel().getSelectedItem();
     }
 
-    @FXML
-    private void onMouseEvent(MouseEvent mouseEvent) {
+    void onMouseEvent(MouseEvent mouseEvent) {
         columnContextMenu.hide();
         MouseButton mouseButton = mouseEvent.getButton();
 
@@ -215,8 +214,7 @@ public class ContentView implements Initializable, Loadable {
         }
     }
 
-    @FXML
-    private void onKeyReleased(KeyEvent keyEvent) {
+    void onKeyReleased(KeyEvent keyEvent) {
 
         KeyCode keyCode = keyEvent.getCode();
         switch (keyCode) {

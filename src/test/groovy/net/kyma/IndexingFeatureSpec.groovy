@@ -9,7 +9,7 @@ import net.kyma.dm.RateTagUpdateRequest
 import net.kyma.dm.Rating
 import net.kyma.dm.SoundFile
 import net.kyma.dm.SupportedField
-import net.kyma.gui.controllers.ContentView
+import net.kyma.gui.content.ContentPaneController
 import net.kyma.gui.controllers.ContentViewTestHelper
 import net.kyma.gui.controllers.ControllerDistributor
 import net.kyma.gui.manager.ManagerPaneController
@@ -38,7 +38,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
     @Shared
     private ManagerPaneControllerTestHelper managerHelper
     @Shared
-    private ContentView contentViewController
+    private ContentPaneController contentViewController
 
     //test properties
     @Shared
@@ -81,7 +81,7 @@ class IndexingFeatureSpec extends FxmlTestHelper {
             return false
         }
 
-        contentViewController = controllerDistributor.call(ContentView.class) as ContentView
+        contentViewController = controllerDistributor.call(ContentPaneController.class) as ContentPaneController
         if (contentViewController == null) return false
 
         ContentViewTestHelper.hasSuggestions(contentViewController) && ContentViewTestHelper.hasEditor(contentViewController)

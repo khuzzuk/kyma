@@ -7,6 +7,7 @@ import lombok.extern.log4j.Log4j2;
 import net.kyma.data.*;
 import net.kyma.disk.FileAccessor;
 import net.kyma.gui.communicate.Alert;
+import net.kyma.gui.content.ContentPaneController;
 import net.kyma.gui.controllers.*;
 import net.kyma.gui.manager.ManagerPaneController;
 import net.kyma.player.PlayerManager;
@@ -120,14 +121,14 @@ public class ObjectContainer
       MainController mainController = new MainController(bus);
       PlayerPaneController playerPaneController = new PlayerPaneController(bus);
 
-      ContentView contentView = new ContentView(bus);
-      putToContainer(EventType.RET_CONTENT_VIEW, contentView);
+      ContentPaneController contentPaneController = new ContentPaneController(bus);
+      putToContainer(EventType.RET_CONTENT_VIEW, contentPaneController);
 
       putToContainer(EventType.RET_CONTROLLER_DISTRIBUTOR, new ControllerDistributor(
             mainController,
             playerPaneController,
             managerPaneController,
-            contentView));
+              contentPaneController));
    }
 
    private void initWeb() {
