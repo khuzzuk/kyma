@@ -1,8 +1,5 @@
 package net.kyma.player;
 
-import java.io.File;
-import java.io.IOException;
-
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.dm.SoundFile;
@@ -14,6 +11,9 @@ import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
 import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.tag.TagException;
 import pl.khuzzuk.messaging.Bus;
+
+import java.io.File;
+import java.io.IOException;
 
 @Log4j2
 public class M4aPlayerSPI extends Mp3PlayerJLayer
@@ -33,7 +33,7 @@ public class M4aPlayerSPI extends Mp3PlayerJLayer
       }
    }
 
-   private class M4aDecoder extends Mp3PlayerJLayer.Mp3Decoder implements Decoder {
+   private class M4aDecoder extends SPIPlayer.SPIDecoder {
       @Override
       void calculateLengths() throws IOException {
          try {

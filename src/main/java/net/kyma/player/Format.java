@@ -17,7 +17,7 @@ public enum Format {
     MP3(Mp3PlayerJLayer::new, true),
     M4A(M4aPlayerSPI::new, false),
     FLAC(FLACPlayer::new, false),
-    OGG(OggPlayerSPI::new, false),
+    OGG(SPIPlayer::new, false),
     UNKNOWN(null, false);
 
     final PlayerSupplier playerSupplier;

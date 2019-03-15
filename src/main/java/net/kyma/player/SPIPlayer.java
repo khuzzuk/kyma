@@ -1,31 +1,40 @@
 package net.kyma.player;
 
-import static net.kyma.EventType.FILES_EXECUTE;
-import static net.kyma.EventType.SHOW_ALERT;
-
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.FloatControl;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.SourceDataLine;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.disk.FileOperation;
 import net.kyma.dm.SoundFile;
+import org.jaudiotagger.audio.AudioFile;
+import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.audio.AudioHeader;
+import org.jaudiotagger.audio.exceptions.CannotReadException;
+import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
+import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.tag.TagException;
 import pl.khuzzuk.messaging.Bus;
+
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.SourceDataLine;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+
+import static net.kyma.EventType.FILES_EXECUTE;
+import static net.kyma.EventType.SHOW_ALERT;
 
 @Log4j2
 @RequiredArgsConstructor
-public abstract class SPIPlayer implements Player {
+public class SPIPlayer implements Player {
     private static SPIPlayer currentPlayer;
     private static AtomicBoolean paused = new AtomicBoolean(false);
     private static AtomicLong skipTo = new AtomicLong(0);
@@ -36,18 +45,18 @@ public abstract class SPIPlayer implements Player {
     private float volume = 100;
     private Emitter emitter;
     private long currentPlaybackStatus;
+    @Getter
+    long length;
 
     private static void globalPause() {
         paused.set(true);
     }
 
-    private static void globalUnPause()
-    {
+    private static void globalUnPause() {
         paused.set(false);
     }
 
-    private static void setGlobalPlayer(SPIPlayer newPlayer)
-    {
+    private static void setGlobalPlayer(SPIPlayer newPlayer) {
         currentPlayer = newPlayer;
     }
 
@@ -92,8 +101,8 @@ public abstract class SPIPlayer implements Player {
     public void setVolume(int percent) {
         volume = (float) (Math.log10((float) percent / 100f) * 50);
         Optional.ofNullable(emitter)
-              .map(Emitter::getControl)
-              .ifPresent(control -> control.setValue(volume));
+                .map(Emitter::getControl)
+                .ifPresent(control -> control.setValue(volume));
     }
 
     private class Emitter implements Runnable {
@@ -133,14 +142,13 @@ public abstract class SPIPlayer implements Player {
             } catch (IOException e) {
                 log.error("Accessing file error during playback", e);
                 bus.message(SHOW_ALERT).withContent("No acces to file").send();
-            } catch (Exception e) {
+            } catch (SPIException e) {
                 log.error("Error during processing a file", e);
                 bus.message(SHOW_ALERT).withContent("Cannot process sound").send();
             }
         }
 
-        private void initDecoding() throws SPIException
-        {
+        private void initDecoding() throws SPIException {
             try {
                 decoder = getDecoder();
                 AudioFormat format = decoder.getFormat();
@@ -149,9 +157,7 @@ public abstract class SPIPlayer implements Player {
                 line.start();
                 control = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
                 control.setValue(volume);
-            }
-            catch (LineUnavailableException e)
-            {
+            } catch (LineUnavailableException e) {
                 log.error("problem with opening file", e);
                 throw new SPIException(e);
             }
@@ -170,14 +176,78 @@ public abstract class SPIPlayer implements Player {
 
     }
 
-    abstract Decoder getDecoder() throws SPIException;
+    Decoder getDecoder() throws SPIException {
+        try {
+            SPIDecoder decoder = new SPIDecoder();
+            decoder.refresh(0);
+            return decoder;
+        } catch (IOException | UnsupportedAudioFileException e) {
+            throw new SPIException(e);
+        }
+    }
 
-    interface Decoder
-    {
+    interface Decoder {
         boolean writeInto(SourceDataLine line) throws IOException;
         AudioFormat getFormat();
         long getCurrentPlaybackStatus();
         void skipTo(long frame) throws IOException;
+    }
+
+    class SPIDecoder implements Decoder {
+        private AudioInputStream player;
+        private final byte[] data = new byte[128];
+        @Getter
+        AudioFormat format;
+        private long skipped;
+        private long linePosition;
+        int bytesTotal;
+        @Getter
+        private long currentPlaybackStatus;
+
+        void refresh(long toSkip) throws IOException, UnsupportedAudioFileException {
+            calculateLengths();
+
+            AudioInputStream rawAudio = AudioSystem.getAudioInputStream(new File(soundFile.getPath()));
+            AudioFormat audioFormat = rawAudio.getFormat();
+            format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, audioFormat.getSampleRate(), 16,
+                    audioFormat.getChannels(), audioFormat.getChannels() * 2, audioFormat.getSampleRate(), false);
+
+            player = AudioSystem.getAudioInputStream(format, rawAudio);
+            long bytesToSkip = (long) (bytesTotal * ((double) (toSkip) / length));
+            player.skip(bytesToSkip);
+        }
+
+        void calculateLengths() throws IOException, UnsupportedAudioFileException {
+            try {
+                AudioFile audioFile = AudioFileIO.read(new File(soundFile.getPath()));
+                AudioHeader audioHeader = audioFile.getAudioHeader();
+                length = audioHeader.getTrackLength() * 1000L;
+                bytesTotal = audioHeader.getTrackLength() * audioHeader.getSampleRateAsNumber() * 4;
+            } catch (CannotReadException | TagException | ReadOnlyFileException | InvalidAudioFrameException e) {
+                throw new UnsupportedAudioFileException(e.getMessage());
+            }
+        }
+
+        @Override
+        public synchronized boolean writeInto(SourceDataLine line) throws IOException {
+            int bytesRead = player.read(data, 0, data.length);
+            if (bytesRead == -1) return false;
+            line.write(data, 0, data.length);
+            linePosition = line.getMicrosecondPosition() / 1000;
+            currentPlaybackStatus = linePosition + skipped;
+            return true;
+        }
+
+        @Override
+        public void skipTo(long toSkip) throws IOException {
+            skipped = toSkip - linePosition;
+            try {
+                refresh(toSkip);
+            } catch (UnsupportedAudioFileException e) {
+                log.error("Cannot read file", e);
+                bus.message(SHOW_ALERT).withContent("Cannot decode mp3 file").send();
+            }
+        }
     }
 
     static void closePlayers() {
