@@ -194,8 +194,8 @@ public class SPIPlayer implements Player {
     }
 
     class SPIDecoder implements Decoder {
-        private AudioInputStream player;
-        private final byte[] data = new byte[128];
+        AudioInputStream player;
+        private final byte[] data = new byte[4096];
         @Getter
         AudioFormat format;
         private long skipped;
@@ -204,10 +204,14 @@ public class SPIPlayer implements Player {
         @Getter
         private long currentPlaybackStatus;
 
+        AudioInputStream retrieveAudioInputStream(File file) throws IOException, UnsupportedAudioFileException {
+            return AudioSystem.getAudioInputStream(file);
+        }
+
         void refresh(long toSkip) throws IOException, UnsupportedAudioFileException {
             calculateLengths();
 
-            AudioInputStream rawAudio = AudioSystem.getAudioInputStream(new File(soundFile.getPath()));
+            AudioInputStream rawAudio = retrieveAudioInputStream(new File(soundFile.getPath()));
             AudioFormat audioFormat = rawAudio.getFormat();
             format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, audioFormat.getSampleRate(), 16,
                     audioFormat.getChannels(), audioFormat.getChannels() * 2, audioFormat.getSampleRate(), false);

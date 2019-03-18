@@ -12,6 +12,8 @@ module kyma {
     requires com.fasterxml.jackson.databind;
     requires jflac;
     requires org.apache.logging.log4j;
+    requires jaad;
+    requires mp3spi;
 
     exports net.kyma;
     exports net.kyma.properties;

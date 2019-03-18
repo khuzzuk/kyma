@@ -70,14 +70,6 @@ dependencies {
 
 mainClassName = 'kyma/net.kyma.Manager'
 
-println sourceSets.main.output.resourcesDir
-
-sourceSets {
-    main.output.resourcesDir = main.java.outputDir
-}
-
-println sourceSets.main.output.resourcesDir
-
 compileJava {
     inputs.property('moduleName', moduleName)
     doFirst {

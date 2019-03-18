@@ -48,6 +48,7 @@ public class ManagerPane extends GridPane {
         mainSplitPane.getItems().addAll(filters, contentView);
 
         TableView<SoundFile> playlist = new TableView<>();
+        playlist.setOnKeyReleased(managerPaneController::removeFromPlaylist);
 
         add(filesList, 0, 0);
         add(mainSplitPane, 1, 0);

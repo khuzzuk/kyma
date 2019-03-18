@@ -164,8 +164,7 @@ public class ManagerPaneController {
         }
     }
 
-    @FXML
-    private void removeFromPlaylist(KeyEvent keyEvent) {
+    void removeFromPlaylist(KeyEvent keyEvent) {
         if (keyEvent.getCode().equals(KeyCode.DELETE) || keyEvent.getCode().equals(KeyCode.BACK_SPACE)) {
             List<SoundFile> selectedItems = playlist.getSelectionModel().getSelectedItems();
             List<SoundFile> playlistItems = playlist.getItems();
