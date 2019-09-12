@@ -148,7 +148,7 @@ public class SPIPlayer implements Player {
             }
         }
 
-        private void initDecoding() throws SPIException {
+        void initDecoding() throws SPIException {
             try {
                 decoder = getDecoder();
                 AudioFormat format = decoder.getFormat();
@@ -195,7 +195,7 @@ public class SPIPlayer implements Player {
 
     class SPIDecoder implements Decoder {
         AudioInputStream player;
-        private final byte[] data = new byte[4096];
+        private byte[] data = new byte[8];
         @Getter
         AudioFormat format;
         private long skipped;
@@ -209,12 +209,11 @@ public class SPIPlayer implements Player {
         }
 
         void refresh(long toSkip) throws IOException, UnsupportedAudioFileException {
-            calculateLengths();
-
             AudioInputStream rawAudio = retrieveAudioInputStream(new File(soundFile.getPath()));
             AudioFormat audioFormat = rawAudio.getFormat();
             format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, audioFormat.getSampleRate(), 16,
                     audioFormat.getChannels(), audioFormat.getChannels() * 2, audioFormat.getSampleRate(), false);
+            calculateLengths();
 
             player = AudioSystem.getAudioInputStream(format, rawAudio);
             long bytesToSkip = (long) (bytesTotal * ((double) (toSkip) / length));
@@ -226,7 +225,9 @@ public class SPIPlayer implements Player {
                 AudioFile audioFile = AudioFileIO.read(new File(soundFile.getPath()));
                 AudioHeader audioHeader = audioFile.getAudioHeader();
                 length = audioHeader.getTrackLength() * 1000L;
-                bytesTotal = audioHeader.getTrackLength() * audioHeader.getSampleRateAsNumber() * 4;
+                int frameSize = getFormat().getFrameSize();
+                bytesTotal = audioHeader.getTrackLength() * audioHeader.getSampleRateAsNumber() * frameSize;
+                data = new byte[frameSize];
             } catch (CannotReadException | TagException | ReadOnlyFileException | InvalidAudioFrameException e) {
                 throw new UnsupportedAudioFileException(e.getMessage());
             }
