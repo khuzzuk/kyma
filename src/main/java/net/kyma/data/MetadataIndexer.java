@@ -1,13 +1,5 @@
 package net.kyma.data;
 
-import static net.kyma.EventType.FILES_EXECUTE;
-import static net.kyma.EventType.SHOW_ALERT;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Collection;
-
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
@@ -20,8 +12,17 @@ import org.jaudiotagger.audio.exceptions.CannotReadException;
 import org.jaudiotagger.audio.exceptions.CannotWriteException;
 import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
 import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagException;
 import pl.khuzzuk.messaging.Bus;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Collection;
+
+import static net.kyma.EventType.FILES_EXECUTE;
+import static net.kyma.EventType.SHOW_ALERT;
 
 @Log4j2
 @AllArgsConstructor
@@ -45,7 +46,8 @@ public class MetadataIndexer implements Loadable {
     private void index(SoundFile soundFile) {
         try {
             AudioFile file = AudioFileIO.read(new File(soundFile.getPath()));
-            MetadataConverter.updateMetadata(file.getTag(), soundFile);
+            Tag tag = retrieveTag(file);
+            MetadataConverter.updateMetadata(tag, soundFile);
             file.commit();
         } catch (CannotReadException | IOException | TagException | ReadOnlyFileException | InvalidAudioFrameException e) {
             //TODO if InvalidAudioFrameException, ask user if file should be removed from index, or deleted
@@ -53,5 +55,14 @@ public class MetadataIndexer implements Loadable {
         } catch (CannotWriteException e) {
             bus.message(SHOW_ALERT).withContent(String.format("cannot write to file: %s\n%s", soundFile.getPath(), e)).send();
         }
+    }
+
+    private static Tag retrieveTag(AudioFile file) {
+        Tag tag = file.getTag();
+        if (tag == null) {
+            tag = file.createDefaultTag();
+            file.setTag(tag);
+        }
+        return tag;
     }
 }

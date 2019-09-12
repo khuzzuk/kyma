@@ -100,7 +100,7 @@ public enum SupportedField
    SupportedField(String name, FieldKey mappedKey,
          Function<SoundFile, String> getter, BiConsumer<SoundFile, String> setter)
    {
-      this(name, mappedKey, getter, setter, Validators.alwaysTrue());
+      this(name, mappedKey, getter, setter, Validators.nullSafe());
    }
 
    SupportedField(String name, FieldKey mappedKey,
