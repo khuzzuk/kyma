@@ -14,6 +14,7 @@ module kyma {
     requires org.apache.logging.log4j;
     requires jaad;
     requires mp3spi;
+    requires org.controlsfx.controls;
 
     exports net.kyma;
     exports net.kyma.properties;

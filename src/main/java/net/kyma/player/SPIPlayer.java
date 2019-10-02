@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static net.kyma.EventType.FILES_EXECUTE;
@@ -36,7 +35,7 @@ import static net.kyma.EventType.SHOW_ALERT;
 @RequiredArgsConstructor
 public class SPIPlayer implements Player {
     private static SPIPlayer currentPlayer;
-    private static AtomicBoolean paused = new AtomicBoolean(false);
+    private static boolean paused = false;
     private static AtomicLong skipTo = new AtomicLong(0);
     final SoundFile soundFile;
     final Bus<EventType> bus;
@@ -44,16 +43,15 @@ public class SPIPlayer implements Player {
     private SourceDataLine line;
     private float volume = 100;
     private Emitter emitter;
-    private long currentPlaybackStatus;
     @Getter
     long length;
 
     private static void globalPause() {
-        paused.set(true);
+        paused = true;
     }
 
     private static void globalUnPause() {
-        paused.set(false);
+        paused = false;
     }
 
     private static void setGlobalPlayer(SPIPlayer newPlayer) {
@@ -61,7 +59,7 @@ public class SPIPlayer implements Player {
     }
 
     public void start() {
-        if (paused.get() && line != null) {
+        if (paused && line != null) {
             globalUnPause();
             return;
         } else if (currentPlayer != null) {
@@ -84,12 +82,12 @@ public class SPIPlayer implements Player {
 
     @Override
     public boolean isPaused() {
-        return paused.get();
+        return paused;
     }
 
     @Override
     public long playbackStatus() {
-        return currentPlaybackStatus;
+        return emitter.decoder != null ? emitter.decoder.getCurrentPlaybackStatus() : 0;
     }
 
     @Override
@@ -118,20 +116,17 @@ public class SPIPlayer implements Player {
                 while (decoder.writeInto(line)) {
                     if (closed) break;
 
-                    if ((paused.get())) {
+                    if (paused) {
                         line.stop();
                         hold();
                         line.start();
                     }
 
-                    long framesToSkip = skipTo.getAndSet(0);
-                    if (framesToSkip > 0) {
+                    if (skipTo.get() > 0) {
                         line.stop();
-                        emitter.decoder.skipTo(framesToSkip);
+                        emitter.decoder.skipTo(skipTo.getAndSet(0));
                         line.start();
                     }
-
-                    currentPlaybackStatus = decoder.getCurrentPlaybackStatus();
                 }
                 line.drain();
                 line.stop();
@@ -165,7 +160,7 @@ public class SPIPlayer implements Player {
 
         private void hold() {
             try {
-                while (paused.get()) {
+                while (paused) {
                     Thread.sleep(50);
                 }
             } catch (InterruptedException e) {
@@ -201,8 +196,10 @@ public class SPIPlayer implements Player {
         private long skipped;
         private long linePosition;
         int bytesTotal;
-        @Getter
-        private long currentPlaybackStatus;
+
+        public long getCurrentPlaybackStatus() {
+            return linePosition + skipped;
+        }
 
         AudioInputStream retrieveAudioInputStream(File file) throws IOException, UnsupportedAudioFileException {
             return AudioSystem.getAudioInputStream(file);
@@ -239,7 +236,6 @@ public class SPIPlayer implements Player {
             if (bytesRead == -1) return false;
             line.write(data, 0, data.length);
             linePosition = line.getMicrosecondPosition() / 1000;
-            currentPlaybackStatus = linePosition + skipped;
             return true;
         }
 

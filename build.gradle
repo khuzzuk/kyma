@@ -31,7 +31,11 @@ repositories {
 }
 
 javafx {
+    version = "11.0.2"
     modules = ['javafx.controls', 'javafx.graphics', 'javafx.fxml']
+}
+application {
+    applicationDefaultJvmArgs = ['--add-exports', 'javafx.base/com.sun.javafx.event=org.controlsfx.controls']
 }
 
 ext {
@@ -60,6 +64,7 @@ dependencies {
     compile group: 'pl.khuzzuk', name: 'message-bus', version: '2.0.1'
     compile group: 'pl.khuzzuk', name: 'functional-logic', version: '0.2.0'
     compile group: 'org.jsoup', name: 'jsoup', version: '1.11.3'
+    compile group: 'org.controlsfx', name: 'controlsfx', version: '11.0.0'
     testCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.13'
     testCompile group: 'org.testng', name: 'testng', version: '6.14.3'
     testCompile group: 'org.spockframework', name: 'spock-core', version: '1.1-groovy-2.4'
@@ -68,45 +73,25 @@ dependencies {
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 }
 
-mainClassName = 'kyma/net.kyma.Manager'
-
-/*
-compileJava {
-    inputs.property('moduleName', moduleName)
-    doFirst {
-        options.compilerArgs = [
-                '--module-path', classpath.asPath,
-                '--patch-module', "$moduleName=" + files(sourceSets.main.resources.srcDirs).asPath,
-                //'--module-version', "$moduleVersion"
-        ]
-    }
-}
-*/
+mainClassName = 'net.kyma.Manager'
 
 run {
-    inputs.property('moduleName', moduleName)
-    doFirst {
-        jvmArgs = [
-                '--module-path', classpath.asPath,
-                '--module-version', "$mainClassName"
-        ]
-        classpath = files()
-    }
+    jvmArgs = [
+            '--add-exports', 'javafx.base/com.sun.javafx.event=org.controlsfx.controls'
+    ]
 }
 
 jar {
     manifest {
         attributes 'Main-class': 'net.kyma.Manager'
     }
-//    from {
-//        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-//    }
 }
 
 jlink {
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
     launcher {
         name = 'kyma'
+        jvmArgs = ['--add-exports', 'javafx.base/com.sun.javafx.event=org.controlsfx.controls']
     }
     forceMerge('log4j-api')
 }
