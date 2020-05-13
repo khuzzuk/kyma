@@ -1,5 +1,15 @@
 package net.kyma.data;
 
+import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
+import static net.kyma.EventType.PLAYLIST_ADD_FILE;
+import static net.kyma.data.PathUtils.normalizePath;
+import static net.kyma.dm.SupportedField.SET;
+
+import java.io.File;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
 import net.kyma.EventType;
 import net.kyma.dm.SoundFile;
@@ -16,17 +26,6 @@ import org.jaudiotagger.tag.id3.ID3v23Frame;
 import org.jaudiotagger.tag.id3.ID3v23Tag;
 import org.jaudiotagger.tag.vorbiscomment.VorbisCommentTagField;
 import pl.khuzzuk.messaging.Bus;
-
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
-import static net.kyma.EventType.PLAYLIST_ADD_FILE;
-import static net.kyma.data.PathUtils.normalizePath;
-import static net.kyma.dm.SupportedField.SET;
 
 @Log4j2
 public class SoundFileConverter {
@@ -61,6 +60,10 @@ public class SoundFileConverter {
                 .map(IndexableField::numericValue)
                 .map(Number::intValue).orElse(0));
 
+        soundFile.setLength(Optional.ofNullable(document.getField("length"))
+                                    .map(IndexableField::numericValue)
+                                    .map(Number::longValue)
+                                    .orElse(0L));
         return soundFile;
     }
 

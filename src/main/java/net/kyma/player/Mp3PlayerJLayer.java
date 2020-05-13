@@ -43,6 +43,8 @@ public class Mp3PlayerJLayer extends SPIPlayer {
       void calculateLengths() throws IOException, UnsupportedAudioFileException {
          TAudioFileFormat rawFormat = (TAudioFileFormat) AudioSystem.getAudioFileFormat(new File(soundFile.getPath()));
          length = (long) rawFormat.properties().get("duration") / 1000; //microseconds to milliseconds
+         soundFile.setLength(length / 1000);
+         bus.message(EventType.PLAYER_SOUND_LENGTH).withContent(soundFile).send();
          bytesTotal = (int) rawFormat.properties().get("mp3.length.bytes");
       }
    }

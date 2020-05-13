@@ -1,48 +1,5 @@
 package net.kyma.gui.content;
 
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.event.EventTarget;
-import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TablePosition;
-import javafx.scene.control.TableView;
-import javafx.scene.control.skin.TableColumnHeader;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
-import net.kyma.EventType;
-import net.kyma.Loadable;
-import net.kyma.dm.SoundFile;
-import net.kyma.dm.StringTagUpdateRequest;
-import net.kyma.dm.SupportedField;
-import net.kyma.dm.TagUpdateRequest;
-import net.kyma.gui.components.editor.SoundFileBulkEditor;
-import net.kyma.gui.components.editor.SoundFileEditor;
-import net.kyma.gui.components.TableColumnFactory;
-import net.kyma.properties.UIProperties;
-import org.apache.commons.lang3.StringUtils;
-import pl.khuzzuk.messaging.Bus;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-
 import static net.kyma.EventType.DATA_INDEX_GET_DISTINCT;
 import static net.kyma.EventType.DATA_REMOVE_ITEM;
 import static net.kyma.EventType.DATA_SET_DISTINCT_CUSTOM1;
@@ -68,6 +25,7 @@ import static net.kyma.EventType.PLAYLIST_REMOVE_SOUND;
 import static net.kyma.dm.SupportedField.ARTIST;
 import static net.kyma.dm.SupportedField.COMPOSER;
 import static net.kyma.dm.SupportedField.CONDUCTOR;
+import static net.kyma.dm.SupportedField.COUNTER;
 import static net.kyma.dm.SupportedField.CUSTOM1;
 import static net.kyma.dm.SupportedField.CUSTOM2;
 import static net.kyma.dm.SupportedField.CUSTOM3;
@@ -81,12 +39,51 @@ import static net.kyma.dm.SupportedField.SUPPORTED_TAG;
 import static net.kyma.dm.SupportedField.TEMPO;
 import static net.kyma.dm.SupportedField.TITLE;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TablePosition;
+import javafx.scene.control.TableView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+import net.kyma.EventType;
+import net.kyma.Loadable;
+import net.kyma.dm.SoundFile;
+import net.kyma.dm.StringTagUpdateRequest;
+import net.kyma.dm.SupportedField;
+import net.kyma.dm.TagUpdateRequest;
+import net.kyma.gui.components.TableColumnFactory;
+import net.kyma.gui.components.editor.SoundFileBulkEditor;
+import net.kyma.gui.components.editor.SoundFileEditor;
+import net.kyma.properties.UIProperties;
+import org.apache.commons.lang3.StringUtils;
+import pl.khuzzuk.messaging.Bus;
+
 @Log4j2
 @RequiredArgsConstructor
 public class ContentPaneController implements Loadable {
     @Setter(AccessLevel.PACKAGE)
     private TableView<SoundFile> mainContentView;
-    private ContextMenu columnContextMenu;
     private ContextMenu contentContextMenu;
     private final Bus<EventType> bus;
     private TableColumnFactory columnFactory;
@@ -182,18 +179,22 @@ public class ContentPaneController implements Loadable {
     }
 
     private void createContextMenu(Collection<SupportedField> enabled) {
-        columnContextMenu = new ContextMenu();
-        for (SupportedField field : SUPPORTED_TAG) {
-            CheckMenuItem menuItem = new CheckMenuItem(field.getName());
-            menuItem.setSelected(enabled.contains(field));
-            menuItem.setOnAction(onChangeColumnsAction(field, menuItem));
-            columnContextMenu.getItems().add(menuItem);
-        }
-
         contentContextMenu = new ContextMenu();
         MenuItem generateTitlesMenuItem = new MenuItem("Generate titles");
         generateTitlesMenuItem.setOnAction(this::onGenerateTitleAction);
         contentContextMenu.getItems().add(generateTitlesMenuItem);
+
+        for (SupportedField field : SUPPORTED_TAG) {
+            CheckMenuItem menuItem = new CheckMenuItem(field.getName());
+            menuItem.setSelected(enabled.contains(field));
+            menuItem.setOnAction(onChangeColumnsAction(field, menuItem));
+            contentContextMenu.getItems().add(menuItem);
+        }
+
+        CheckMenuItem menuItem = new CheckMenuItem(COUNTER.getName());
+        menuItem.setSelected(enabled.contains(COUNTER));
+        menuItem.setOnAction(onChangeColumnsAction(COUNTER, menuItem));
+        contentContextMenu.getItems().add(menuItem);
     }
 
     private EventHandler<ActionEvent> onChangeColumnsAction(SupportedField field, CheckMenuItem menuItem) {
@@ -233,7 +234,6 @@ public class ContentPaneController implements Loadable {
     }
 
     void onMouseEvent(MouseEvent mouseEvent) {
-        columnContextMenu.hide();
         MouseButton mouseButton = mouseEvent.getButton();
 
         switch (mouseButton) {
@@ -248,12 +248,7 @@ public class ContentPaneController implements Loadable {
                 break;
 
             case SECONDARY:
-                EventTarget target = mouseEvent.getTarget();
-                if (target instanceof TableColumnHeader) {
-                    columnContextMenu.show((TableColumnHeader) target, mouseEvent.getScreenX(), mouseEvent.getScreenY());
-                } else {
-                    contentContextMenu.show(mainContentView, mouseEvent.getScreenX(), mouseEvent.getScreenY());
-                }
+                contentContextMenu.show(mainContentView, mouseEvent.getScreenX(), mouseEvent.getScreenY());
                 break;
             default:
                 break;

@@ -1,13 +1,13 @@
 package net.kyma.data;
 
+import static org.apache.lucene.document.Field.Store.YES;
+
 import lombok.extern.log4j.Log4j2;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
-
-import static org.apache.lucene.document.Field.Store.YES;
 
 @SuppressWarnings("unused")
 @Log4j2
@@ -16,6 +16,7 @@ public class DocConverter {
         Document doc = new Document();
         SupportedField.SET.forEach(m -> addField(doc, m, m.getGetter().apply(file)));
         doc.add(new StoredField("counter", file.getCounter()));
+        doc.add(new StoredField("length", file.getLength()));
         return doc;
     }
 

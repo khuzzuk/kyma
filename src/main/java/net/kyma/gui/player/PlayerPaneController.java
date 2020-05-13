@@ -1,13 +1,5 @@
 package net.kyma.gui.player;
 
-import javafx.scene.control.Slider;
-import javafx.scene.input.MouseEvent;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import net.kyma.EventType;
-import pl.khuzzuk.messaging.Bus;
-
 import static java.lang.Math.round;
 import static net.kyma.EventType.GUI_VOLUME_GET;
 import static net.kyma.EventType.GUI_VOLUME_SET;
@@ -16,11 +8,21 @@ import static net.kyma.EventType.PLAYER_PLAY_FROM;
 import static net.kyma.EventType.PLAYER_RESUME;
 import static net.kyma.EventType.PLAYER_SET_SLIDER;
 import static net.kyma.EventType.PLAYER_SET_VOLUME;
+import static net.kyma.EventType.PLAYER_SOUND_LENGTH;
 import static net.kyma.EventType.PLAYER_STOP;
 import static net.kyma.EventType.PLAYLIST_NEXT;
 import static net.kyma.EventType.PLAYLIST_PREVIOUS;
 
-@SuppressWarnings("WeakerAccess")
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
+import javafx.scene.input.MouseEvent;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import net.kyma.EventType;
+import net.kyma.dm.SoundFile;
+import pl.khuzzuk.messaging.Bus;
+
 @RequiredArgsConstructor
 public class PlayerPaneController {
     @Setter(AccessLevel.PACKAGE)
@@ -29,6 +31,8 @@ public class PlayerPaneController {
     private PlayButton playButton;
     @Setter(AccessLevel.PACKAGE)
     private Slider playbackProgress;
+    @Setter(AccessLevel.PACKAGE)
+    private Label timeLabel;
     private final Bus<EventType> bus;
 
     public void initialize() {
@@ -36,7 +40,13 @@ public class PlayerPaneController {
         bus.subscribingFor(GUI_VOLUME_SET).<Integer>accept(value -> volumeSlider.setValue(value)).subscribe();
         bus.message(GUI_VOLUME_GET).withResponse(GUI_VOLUME_SET).send();
         bus.message(PLAYER_SET_SLIDER).withContent(playbackProgress).send();
+        bus.subscribingFor(PLAYER_SOUND_LENGTH).onFXThread().accept(this::updateTiming).subscribe();
         playButton.showPlay();
+    }
+
+    private void updateTiming(SoundFile soundFile) {
+        long seconds = soundFile.getLength();
+        timeLabel.setText(String.format("%s:%s", seconds / 60, seconds % 60));
     }
 
     void startOrPause() {

@@ -1,20 +1,24 @@
 package net.kyma.gui.player;
 
+import static net.kyma.gui.components.GridPaneUtils.columnConstraints;
+import static net.kyma.gui.components.GridPaneUtils.rowConstraints;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.RowConstraints;
 
-import static net.kyma.gui.components.GridPaneUtils.columnConstraints;
-import static net.kyma.gui.components.GridPaneUtils.rowConstraints;
-
 public class PlayerPane extends GridPane {
     public PlayerPane(PlayerPaneController playerPaneController) {
-        getColumnConstraints().addAll(columnConstraints(2), columnConstraints(18), columnConstraints(80));
+        getColumnConstraints().addAll(columnConstraints(2),
+                                      columnConstraints(18),
+                                      columnConstraints(75),
+                                      columnConstraints(5));
         RowConstraints rowConstraints = rowConstraints(0);
         rowConstraints.setValignment(VPos.CENTER);
         getRowConstraints().addAll(rowConstraints);
@@ -42,13 +46,17 @@ public class PlayerPane extends GridPane {
         Slider playbackProgress = new Slider();
         playbackProgress.setOnMouseClicked(playerPaneController::playFrom);
 
+        Label timeLabel = new Label();
+
         add(volumeSlider, 0, 0);
         add(playerControllers, 1, 0);
         add(playbackProgress, 2, 0);
+        add(timeLabel, 3, 0);
 
         playerPaneController.setPlaybackProgress(playbackProgress);
         playerPaneController.setPlayButton(playButton);
         playerPaneController.setVolumeSlider(volumeSlider);
+        playerPaneController.setTimeLabel(timeLabel);
         playerPaneController.initialize();
     }
 }

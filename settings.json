@@ -1,14 +1,14 @@
 {
   "uiProperties" : {
     "fullScreen" : false,
-    "maximized" : true,
-    "x" : 1912,
-    "y" : -8,
-    "width" : 1936,
-    "height" : 1056,
+    "maximized" : false,
+    "x" : 650,
+    "y" : 122,
+    "width" : 1262,
+    "height" : 1036,
     "columnDefinitions" : [ {
       "field" : "TITLE",
-      "size" : 355.0
+      "size" : 100.0
     }, {
       "field" : "RATE",
       "size" : 100.0
@@ -30,6 +30,6 @@
     } ]
   },
   "playerProperties" : {
-    "volume" : 42
+    "volume" : 52
   }
 }

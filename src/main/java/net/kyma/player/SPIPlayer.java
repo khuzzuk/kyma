@@ -1,5 +1,20 @@
 package net.kyma.player;
 
+import static net.kyma.EventType.FILES_EXECUTE;
+import static net.kyma.EventType.SHOW_ALERT;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.SourceDataLine;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -14,22 +29,6 @@ import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
 import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.tag.TagException;
 import pl.khuzzuk.messaging.Bus;
-
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.FloatControl;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.SourceDataLine;
-import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
-
-import static net.kyma.EventType.FILES_EXECUTE;
-import static net.kyma.EventType.SHOW_ALERT;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -225,6 +224,9 @@ public class SPIPlayer implements Player {
                 int frameSize = getFormat().getFrameSize();
                 bytesTotal = audioHeader.getTrackLength() * audioHeader.getSampleRateAsNumber() * frameSize;
                 data = new byte[frameSize];
+
+                soundFile.setLength(length / 1000);
+                bus.message(EventType.PLAYER_SOUND_LENGTH).withContent(soundFile).send();
             } catch (CannotReadException | TagException | ReadOnlyFileException | InvalidAudioFrameException e) {
                 throw new UnsupportedAudioFileException(e.getMessage());
             }

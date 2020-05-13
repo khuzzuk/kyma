@@ -20,8 +20,8 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="bus" level="debug" additivity="false">
-            <ThresholdFilter level="info"/>
+        <Logger name="bus" level="info" additivity="false">
+<!--            <ThresholdFilter level="info"/>-->
             <AppenderRef ref="logMessage"/>
             <AppenderRef ref="STDOUT"/>
         </Logger>

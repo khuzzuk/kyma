@@ -46,6 +46,7 @@ public class SoundFile implements Comparable<SoundFile> {
     private String work;
     private String workType;
     private int counter;
+    private long length;
 
     @Override
     public int compareTo(SoundFile o) {

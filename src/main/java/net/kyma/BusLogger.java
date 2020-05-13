@@ -19,7 +19,7 @@ public class BusLogger extends PrintStream {
 
    @Override
    public void println(String x) {
-      log.debug(x);
+      log.info(x);
    }
 
    @Override
