@@ -1,5 +1,29 @@
 package net.kyma.data;
 
+import static net.kyma.EventType.CLOSE;
+import static net.kyma.EventType.DATA_CONVERT_FROM_DOC;
+import static net.kyma.EventType.DATA_GET_PATHS;
+import static net.kyma.EventType.DATA_INDEX_CLEAN;
+import static net.kyma.EventType.DATA_INDEX_GET_ALL;
+import static net.kyma.EventType.DATA_INDEX_GET_DIRECTORIES;
+import static net.kyma.EventType.DATA_INDEX_GET_DISTINCT;
+import static net.kyma.EventType.DATA_INDEX_ITEM;
+import static net.kyma.EventType.DATA_INDEX_LIST;
+import static net.kyma.EventType.DATA_REFRESH;
+import static net.kyma.EventType.DATA_REMOVE_ITEM;
+import static net.kyma.EventType.DATA_REMOVE_PATH;
+import static net.kyma.EventType.DATA_STORE_ITEM;
+import static net.kyma.EventType.DATA_STORE_LIST;
+import static net.kyma.EventType.RET_INDEX_WRITER;
+import static net.kyma.EventType.SHOW_ALERT;
+import static net.kyma.data.QueryUtils.termForPath;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -12,19 +36,13 @@ import net.kyma.dm.SupportedField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.MultiFields;
+import org.apache.lucene.index.MultiBits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.Bits;
 import pl.khuzzuk.messaging.Bus;
-
-import java.io.IOException;
-import java.util.*;
-
-import static net.kyma.EventType.*;
-import static net.kyma.data.QueryUtils.termForPath;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -118,7 +136,7 @@ public class DataIndexer implements Loadable {
       Collection<Document> documents = new ArrayList<>();
       try (DirectoryReader reader = DirectoryReader.open(writer)) {
          int maxDoc = reader.maxDoc();
-         Bits liveDocs = MultiFields.getLiveDocs(reader);
+         Bits liveDocs = MultiBits.getLiveDocs(reader);
          for (int i = 0; i < maxDoc; i++)
          {
             if (liveDocs == null || liveDocs.get(i))

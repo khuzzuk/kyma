@@ -15,8 +15,6 @@ import net.kyma.gui.player.PlayerPaneController;
 import net.kyma.player.PlayerManager;
 import net.kyma.player.Playlist;
 import net.kyma.properties.PropertiesManager;
-import net.kyma.web.YoutubeDownloadedFilesReader;
-import net.kyma.web.YoutubeDownloader;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -65,7 +63,6 @@ public class ObjectContainer
       initDataAccess();
       initDataIndex();
       initPlayer();
-      initWeb();
       initGuiDependency();
    }
 
@@ -131,10 +128,5 @@ public class ObjectContainer
             playerPaneController,
             managerPaneController,
               contentPaneController));
-   }
-
-   private void initWeb() {
-      loadables.add(new YoutubeDownloader(bus));
-      loadables.add(new YoutubeDownloadedFilesReader(bus));
    }
 }

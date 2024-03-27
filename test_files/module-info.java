@@ -1,14 +1,13 @@
 module kyma {
     requires static lombok;
     requires MessageBus;
-    requires lucene.core;
+    requires org.apache.lucene.core;
     requires javafx.fxml;
     requires javafx.controls;
     requires org.apache.commons.lang3;
     requires java.desktop;
     requires tritonus.share;
     requires jaudiotagger;
-    requires functional.logic;
     requires com.fasterxml.jackson.databind;
     requires jflac;
     requires org.apache.logging.log4j;
@@ -18,7 +17,7 @@ module kyma {
     requires java.logging;
     requires org.apache.logging.log4j.core;
 
-    exports net.kyma;
+  exports net.kyma;
     exports net.kyma.properties;
     exports net.kyma.dm;
 }

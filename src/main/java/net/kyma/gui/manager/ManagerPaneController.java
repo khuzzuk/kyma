@@ -1,8 +1,30 @@
 package net.kyma.gui.manager;
 
+import static net.kyma.EventType.DATA_GET_PATHS;
+import static net.kyma.EventType.DATA_INDEXING_FINISH;
+import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
+import static net.kyma.EventType.DATA_QUERY_RESULT_FOR_CONTENT_VIEW;
+import static net.kyma.EventType.DATA_REFRESH_PATHS;
+import static net.kyma.EventType.DATA_SET_DISTINCT_GENRE;
+import static net.kyma.EventType.DATA_SET_DISTINCT_MOOD;
+import static net.kyma.EventType.DATA_SET_DISTINCT_OCCASION;
+import static net.kyma.EventType.DATA_SET_DISTINCT_PEOPLE;
+import static net.kyma.EventType.DATA_STORE_ITEM;
+import static net.kyma.EventType.DATA_STORE_LIST;
+import static net.kyma.EventType.PLAYLIST_REFRESH;
+import static net.kyma.EventType.PLAYLIST_REMOVE_LIST;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.fxml.FXML;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
@@ -18,42 +40,15 @@ import net.kyma.EventType;
 import net.kyma.dm.DataQuery;
 import net.kyma.dm.SoundFile;
 import net.kyma.dm.SupportedField;
-import net.kyma.gui.components.NetworkPopup;
 import net.kyma.gui.components.TableColumnFactory;
 import net.kyma.gui.tree.BaseElement;
 import net.kyma.gui.tree.ContentElement;
 import net.kyma.gui.tree.FilterRootElement;
-import net.kyma.gui.tree.NetworkRoot;
 import net.kyma.gui.tree.RootElement;
 import net.kyma.player.PlaylistEvent;
 import net.kyma.player.PlaylistRefreshEvent;
-import net.kyma.web.YoutubeDownloadedFilesReader;
 import org.apache.commons.lang3.StringUtils;
 import pl.khuzzuk.messaging.Bus;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static net.kyma.EventType.DATA_GET_PATHS;
-import static net.kyma.EventType.DATA_INDEXING_FINISH;
-import static net.kyma.EventType.DATA_INDEX_DIRECTORY;
-import static net.kyma.EventType.DATA_QUERY_RESULT_FOR_CONTENT_VIEW;
-import static net.kyma.EventType.DATA_REFRESH_PATHS;
-import static net.kyma.EventType.DATA_SET_DISTINCT_GENRE;
-import static net.kyma.EventType.DATA_SET_DISTINCT_MOOD;
-import static net.kyma.EventType.DATA_SET_DISTINCT_OCCASION;
-import static net.kyma.EventType.DATA_SET_DISTINCT_PEOPLE;
-import static net.kyma.EventType.DATA_STORE_ITEM;
-import static net.kyma.EventType.DATA_STORE_LIST;
-import static net.kyma.EventType.PLAYLIST_REFRESH;
-import static net.kyma.EventType.PLAYLIST_REMOVE_LIST;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -103,7 +98,6 @@ public class ManagerPaneController {
         bus.subscribingFor(DATA_QUERY_RESULT_FOR_CONTENT_VIEW).onFXThread().accept(this::updateFilters).subscribe();
 
         filesList.setRoot(new RootElement("Content"));
-        addNetworkView();
 
         initPlaylistView();
 
@@ -116,15 +110,6 @@ public class ManagerPaneController {
         columnForPlaylist.setSortable(false);
         playlist.getColumns().add(columnForPlaylist);
         playlist.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-    }
-
-    private void addNetworkView() {
-        NetworkPopup networkPopup = new NetworkPopup(bus);
-        networkPopup.init();
-        NetworkRoot networkElement = new NetworkRoot(networkPopup);
-        networkElement.setName(YoutubeDownloadedFilesReader.LABEL_NAME);
-        RootElement root = (RootElement) filesList.getRoot();
-        root.addChild(networkElement);
     }
 
     private synchronized void fillPaths(Map<String, Collection<String>> paths) {

@@ -39,7 +39,6 @@ public class PlayerManager implements Loadable
       bus.subscribingFor(PLAYER_PAUSE).then(this::pauseMp3).subscribe();
       bus.subscribingFor(PLAYER_STOP).then(this::stopMp3).subscribe();
       bus.subscribingFor(PLAYER_RESUME).then(this::resume).subscribe();
-      bus.subscribingFor(CLOSE).then(this::stopMp3).subscribe();
       bus.subscribingFor(CLOSE).then(SPIPlayer::closePlayers).subscribe();
       bus.subscribingFor(PLAYER_PLAY_FROM).accept(this::startFrom).subscribe();
       bus.subscribingFor(PLAYER_SET_VOLUME).accept(this::setVolume).subscribe();
