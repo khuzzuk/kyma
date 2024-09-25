@@ -44,7 +44,7 @@ public class DirectoryIndexer implements Loadable {
     public void load() {
         bus.subscribingFor(RET_SOUND_FILE_CONVERTER).accept(this::setConverter).subscribe();
         bus.subscribingFor(DATA_INDEX_GET_DIRECTORIES).accept(this::setIndexedPaths).subscribe();
-        bus.subscribingFor(DATA_INDEX_DIRECTORY).accept(this::indexCatalogue).subscribe();
+        bus.subscribingFor(DATA_INDEX_DIRECTORY).accept(this::indexDirectory).subscribe();
     }
 
     private List<File> getFilesFromDirectory(File file) {
@@ -57,13 +57,13 @@ public class DirectoryIndexer implements Loadable {
               .collect(Collectors.toList());
     }
 
-    private void indexCatalogue(File file) {
+    private void indexDirectory(File file) {
         log.info(String.format("Start indexing: %s", file));
 
         List<File> files = getFilesFromDirectory(file)
-                .stream().filter(f -> !f.isHidden()).collect(Collectors.toList());
+                .stream().filter(f -> !f.isHidden()).toList();
         List<SoundFile> soundFiles = new ArrayList<>();
-        String convertPath = file.getParent() + "/";
+        String convertPath = file + "/";
 
         bus.message(DATA_INDEXING_AMOUNT).withContent(files.size()).send();
         for (int x = 0; x < files.size(); x++) {
@@ -74,7 +74,7 @@ public class DirectoryIndexer implements Loadable {
         }
 
         String directoryPath = normalizePath(file.getPath());
-        String indexingPath = indexedPaths.stream().filter(directoryPath::contains).findAny().orElse("");
+        String indexingPath = indexedPaths.stream().filter(directoryPath::contains).findAny().orElse(directoryPath);
         DataQuery query = DataQuery
               .queryFor(SupportedField.PATH, "*" + directoryPath.replaceFirst(indexingPath, "") + "/*", true)
               .and(SupportedField.INDEXED_PATH, indexingPath, false);

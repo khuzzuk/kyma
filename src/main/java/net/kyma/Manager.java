@@ -22,6 +22,7 @@ public class Manager extends Application {
   private static ForceGate gate = ForceGate.of(2, Manager::initMainWindow);
 
   public static void main(String[] args) {
+    System.out.println("Start app");
     AudioFile.logger.setLevel(Level.SEVERE);
     AbstractID3Tag.logger.setLevel(Level.SEVERE);
     Configurator.setLevel("bus", org.apache.logging.log4j.Level.WARN);
@@ -62,6 +63,15 @@ public class Manager extends Application {
 
   @Override
   public void start(Stage primaryStage) {
+    System.out.println("Start app");
+    AudioFile.logger.setLevel(Level.SEVERE);
+    AbstractID3Tag.logger.setLevel(Level.SEVERE);
+    Configurator.setLevel("bus", org.apache.logging.log4j.Level.WARN);
+    Configurator.setLevel("directory_indexer", org.apache.logging.log4j.Level.WARN);
+
+    bus = createBus();
+    prepareApp("index/", bus);
+
     currentStage = primaryStage;
     gate.on();
   }

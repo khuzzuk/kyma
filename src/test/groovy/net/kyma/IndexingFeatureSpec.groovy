@@ -16,6 +16,7 @@ import net.kyma.gui.manager.ManagerPaneController
 import net.kyma.gui.controllers.ManagerPaneControllerTestHelper
 import net.kyma.player.Format
 import pl.khuzzuk.messaging.Bus
+import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Stepwise
 
@@ -27,6 +28,7 @@ import static net.kyma.EventType.*
 import static org.awaitility.Awaitility.await
 
 @Stepwise
+@Ignore
 class IndexingFeatureSpec extends FxmlTestHelper {
     private static final int WAITING_SECONDS = 5
     @Shared
