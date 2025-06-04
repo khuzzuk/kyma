@@ -5,6 +5,7 @@ import static org.apache.commons.lang3.StringUtils.startsWithIgnoreCase;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.geometry.Side;
 import javafx.scene.control.ContextMenu;
@@ -40,7 +41,10 @@ public class AutoCompletionUtils {
         for (String value : values) {
             Label label = new Label(value);
             CustomMenuItem customMenuItem = new CustomMenuItem(label);
-            customMenuItem.setOnAction(event -> textField.setText(value));
+            customMenuItem.setOnAction(event -> {
+                textField.setText(value);
+                Platform.runLater(textField::requestFocus);
+            });
             menuItems.add(customMenuItem);
         }
     }
